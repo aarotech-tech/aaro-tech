@@ -55,7 +55,7 @@
   --card-foreground: #0a0a0a;
   --popover: oklch(1 0 0);
   --popover-foreground: #0a0a0a;
-  --primary: #ff0000;
+  --primary: #FA0201;
   --primary-foreground: oklch(1 0 0);
   --secondary: oklch(0.97 0 0);
   --secondary-foreground: #0a0a0a;
@@ -63,11 +63,11 @@
   --muted-foreground: oklch(0.556 0 0);
   --accent: oklch(0.97 0 0);
   --accent-foreground: #0a0a0a;
-  --destructive: #ff0000;
+  --destructive: #FA0201;
   --border: oklch(0.922 0 0);
   --input: oklch(0.922 0 0);
-  --ring: #ff0000;
-  --chart-1: #ff0000;
+  --ring: #FA0201;
+  --chart-1: #FA0201;
   --chart-2: oklch(0.556 0 0);
   --chart-3: oklch(0.439 0 0);
   --chart-4: oklch(0.371 0 0);
@@ -75,12 +75,12 @@
   --radius: 0.625rem;
   --sidebar: oklch(0.985 0 0);
   --sidebar-foreground: #0a0a0a;
-  --sidebar-primary: #ff0000;
+  --sidebar-primary: #FA0201;
   --sidebar-primary-foreground: oklch(1 0 0);
   --sidebar-accent: oklch(0.97 0 0);
   --sidebar-accent-foreground: #0a0a0a;
   --sidebar-border: oklch(0.922 0 0);
-  --sidebar-ring: #ff0000;
+  --sidebar-ring: #FA0201;
 }
 
 .dark {
@@ -90,7 +90,7 @@
   --card-foreground: oklch(0.985 0 0);
   --popover: #111111;
   --popover-foreground: oklch(0.985 0 0);
-  --primary: #ff0000;
+  --primary: #FA0201;
   --primary-foreground: #ffffff;
   --secondary: #1a1a1a;
   --secondary-foreground: oklch(0.985 0 0);
@@ -98,23 +98,23 @@
   --muted-foreground: oklch(0.708 0 0);
   --accent: #1a1a1a;
   --accent-foreground: oklch(0.985 0 0);
-  --destructive: #ff0000;
+  --destructive: #FA0201;
   --border: oklch(1 0 0 / 10%);
   --input: oklch(1 0 0 / 15%);
-  --ring: #ff0000;
-  --chart-1: #ff0000;
+  --ring: #FA0201;
+  --chart-1: #FA0201;
   --chart-2: oklch(0.556 0 0);
   --chart-3: oklch(0.439 0 0);
   --chart-4: oklch(0.371 0 0);
   --chart-5: oklch(0.269 0 0);
   --sidebar: #111111;
   --sidebar-foreground: oklch(0.985 0 0);
-  --sidebar-primary: #ff0000;
+  --sidebar-primary: #FA0201;
   --sidebar-primary-foreground: #ffffff;
   --sidebar-accent: #1a1a1a;
   --sidebar-accent-foreground: oklch(0.985 0 0);
   --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: #ff0000;
+  --sidebar-ring: #FA0201;
 }
 
 @layer base {

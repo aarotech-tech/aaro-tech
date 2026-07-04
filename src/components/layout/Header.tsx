@@ -27,15 +27,15 @@ export function Header() {
     setIsMobileMenuOpen(false);
     const href = e.currentTarget.getAttribute("href");
     if (!href?.startsWith("/#")) return;
-    
+
     const targetId = href.replace("/#", "");
-    
+
     if (pathname === "/") {
       e.preventDefault();
       const elem = document.getElementById(targetId);
       if (elem) {
-        const targetPosition = elem.getBoundingClientRect().top + window.scrollY - 80; // Offset for sticky header
-        
+        const targetPosition = elem.getBoundingClientRect().top + window.scrollY - 64; // Offset for sticky header
+
         // Use native hardware-accelerated smooth scrolling instead of custom JS loops
         window.scrollTo({
           top: targetPosition,
@@ -47,24 +47,24 @@ export function Header() {
 
   return (
     <header className="fixed top-0 w-full z-50 border-b bg-white/90 backdrop-blur-md shadow-sm">
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8 flex h-20 items-center justify-between">
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8 flex h-16 items-center justify-between">
         <div className="flex gap-2 items-center">
           <Link href="/" onClick={handleLogoClick} className="flex items-center space-x-2">
-            <Image 
-              src="/images/aarotech-logos/header-logo-light.png" 
-              alt="Aarotech" 
-              width={200} 
-              height={60} 
-              className="h-12 md:h-16 w-auto object-contain block dark:hidden"
+            <Image
+              src="/images/aarotech-logos/header-logo-primary.png"
+              alt="Aarotech"
+              width={200}
+              height={60}
+              className="h-10 md:h-12 w-auto object-contain block dark:hidden"
               priority
               loading="eager"
             />
-            <Image 
-              src="/images/aarotech-logos/header-logo-dark.png" 
-              alt="Aarotech" 
-              width={200} 
-              height={60} 
-              className="h-12 md:h-16 w-auto object-contain hidden dark:block"
+            <Image
+              src="/images/aarotech-logos/header-logo-primary.png"
+              alt="Aarotech"
+              width={200}
+              height={60}
+              className="h-10 md:h-12 w-auto object-contain hidden dark:block"
               priority
               loading="eager"
             />
@@ -84,7 +84,7 @@ export function Header() {
             <button className={buttonVariants({ size: "lg", className: "text-base font-semibold px-6 xl:px-8" })}>Get My Free Growth Plan</button>
           </ContactPopup>
         </div>
-        <button 
+        <button
           className="lg:hidden p-2 text-foreground"
           onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
           aria-label="Toggle menu"
@@ -95,7 +95,7 @@ export function Header() {
 
       {/* Mobile Menu */}
       {isMobileMenuOpen && (
-        <div className="lg:hidden border-t bg-white/95 backdrop-blur-xl absolute w-full shadow-xl h-[calc(100dvh-80px)] overflow-y-auto">
+        <div className="lg:hidden border-t bg-white/95 backdrop-blur-xl absolute w-full shadow-xl h-[calc(100dvh-64px)] overflow-y-auto">
           <nav className="flex flex-col items-center gap-4 pt-8 pb-32 text-base font-medium">
             <Link href="/#services" onClick={handleScroll} className="transition-colors hover:text-primary text-foreground w-full text-center py-2 focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none">Services</Link>
             <Link href="/#industries" onClick={handleScroll} className="transition-colors hover:text-primary text-foreground w-full text-center py-2 focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none">Industries</Link>
