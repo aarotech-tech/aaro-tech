@@ -55,16 +55,7 @@ export function Header() {
               alt="Aarotech"
               width={200}
               height={60}
-              className="h-10 md:h-12 w-auto object-contain block dark:hidden"
-              priority
-              loading="eager"
-            />
-            <Image
-              src="/images/aarotech-logos/header-logo-primary.png"
-              alt="Aarotech"
-              width={200}
-              height={60}
-              className="h-10 md:h-12 w-auto object-contain hidden dark:block"
+              className="h-10 md:h-12 w-auto object-contain"
               priority
               loading="eager"
             />

@@ -9,7 +9,7 @@ export function Footer() {
           <div className="col-span-1 md:col-span-1">
             <Link href="/" className="flex items-center space-x-2 mb-4">
               <Image
-                src="/images/aarotech-logos/header-logo-primary.png"
+                src="/images/aarotech-logos/footer-logo-primary.png"
                 alt="Aarotech"
                 width={240}
                 height={70}

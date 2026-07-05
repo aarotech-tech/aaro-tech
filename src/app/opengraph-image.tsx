@@ -1,4 +1,5 @@
 import { ImageResponse } from "next/og";
+import { headers } from "next/headers";
 
 export const runtime = "edge";
 
@@ -12,11 +13,16 @@ export const size = {
 export const contentType = "image/png";
 
 export default async function Image() {
+  const headersList = await headers();
+  const host = headersList.get("host") || "localhost:3000";
+  const protocol = host.includes("localhost") ? "http" : "https";
+  const baseUrl = `${protocol}://${host}`;
+
   return new ImageResponse(
     (
       <div
         style={{
-          background: "linear-gradient(to right bottom, #0f172a, #1e293b)",
+          background: "linear-gradient(to right bottom, #f8fafc, #e2e8f0)",
           width: "100%",
           height: "100%",
           display: "flex",
@@ -35,33 +41,20 @@ export default async function Image() {
             marginBottom: "40px",
           }}
         >
-          <div
-            style={{
-              width: "60px",
-              height: "60px",
-              backgroundColor: "#22c55e",
-              borderRadius: "50%",
-              marginRight: "20px",
-            }}
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={`${baseUrl}/images/aarotech-logos/header-logo-primary.png`}
+            height={90}
+            alt="Aarotech"
+            style={{ objectFit: "contain" }}
           />
-          <h1
-            style={{
-              fontSize: "80px",
-              fontWeight: "900",
-              color: "white",
-              letterSpacing: "-0.05em",
-              margin: 0,
-            }}
-          >
-            Aarotech.
-          </h1>
         </div>
 
         <h2
           style={{
             fontSize: "48px",
             fontWeight: "700",
-            color: "#e2e8f0",
+            color: "#0f172a",
             textAlign: "center",
             maxWidth: "900px",
             lineHeight: 1.2,
@@ -74,12 +67,12 @@ export default async function Image() {
         <p
           style={{
             fontSize: "32px",
-            color: "#94a3b8",
+            color: "#475569",
             textAlign: "center",
             fontWeight: "500",
           }}
         >
-          Web Design • SEO • Ads • Social Media
+          Content Creation • SEO • Ads • Social Media Marketing
         </p>
       </div>
     ),
