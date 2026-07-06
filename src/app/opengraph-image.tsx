@@ -54,7 +54,7 @@ export default async function Image() {
           style={{
             fontSize: "48px",
             fontWeight: "700",
-            color: "#f8fafc",
+            color: "#ffce1b",
             textAlign: "center",
             maxWidth: "900px",
             lineHeight: 1.2,
@@ -72,7 +72,7 @@ export default async function Image() {
             fontWeight: "500",
           }}
         >
-          Content Creation • SEO • Ads • Social Media Marketing
+          Social Media Marketing • Content Creation • Google and Meta Ads • Website Developement • SEO
         </p>
       </div>
     ),
