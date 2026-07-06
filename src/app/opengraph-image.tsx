@@ -72,7 +72,7 @@ export default async function Image() {
             fontWeight: "500",
           }}
         >
-          Social Media Marketing • Content Creation • Google and Meta Ads • Website Developement • SEO
+          Social Media Marketing • Content Creation • Google and Meta Ads • Website Development • SEO
         </p>
       </div>
     ),
