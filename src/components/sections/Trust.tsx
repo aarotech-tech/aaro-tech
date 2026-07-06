@@ -16,9 +16,9 @@ export function Trust() {
           {metrics.map((metric, index) => (
             <AnimateOnScroll key={index} delay={`${index * 0.1 + 0.2}s`} className="h-full">
               <Card className="border border-slate-200 shadow-sm bg-white rounded-2xl hover:shadow-md transition-shadow h-full">
-                <CardContent className="p-6 md:p-8 text-center h-full flex flex-col justify-center">
-                  <div className="text-3xl md:text-4xl lg:text-5xl font-bold text-primary mb-3">{metric.value}</div>
-                  <div className="text-sm md:text-base text-slate-500 font-bold tracking-wide uppercase">{metric.label}</div>
+                <CardContent className="p-3 sm:p-4 md:p-6 lg:p-8 text-center h-full flex flex-col justify-center">
+                  <div className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-primary mb-2 sm:mb-3">{metric.value}</div>
+                  <div className="text-[10px] sm:text-xs md:text-sm lg:text-base text-slate-500 font-bold tracking-wide uppercase leading-tight">{metric.label}</div>
                 </CardContent>
               </Card>
             </AnimateOnScroll>
