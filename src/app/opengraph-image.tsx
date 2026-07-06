@@ -22,7 +22,7 @@ export default async function Image() {
     (
       <div
         style={{
-          background: "linear-gradient(to right bottom, #f8fafc, #e2e8f0)",
+          background: "linear-gradient(to right bottom, #0f172a, #1e293b)",
           width: "100%",
           height: "100%",
           display: "flex",
@@ -43,7 +43,7 @@ export default async function Image() {
         >
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
-            src={`${baseUrl}/images/aarotech-logos/header-logo-primary.png`}
+            src={`${baseUrl}/images/aarotech-logos/footer-logo-primary.png`}
             height={90}
             alt="Aarotech"
             style={{ objectFit: "contain" }}
@@ -54,7 +54,7 @@ export default async function Image() {
           style={{
             fontSize: "48px",
             fontWeight: "700",
-            color: "#0f172a",
+            color: "#f8fafc",
             textAlign: "center",
             maxWidth: "900px",
             lineHeight: 1.2,
@@ -67,7 +67,7 @@ export default async function Image() {
         <p
           style={{
             fontSize: "32px",
-            color: "#475569",
+            color: "#cbd5e1",
             textAlign: "center",
             fontWeight: "500",
           }}
