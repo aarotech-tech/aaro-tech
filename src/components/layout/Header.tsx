@@ -46,12 +46,12 @@ export function Header() {
   };
 
   return (
-    <header className="fixed top-0 w-full z-50 border-b bg-white/90 backdrop-blur-md shadow-sm">
+    <header className="fixed top-0 w-full z-50 border-b border-white/10 bg-slate-950/85 backdrop-blur-xl shadow-md transition-all duration-300">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 flex h-16 items-center justify-between">
         <div className="flex gap-2 items-center">
           <Link href="/" onClick={handleLogoClick} className="flex items-center space-x-2">
             <Image
-              src="/images/aarotech-logos/header-logo-primary.png"
+              src="/images/aarotech-logos/footer-logo-primary.png"
               alt="Aarotech"
               width={200}
               height={60}
@@ -62,13 +62,13 @@ export function Header() {
           </Link>
         </div>
         <nav className="hidden lg:flex items-center gap-6 xl:gap-8 text-base font-bold">
-          <Link href="/#services" onClick={handleScroll} className="transition-colors hover:text-primary text-slate-700 focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none rounded-sm">Services</Link>
-          <Link href="/#industries" onClick={handleScroll} className="transition-colors hover:text-primary text-slate-700 focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none rounded-sm">Industries</Link>
-          <Link href="/#process" onClick={handleScroll} className="transition-colors hover:text-primary text-slate-700 focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none rounded-sm">Process</Link>
-          <Link href="/#work" onClick={handleScroll} className="transition-colors hover:text-primary text-slate-700 focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none rounded-sm">Case Studies</Link>
-          <Link href="/#testimonials" onClick={handleScroll} className="transition-colors hover:text-primary text-slate-700 focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none rounded-sm">Testimonials</Link>
-          <Link href="/#about" onClick={handleScroll} className="transition-colors hover:text-primary text-slate-700 focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none rounded-sm">About</Link>
-          <Link href="/#faq" onClick={handleScroll} className="transition-colors hover:text-primary text-slate-700 focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none rounded-sm">FAQ</Link>
+          <Link href="/#services" onClick={handleScroll} className="transition-colors hover:text-primary text-slate-300 focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none rounded-sm">Services</Link>
+          <Link href="/#industries" onClick={handleScroll} className="transition-colors hover:text-primary text-slate-300 focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none rounded-sm">Industries</Link>
+          <Link href="/#process" onClick={handleScroll} className="transition-colors hover:text-primary text-slate-300 focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none rounded-sm">Process</Link>
+          <Link href="/#work" onClick={handleScroll} className="transition-colors hover:text-primary text-slate-300 focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none rounded-sm">Case Studies</Link>
+          <Link href="/#testimonials" onClick={handleScroll} className="transition-colors hover:text-primary text-slate-300 focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none rounded-sm">Testimonials</Link>
+          <Link href="/#about" onClick={handleScroll} className="transition-colors hover:text-primary text-slate-300 focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none rounded-sm">About</Link>
+          <Link href="/#faq" onClick={handleScroll} className="transition-colors hover:text-primary text-slate-300 focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none rounded-sm">FAQ</Link>
         </nav>
         <div className="hidden sm:flex items-center gap-4">
           <ContactPopup>
@@ -76,7 +76,7 @@ export function Header() {
           </ContactPopup>
         </div>
         <button
-          className="lg:hidden p-2 text-foreground"
+          className="lg:hidden p-2 text-slate-200 hover:text-white"
           onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
           aria-label="Toggle menu"
         >
@@ -86,15 +86,15 @@ export function Header() {
 
       {/* Mobile Menu */}
       {isMobileMenuOpen && (
-        <div className="lg:hidden border-t bg-white/95 backdrop-blur-xl absolute w-full shadow-xl h-[calc(100dvh-64px)] overflow-y-auto">
+        <div className="lg:hidden border-t border-white/10 bg-slate-950/90 backdrop-blur-xl absolute w-full shadow-2xl h-[calc(100dvh-64px)] overflow-y-auto">
           <nav className="flex flex-col items-center gap-4 pt-8 pb-32 text-base font-medium">
-            <Link href="/#services" onClick={handleScroll} className="transition-colors hover:text-primary text-foreground w-full text-center py-2 focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none">Services</Link>
-            <Link href="/#industries" onClick={handleScroll} className="transition-colors hover:text-primary text-foreground w-full text-center py-2 focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none">Industries</Link>
-            <Link href="/#process" onClick={handleScroll} className="transition-colors hover:text-primary text-foreground w-full text-center py-2 focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none">Process</Link>
-            <Link href="/#work" onClick={handleScroll} className="transition-colors hover:text-primary text-foreground w-full text-center py-2 focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none">Case Studies</Link>
-            <Link href="/#testimonials" onClick={handleScroll} className="transition-colors hover:text-primary text-foreground w-full text-center py-2 focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none">Testimonials</Link>
-            <Link href="/#about" onClick={handleScroll} className="transition-colors hover:text-primary text-foreground w-full text-center py-2 focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none">About</Link>
-            <Link href="/#faq" onClick={handleScroll} className="transition-colors hover:text-primary text-foreground w-full text-center py-2 focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none">FAQ</Link>
+            <Link href="/#services" onClick={handleScroll} className="transition-colors hover:text-primary text-slate-300 w-full text-center py-2 focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none">Services</Link>
+            <Link href="/#industries" onClick={handleScroll} className="transition-colors hover:text-primary text-slate-300 w-full text-center py-2 focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none">Industries</Link>
+            <Link href="/#process" onClick={handleScroll} className="transition-colors hover:text-primary text-slate-300 w-full text-center py-2 focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none">Process</Link>
+            <Link href="/#work" onClick={handleScroll} className="transition-colors hover:text-primary text-slate-300 w-full text-center py-2 focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none">Case Studies</Link>
+            <Link href="/#testimonials" onClick={handleScroll} className="transition-colors hover:text-primary text-slate-300 w-full text-center py-2 focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none">Testimonials</Link>
+            <Link href="/#about" onClick={handleScroll} className="transition-colors hover:text-primary text-slate-300 w-full text-center py-2 focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none">About</Link>
+            <Link href="/#faq" onClick={handleScroll} className="transition-colors hover:text-primary text-slate-300 w-full text-center py-2 focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none">FAQ</Link>
           </nav>
         </div>
       )}

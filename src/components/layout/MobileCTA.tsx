@@ -9,7 +9,7 @@ export function MobileCTA() {
 
   return (
     <div
-      className={`fixed bottom-0 w-full p-4 bg-background border-t z-40 sm:hidden shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)] transition-transform duration-300 ${
+      className={`fixed bottom-0 w-full p-4 bg-slate-950/85 backdrop-blur-xl border-t border-white/10 z-40 sm:hidden shadow-[0_-10px_30px_rgba(0,0,0,0.3)] transition-transform duration-300 ${
         popupOpen ? "translate-y-full" : "translate-y-0"
       }`}
     >

@@ -37,7 +37,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning data-scroll-behavior="smooth" className={`${inter.variable} antialiased overscroll-none scroll-smooth`}>
-      <body suppressHydrationWarning className="min-h-screen flex flex-col pb-20 sm:pb-0 overflow-x-clip overscroll-none bg-background">
+      <body suppressHydrationWarning className="min-h-screen flex flex-col pb-20 sm:pb-0 overscroll-none bg-background">
         {children}
         <WhatsAppButton />
         <MobileCTA />

@@ -6,8 +6,8 @@ import { AnimateOnScroll } from "@/components/ui/animate-on-scroll";
 
 export function Services() {
   return (
-    <section id="services" className="relative py-24 bg-white">
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+    <section id="services" className="relative py-24 bg-gradient-to-br from-slate-50 via-white to-slate-100/50">
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         <div className="text-center max-w-3xl mx-auto mb-16 md:mb-20">
           <AnimateOnScroll delay="0s">
             <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold tracking-tight text-slate-900 mb-6">How We Help Businesses Grow</h2>
@@ -21,7 +21,7 @@ export function Services() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {services.map((service, index) => (
             <AnimateOnScroll key={service.id} delay={`${index * 0.1 + 0.2}s`} className="h-full">
-              <Card className="group h-full border-slate-200 shadow-sm bg-white hover:border-primary/50 hover:shadow-md transition-all duration-300 hover:-translate-y-1">
+              <Card className="group h-full border-slate-200/60 shadow-sm bg-white/60 backdrop-blur-xl hover:border-primary/30 hover:shadow-2xl hover:shadow-primary/10 transition-all duration-500 hover:-translate-y-2">
                 <CardHeader className="p-6 pb-4">
                   <div className="w-14 h-14 bg-primary/10 text-primary rounded-xl flex items-center justify-center mb-6 group-hover:bg-primary group-hover:text-white transition-colors duration-300">
                     <service.icon className="w-7 h-7" />
