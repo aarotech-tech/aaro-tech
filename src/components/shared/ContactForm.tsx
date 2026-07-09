@@ -35,7 +35,7 @@ export function ContactForm({ onSuccess }: { onSuccess?: () => void }) {
     const phoneVal = (e.currentTarget.elements.namedItem("phone") as HTMLInputElement)?.value?.trim() || "";
     const digits = phoneVal.replace(/\D/g, "");
     if (!phoneVal || digits.length < 7 || digits.length > 15) {
-      setPhoneError("Enter a valid phone number (7–15 digits).");
+      setPhoneError("Enter a valid phone number (7-15 digits).");
       return;
     }
 
@@ -136,12 +136,12 @@ export function ContactForm({ onSuccess }: { onSuccess?: () => void }) {
             className={`bg-slate-950 border-slate-800 text-white placeholder:text-slate-500 ${phoneError ? "border-red-500 focus:border-red-500" : ""}`}
             onBlur={(e) => {
               const val = e.target.value.trim();
-              // Accepts: optional +, digits, spaces, dashes, dots — 7 to 15 digits total
+              // Accepts: optional +, digits, spaces, dashes, dots - 7 to 15 digits total
               const digits = val.replace(/\D/g, "");
               if (!val) {
                 setPhoneError("Phone number is required.");
               } else if (digits.length < 7 || digits.length > 15) {
-                setPhoneError("Enter a valid phone number (7–15 digits).");
+                setPhoneError("Enter a valid phone number (7-15 digits).");
               } else {
                 setPhoneError("");
               }

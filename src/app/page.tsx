@@ -29,7 +29,7 @@ export default function Home() {
         <CaseStudies />
         <WhyWorkWithUs />
         <Testimonials />
-        <MeetFounders />
+        {/* <MeetFounders /> */}
         <FAQ />
         <Contact />
       </main>
