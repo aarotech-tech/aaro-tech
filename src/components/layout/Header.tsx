@@ -76,9 +76,11 @@ export function Header() {
           </ContactPopup>
         </div>
         <button
-          className="lg:hidden p-2 text-slate-200 hover:text-white"
+          className="lg:hidden p-2 text-slate-200 hover:text-white focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none rounded-md"
           onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-          aria-label="Toggle menu"
+          aria-label={isMobileMenuOpen ? "Close menu" : "Open menu"}
+          aria-expanded={isMobileMenuOpen}
+          aria-controls="mobile-menu"
         >
           {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
         </button>
@@ -86,7 +88,7 @@ export function Header() {
 
       {/* Mobile Menu */}
       {isMobileMenuOpen && (
-        <div className="lg:hidden border-t border-white/10 bg-slate-950/90 backdrop-blur-xl absolute w-full shadow-2xl h-[calc(100dvh-64px)] overflow-y-auto">
+        <div id="mobile-menu" className="lg:hidden border-t border-white/10 bg-slate-950/90 backdrop-blur-xl absolute w-full shadow-2xl h-[calc(100dvh-64px)] overflow-y-auto">
           <nav className="flex flex-col items-center gap-4 pt-8 pb-32 text-base font-medium">
             <Link href="/#services" onClick={handleScroll} className="transition-colors hover:text-primary text-slate-300 w-full text-center py-2 focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none">Services</Link>
             <Link href="/#industries" onClick={handleScroll} className="transition-colors hover:text-primary text-slate-300 w-full text-center py-2 focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none">Industries</Link>

@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { CheckCircle2 } from "lucide-react";
+import { sendGAEvent } from "@next/third-parties/google";
 
 export function ContactForm({ onSuccess }: { onSuccess?: () => void }) {
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -13,6 +14,7 @@ export function ContactForm({ onSuccess }: { onSuccess?: () => void }) {
   const [selectedChallenge, setSelectedChallenge] = useState<string>("");
   const [phoneError, setPhoneError] = useState<string>("");
   const [emailError, setEmailError] = useState<string>("");
+  const [submitError, setSubmitError] = useState<string>("");
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -27,7 +29,7 @@ export function ContactForm({ onSuccess }: { onSuccess?: () => void }) {
 
     // Validate challenge selection
     if (!selectedChallenge) {
-      alert("Please select your biggest challenge.");
+      setSubmitError("Please select your biggest challenge.");
       return;
     }
 
@@ -45,23 +47,22 @@ export function ContactForm({ onSuccess }: { onSuccess?: () => void }) {
     const formData = new FormData(form);
 
     try {
-      const response = await fetch("https://formspree.io/f/mzdqqdao", {
+      const response = await fetch("/api/contact", {
         method: "POST",
         body: formData,
-        headers: {
-          Accept: "application/json",
-        },
       });
 
       if (response.ok) {
         setIsSuccess(true);
         form.reset();
+        setSubmitError("");
+        sendGAEvent("event", "generate_lead", { value: 1, currency: "USD" });
         if (onSuccess) onSuccess();
       } else {
-        alert("Oops! There was a problem submitting your form.");
+        setSubmitError("Oops! There was a problem submitting your form. Please try again.");
       }
     } catch {
-      alert("Oops! There was a problem submitting your form.");
+      setSubmitError("Oops! There was a problem submitting your form. Please check your connection and try again.");
     } finally {
       setIsSubmitting(false);
     }
@@ -173,6 +174,12 @@ export function ContactForm({ onSuccess }: { onSuccess?: () => void }) {
           <div className="space-y-2 animate-in fade-in slide-in-from-top-2 duration-300">
             <Label htmlFor="otherChallenge" className="text-white">Please specify your challenge</Label>
             <Input id="otherChallenge" name="otherChallenge" placeholder="Tell us more about your challenge..." required className="bg-slate-950 border-slate-800 text-white placeholder:text-slate-500" />
+          </div>
+        )}
+
+        {submitError && (
+          <div className="p-3 bg-red-500/10 border border-red-500/20 text-red-400 rounded-lg text-sm">
+            {submitError}
           </div>
         )}
 
