@@ -2,7 +2,7 @@
 
 import { useEffect } from "react";
 import Link from "next/link";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 
 export default function Error({
   error,
@@ -27,9 +27,7 @@ export default function Error({
           <Button onClick={() => reset()} className="bg-primary text-white hover:bg-primary/90">
             Try again
           </Button>
-          <Button asChild variant="outline" className="border-slate-700 bg-transparent hover:bg-slate-800 text-slate-300">
-            <Link href="/">Return to Homepage</Link>
-          </Button>
+          <Link href="/" className={buttonVariants({ variant: "outline", className: "border-slate-700 bg-transparent hover:bg-slate-800 text-slate-300" })}>Return to Homepage</Link>
         </div>
       </div>
     </div>

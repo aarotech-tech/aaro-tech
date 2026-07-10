@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Button } from "@/components/ui/button";
+import { buttonVariants } from "@/components/ui/button";
 
 export default function NotFound() {
   return (
@@ -8,12 +8,10 @@ export default function NotFound() {
         <h1 className="text-8xl font-extrabold text-slate-800">404</h1>
         <h2 className="text-3xl font-bold">Page Not Found</h2>
         <p className="text-slate-400">
-          The page you are looking for doesn't exist or has been moved.
+          The page you are looking for doesn&apos;t exist or has been moved.
         </p>
         <div className="pt-4">
-          <Button asChild size="lg" className="bg-primary text-white hover:bg-primary/90">
-            <Link href="/">Return to Homepage</Link>
-          </Button>
+          <Link href="/" className={buttonVariants({ size: "lg", className: "bg-primary text-white hover:bg-primary/90" })}>Return to Homepage</Link>
         </div>
       </div>
     </div>

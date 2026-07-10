@@ -14,7 +14,7 @@ export function Testimonials() {
             <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold tracking-tight mb-6">What Our Partners Say</h2>
           </AnimateOnScroll>
           <AnimateOnScroll delay="0.1s">
-            <p className="text-lg text-slate-300">Real results from real businesses we've partnered with.</p>
+            <p className="text-lg text-slate-300">Real results from real businesses we&apos;ve partnered with.</p>
           </AnimateOnScroll>
         </div>
         
