@@ -5,6 +5,7 @@ import { MobileCTA } from "@/components/layout/MobileCTA";
 import { WhatsAppButton } from "@/components/layout/WhatsAppButton";
 import { ClickTracker } from "@/components/shared/ClickTracker";
 import { GoogleAnalytics, GoogleTagManager } from "@next/third-parties/google";
+import { CursorGlow } from "@/components/ui/cursor-glow";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -84,6 +85,7 @@ export default function RootLayout({
         <WhatsAppButton />
         <MobileCTA />
         <ClickTracker />
+        <CursorGlow />
       </body>
       {process.env.NEXT_PUBLIC_GA_ID && <GoogleAnalytics gaId={process.env.NEXT_PUBLIC_GA_ID} />}
       {process.env.NEXT_PUBLIC_GTM_ID && <GoogleTagManager gtmId={process.env.NEXT_PUBLIC_GTM_ID} />}

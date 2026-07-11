@@ -2,6 +2,7 @@ import { testimonials } from "@/data/content";
 import { FallbackImage as Image } from "@/components/ui/fallback-image";
 import { TrendingUp } from "lucide-react";
 import { AnimateOnScroll } from "@/components/ui/animate-on-scroll";
+import { TextReveal } from "@/components/ui/text-reveal";
 
 export function Testimonials() {
   if (testimonials.length === 0) return null;
@@ -11,7 +12,7 @@ export function Testimonials() {
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center max-w-3xl mx-auto mb-16 md:mb-20">
           <AnimateOnScroll delay="0s">
-            <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold tracking-tight mb-6">What Our Partners Say</h2>
+            <TextReveal text="What Our Partners Say" className="text-3xl md:text-4xl lg:text-5xl font-bold tracking-tight mb-6 justify-center text-center" />
           </AnimateOnScroll>
           <AnimateOnScroll delay="0.1s">
             <p className="text-lg text-slate-300">Real results from real businesses we&apos;ve partnered with.</p>

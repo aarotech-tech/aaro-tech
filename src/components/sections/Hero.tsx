@@ -1,8 +1,25 @@
+"use client";
+
 import Link from "next/link";
+import { useRef } from "react";
 import { buttonVariants } from "@/components/ui/button";
 import { ArrowRight } from "lucide-react";
+import { TextReveal } from "@/components/ui/text-reveal";
 
 export function Hero() {
+  const videoRef = useRef<HTMLVideoElement>(null);
+
+  const handleMouseEnter = () => {
+    if (videoRef.current) {
+      videoRef.current.pause();
+    }
+  };
+
+  const handleMouseLeave = () => {
+    if (videoRef.current) {
+      videoRef.current.play();
+    }
+  };
   return (
     <section className="relative overflow-hidden bg-[#6891b3] pt-24 pb-16">
       <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(255,255,255,0.1)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.1)_1px,transparent_1px)] bg-[size:24px_24px]"></div>
@@ -17,9 +34,11 @@ export function Hero() {
               </span>
               Accepting new clients
             </div>
-            <h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold tracking-tight max-w-3xl mb-4 animate-slide-up-fade [text-shadow:_0_4px_16px_rgb(0_0_0_/_30%)]" style={{ animationDelay: "0.2s" }}>
-              Get More Leads, Customers, and Revenue for Your Business
-            </h1>
+            <TextReveal 
+              text="Get More Leads, Customers, and Revenue for Your Business" 
+              className="text-4xl md:text-5xl lg:text-6xl font-extrabold tracking-tight max-w-3xl mb-4 [text-shadow:_0_4px_16px_rgb(0_0_0_/_30%)]" 
+              delay={2}
+            />
             <p className="text-lg md:text-xl text-white/90 max-w-2xl mb-6 leading-relaxed animate-slide-up-fade" style={{ animationDelay: "0.3s" }}>
               We help businesses generate more leads, improve online visibility, and grow revenue through high-converting websites, SEO, advertising, and social media.
             </p>
@@ -53,8 +72,13 @@ export function Hero() {
             </div>
           </div>
 
-          <div className="absolute inset-0 lg:static lg:w-[45%] flex justify-center items-center z-0 opacity-40 lg:opacity-100 pointer-events-none overflow-hidden lg:overflow-visible">
+          <div 
+            className="absolute inset-0 lg:static lg:w-[45%] flex justify-center items-center z-0 opacity-40 lg:opacity-100 pointer-events-none lg:pointer-events-auto overflow-hidden lg:overflow-visible"
+            onMouseEnter={handleMouseEnter}
+            onMouseLeave={handleMouseLeave}
+          >
             <video
+              ref={videoRef}
               src="/animations/Red%20Floating%20Cube.mp4"
               autoPlay
               loop
@@ -62,6 +86,8 @@ export function Hero() {
               playsInline
               preload="auto"
               className="w-full h-full lg:h-[550px] object-cover pointer-events-none lg:scale-[1.25] mix-blend-screen lg:mix-blend-normal [mask-image:radial-gradient(circle_at_center,black_30%,transparent_80%)] [-webkit-mask-image:radial-gradient(circle_at_center,black_30%,transparent_80%)] lg:[mask-image:radial-gradient(circle_at_center,black_50%,transparent_80%)] lg:[-webkit-mask-image:radial-gradient(circle_at_center,black_50%,transparent_80%)] will-change-transform"
+              disablePictureInPicture
+              disableRemotePlayback
             />
           </div>
         </div>

@@ -2,6 +2,7 @@ import { founders } from "@/data/content";
 import { Link as LinkIcon } from "lucide-react";
 import { FallbackImage as Image } from "@/components/ui/fallback-image";
 import { AnimateOnScroll } from "@/components/ui/animate-on-scroll";
+import { TextReveal } from "@/components/ui/text-reveal";
 
 export function MeetFounders() {
   return (
@@ -9,7 +10,7 @@ export function MeetFounders() {
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center max-w-3xl mx-auto mb-16 md:mb-20">
           <AnimateOnScroll delay="0s">
-            <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold tracking-tight mb-6">The People Behind the Campaigns</h2>
+            <TextReveal text="The People Behind the Campaigns" className="text-3xl md:text-4xl lg:text-5xl font-bold tracking-tight mb-6 justify-center text-center" />
           </AnimateOnScroll>
           <AnimateOnScroll delay="0.1s">
             <p className="text-lg md:text-xl text-slate-500 leading-relaxed mb-6">

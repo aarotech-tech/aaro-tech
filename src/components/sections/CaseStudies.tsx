@@ -4,6 +4,7 @@ import { ArrowRight, LayoutTemplate } from "lucide-react";
 import { FallbackImage as Image } from "@/components/ui/fallback-image";
 import { AnimateOnScroll } from "@/components/ui/animate-on-scroll";
 import { ContactPopup } from "@/components/shared/ContactPopup";
+import { TextReveal } from "@/components/ui/text-reveal";
 
 export function CaseStudies() {
   return (
@@ -12,7 +13,7 @@ export function CaseStudies() {
         <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-16 md:mb-20 gap-6">
           <div className="max-w-2xl">
             <AnimateOnScroll delay="0s">
-              <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold tracking-tight mb-6">Results We&apos;ve Helped Create</h2>
+              <TextReveal text="Results We've Helped Create" className="text-3xl md:text-4xl lg:text-5xl font-bold tracking-tight mb-6 justify-center text-center" />
             </AnimateOnScroll>
             <AnimateOnScroll delay="0.1s">
               <p className="text-lg md:text-xl text-slate-500 leading-relaxed">

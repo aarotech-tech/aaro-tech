@@ -2,6 +2,7 @@
 
 import { AnimateOnScroll } from "@/components/ui/animate-on-scroll";
 import { ContactForm } from "@/components/shared/ContactForm";
+import { TextReveal } from "@/components/ui/text-reveal";
 
 export function Contact() {
   return (
@@ -10,7 +11,7 @@ export function Contact() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-16">
           <div>
             <AnimateOnScroll delay="0s">
-              <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold tracking-tight mb-4 text-white">Ready to Grow?</h2>
+              <TextReveal text="Ready to Grow?" className="text-3xl md:text-4xl lg:text-5xl font-bold tracking-tight mb-4 text-white" />
             </AnimateOnScroll>
             <AnimateOnScroll delay="0.1s">
               <p className="text-lg text-slate-300 mb-10">

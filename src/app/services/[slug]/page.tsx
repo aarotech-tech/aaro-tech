@@ -87,7 +87,7 @@ export default async function ServicePage({ params }: { params: Promise<{ slug: 
                 ))}
               </ul>
             </div>
-            <div className="bg-slate-50 rounded-2xl p-8 md:p-12 w-full border border-slate-200 shadow-sm relative group overflow-hidden flex flex-col items-center justify-center text-center aspect-video">
+            <div className="bg-slate-50 rounded-2xl p-8 md:p-12 w-full border border-slate-200 shadow-sm relative group overflow-hidden flex flex-col items-center justify-center text-center min-h-[350px]">
               <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,var(--color-primary)_0%,transparent_100%)] opacity-5 transition-opacity duration-500 group-hover:opacity-10"></div>
               <div className="relative z-10">
                 <div className="w-20 h-20 mx-auto bg-white rounded-2xl shadow-sm border border-slate-100 flex items-center justify-center mb-6 group-hover:-translate-y-2 transition-transform duration-500">

@@ -1,6 +1,7 @@
 import { faqs } from "@/data/content";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { AnimateOnScroll } from "@/components/ui/animate-on-scroll";
+import { TextReveal } from "@/components/ui/text-reveal";
 
 export function FAQ() {
   const faqSchema = {
@@ -26,7 +27,7 @@ export function FAQ() {
         <div className="text-center mb-16 md:mb-20">
           <AnimateOnScroll delay="0s">
             <p className="text-sm font-semibold uppercase tracking-widest text-primary mb-3">Frequently Asked Questions</p>
-            <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold tracking-tight mb-6">Radical Transparency: Clear Answers</h2>
+            <TextReveal text="Radical Transparency: Clear Answers" className="text-3xl md:text-4xl lg:text-5xl font-bold tracking-tight mb-6 justify-center text-center" />
           </AnimateOnScroll>
           <AnimateOnScroll delay="0.1s">
             <p className="text-lg md:text-xl text-slate-500 leading-relaxed">Everything you need to know before we partner up.</p>

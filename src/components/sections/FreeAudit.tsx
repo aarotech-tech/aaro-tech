@@ -1,6 +1,7 @@
 import { buttonVariants } from "@/components/ui/button";
 import { AnimateOnScroll } from "@/components/ui/animate-on-scroll";
 import { ContactPopup } from "@/components/shared/ContactPopup";
+import { TextReveal } from "@/components/ui/text-reveal";
 
 export function FreeAudit() {
   return (
@@ -16,7 +17,7 @@ export function FreeAudit() {
       <div className="absolute inset-0 bg-slate-950/60 pointer-events-none"></div>
       <div className="container relative mx-auto px-4 sm:px-6 lg:px-8 text-center max-w-3xl z-10">
         <AnimateOnScroll delay="0s">
-          <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-6 tracking-tight">Stop Guessing. Start Growing.</h2>
+          <TextReveal text="Stop Guessing. Start Growing." className="text-3xl md:text-4xl lg:text-5xl font-bold mb-6 tracking-tight justify-center text-center" />
         </AnimateOnScroll>
         <div className="max-w-2xl mx-auto mb-8">
           <AnimateOnScroll delay="0.1s">
