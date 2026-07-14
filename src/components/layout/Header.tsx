@@ -64,10 +64,8 @@ export function Header() {
         <nav className="hidden lg:flex items-center gap-6 xl:gap-8 text-base font-bold">
           <Link href="/#services" onClick={handleScroll} className="transition-colors hover:text-primary text-slate-300 focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none rounded-sm">Services</Link>
           <Link href="/#industries" onClick={handleScroll} className="transition-colors hover:text-primary text-slate-300 focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none rounded-sm">Industries</Link>
-          <Link href="/locations" className="transition-colors hover:text-primary text-slate-300 focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none rounded-sm">Locations</Link>
           <Link href="/#process" onClick={handleScroll} className="transition-colors hover:text-primary text-slate-300 focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none rounded-sm">Process</Link>
           <Link href="/#work" onClick={handleScroll} className="transition-colors hover:text-primary text-slate-300 focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none rounded-sm">Case Studies</Link>
-          <Link href="/blog" className="transition-colors hover:text-primary text-slate-300 focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none rounded-sm">Blog</Link>
           <Link href="/#testimonials" onClick={handleScroll} className="transition-colors hover:text-primary text-slate-300 focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none rounded-sm">Testimonials</Link>
           <Link href="/#about" onClick={handleScroll} className="transition-colors hover:text-primary text-slate-300 focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none rounded-sm">About</Link>
         </nav>
