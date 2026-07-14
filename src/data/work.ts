@@ -13,38 +13,31 @@ export interface Project {
   slug: string;
   industry: string;
   serviceCategory: ServiceCategory;
-  client: string;
+  client: string; // The client name
+  clientOverview: string;
   heroImage: string;
   gallery: string[];
   duration: string;
   websiteUrl?: string;
-  summary: {
-    client: string;
-    challenge: string;
-    delivery: string;
-    impact: string;
-  };
-  challenge: string[];
-  approach: {
-    category: string;
-    description: string;
-  }[];
-  timeline: string[];
+  businessChallenge: string[];
+  research: string[];
+  strategy: string[];
+  execution: string[];
   deliverables: string[];
-  impact: {
+  outcome: {
     label?: string;
     value: string;
     isQuantitative: boolean;
   }[];
+  lessonsLearned: string[];
+  technologiesUsed: string[];
+  relatedServices: string[]; // slugs
   testimonial?: {
     quote: string;
     author: string;
     role: string;
     avatar?: string;
   };
-  lessonsLearned: string;
-  relatedSlugs: string[];
-  highlights: string[];
   isNDA?: boolean;
 }
 
@@ -56,6 +49,7 @@ export const projects: Project[] = [
     industry: "Financial Services",
     serviceCategory: "Branding",
     client: "Nexus Wealth",
+    clientOverview: "Nexus Wealth is a prominent, traditional wealth management firm that has successfully served high-net-worth individuals for over two decades. However, as wealth transfers to the next generation, they found themselves struggling to attract millennial and Gen-Z clients who prefer digital-first experiences and modern aesthetics.",
     heroImage: "https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&q=80&w=1200",
     gallery: [
       "https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&q=80&w=1200",
@@ -64,29 +58,27 @@ export const projects: Project[] = [
     ],
     duration: "2 Months",
     websiteUrl: "https://example.com",
-    summary: {
-      client: "A traditional wealth management firm.",
-      challenge: "Their outdated brand identity was failing to attract the next generation of millennial wealth.",
-      delivery: "We crafted a modern, trustworthy brand identity and a comprehensive set of marketing materials.",
-      impact: "Positioned Nexus as a forward-thinking firm, leading to a surge in younger client acquisitions."
-    },
-    challenge: [
-      "Outdated visual identity that looked like a 1990s bank",
-      "Inconsistent branding across marketing materials",
-      "Failing to resonate with millennial and Gen-Z demographics",
-      "No clear brand voice or positioning strategy"
+    businessChallenge: [
+      "Outdated visual identity that looked like a 1990s bank.",
+      "Inconsistent branding across marketing materials.",
+      "Failing to resonate with millennial and Gen-Z demographics.",
+      "No clear brand voice or positioning strategy."
     ],
-    approach: [
-      {
-        category: "Research & Positioning",
-        description: "We started by analyzing the wealth transfer happening between generations, identifying that younger clients want transparency, digital-first experiences, and sleek aesthetics."
-      },
-      {
-        category: "Creative Direction",
-        description: "We moved away from traditional navy blues and golds, introducing a vibrant, digital-native palette with brutalist typographic elements to signal disruption."
-      }
+    research: [
+      "Conducted focus groups with millennial high-net-worth individuals to understand their wealth management expectations.",
+      "Analyzed top modern fintech competitors to identify design trends and communication styles.",
+      "Audited Nexus Wealth's entire existing marketing collateral to identify brand inconsistencies."
     ],
-    timeline: ["Discovery", "Brand Strategy", "Visual Identity", "Guidelines", "Asset Creation", "Launch"],
+    strategy: [
+      "Shift the narrative from 'traditional stability' to 'modern, transparent wealth growth'.",
+      "Introduce a vibrant, digital-native palette with brutalist typographic elements to signal disruption while maintaining trust.",
+      "Standardize the brand voice to be educational, transparent, and approachable."
+    ],
+    execution: [
+      "Designed a complete new logo suite and typography system.",
+      "Developed a comprehensive 60-page brand guideline document.",
+      "Redesigned all client-facing materials including pitch decks, business cards, and social media templates."
+    ],
     deliverables: [
       "Logo Suite",
       "Brand Guidelines",
@@ -95,127 +87,122 @@ export const projects: Project[] = [
       "Social Media Templates",
       "Business Cards"
     ],
-    impact: [
+    outcome: [
       { label: "Demographic Shift", value: "+40% Millennial Clients", isQuantitative: true },
-      { label: "", value: "Modern, cohesive visual identity", isQuantitative: false },
-      { label: "", value: "Improved client trust and perception", isQuantitative: false }
+      { label: "Brand Consistency", value: "100% unified visual identity", isQuantitative: false }
     ],
-    testimonial: {
-      quote: "Aarotech completely transformed how we are perceived in the market. The new brand gave our advisors the confidence to pitch to younger, high-net-worth individuals.",
-      author: "David Chen",
-      role: "Managing Partner"
-    },
-    lessonsLearned: "Rebranding a traditional financial institution requires balancing modern aesthetics with the core tenets of trust and security. You can push boundaries, but you must ground the design in professionalism.",
-    relatedSlugs: ["urban-seo"],
-    highlights: ["✓ Brand Strategy", "✓ Logo Evolution", "✓ Marketing Assets"]
+    lessonsLearned: [
+      "Traditional firms are often hesitant to embrace bold colors; presenting competitive analysis early helped ease this transition.",
+      "A brand guidelines document is only effective if the client's internal team is trained on how to use it."
+    ],
+    technologiesUsed: ["Figma", "Adobe Illustrator", "Adobe InDesign"],
+    relatedServices: ["branding", "digital-advertising"],
+    isNDA: false
   },
   {
     id: "cs-2",
-    title: "Local SEO Dominance for Healthcare",
+    title: "Local SEO Dominance for Retail Chain",
     slug: "urban-seo",
-    industry: "Healthcare",
+    industry: "Retail",
     serviceCategory: "SEO",
-    client: "Urban Dental Group",
-    heroImage: "https://images.unsplash.com/photo-1606811841689-23dfddce3e95?auto=format&fit=crop&q=80&w=1200",
+    client: "Urban Outfitters Regional",
+    clientOverview: "A fast-growing regional retail chain with 12 physical store locations across Tamil Nadu, specializing in contemporary fashion.",
+    heroImage: "https://images.unsplash.com/photo-1441986300917-64674bd600d8?auto=format&fit=crop&q=80&w=1200",
     gallery: [
-      "https://images.unsplash.com/photo-1606811841689-23dfddce3e95?auto=format&fit=crop&q=80&w=1200",
-      "https://images.unsplash.com/photo-1432821596592-e2c18b78144f?auto=format&fit=crop&q=80&w=1200"
+      "https://images.unsplash.com/photo-1441986300917-64674bd600d8?auto=format&fit=crop&q=80&w=1200"
     ],
-    duration: "6 Months ONGOING",
-    summary: {
-      client: "A multi-location dental practice.",
-      challenge: "They were invisible on Google Maps and search results, losing local patients to competitors.",
-      delivery: "A hyper-local SEO strategy, aggressive Google Business Profile optimization, and targeted content creation.",
-      impact: "Ranked #1 for 15+ high-intent keywords, driving a 300% increase in organic bookings."
-    },
-    challenge: [
-      "Zero visibility on Google Maps",
-      "No local keyword optimization",
-      "Inconsistent NAP (Name, Address, Phone) data across directories",
-      "Lack of authoritative localized content"
+    duration: "6 Months",
+    businessChallenge: [
+      "Inconsistent NAP (Name, Address, Phone) data across the web.",
+      "Unoptimized Google Business Profiles causing poor map pack visibility.",
+      "No location-specific landing pages on their main website.",
+      "Low volume of online reviews compared to local competitors."
     ],
-    approach: [
-      {
-        category: "Technical Audit",
-        description: "We resolved over 400 technical crawl errors on their website that were preventing Google from indexing their location pages properly."
-      },
-      {
-        category: "Content Strategy",
-        description: "Created dedicated, highly-optimized pages for every service in every location, targeting high-intent phrases like 'Emergency Dentist [City]'."
-      }
+    research: [
+      "Audited all 12 locations on Google Maps and 50+ local directories.",
+      "Identified top search terms for fashion retail in their specific neighborhoods.",
+      "Analyzed competitor review generation strategies."
     ],
-    timeline: ["Technical Audit", "Keyword Research", "On-Page SEO", "GBP Optimization", "Link Building", "Ongoing Content"],
+    strategy: [
+      "Standardize all directory listings using a centralized data management approach.",
+      "Create 12 unique, highly-optimized location landing pages with LocalBusiness Schema.",
+      "Implement an automated point-of-sale review request system."
+    ],
+    execution: [
+      "Developed individual location pages detailing store hours, specific inventory, and local team photos.",
+      "Optimized Google Business Profiles with fresh content, FAQs, and weekly update posts.",
+      "Rolled out an SMS-based review generation campaign post-purchase."
+    ],
     deliverables: [
-      "SEO Audit Report",
-      "Google Business Profile Optimization",
-      "Keyword Strategy",
-      "Localized Landing Pages",
-      "Monthly Content Writing"
+      "12 Location Landing Pages",
+      "Optimized Google Business Profiles",
+      "Automated Review System",
+      "Local Citation Audit & Fix"
     ],
-    impact: [
-      { label: "Organic Traffic", value: "+300%", isQuantitative: true },
-      { label: "Map Pack Rankings", value: "#1 in 3 Cities", isQuantitative: true },
-      { label: "Patient Leads", value: "85/month", isQuantitative: true }
+    outcome: [
+      { label: "Visibility", value: "215% Increase in Local Search Impressions", isQuantitative: true },
+      { label: "Foot Traffic", value: "+45% increase in direction requests", isQuantitative: true },
+      { label: "Reviews", value: "Generated 500+ new 5-star reviews", isQuantitative: true }
     ],
-    lessonsLearned: "For multi-location businesses, Google Business Profile optimization is just as critical as on-page SEO. Unifying their NAP data resulted in a massive ranking boost within weeks.",
-    relatedSlugs: ["nexus-branding", "retail-headless"],
-    highlights: ["✓ #1 Map Rankings", "✓ Local SEO Strategy", "✓ +300% Traffic"]
+    lessonsLearned: [
+      "Local SEO requires physical validation. Ensuring consistency between the physical store's signage and digital footprint was crucial for Google's verification process.",
+      "Customers are 3x more likely to leave a review if asked via SMS within 2 hours of leaving the store."
+    ],
+    technologiesUsed: ["Google Business Profile", "Ahrefs", "Schema Markup", "Twilio API (for reviews)"],
+    relatedServices: ["seo"],
+    isNDA: false
   },
   {
     id: "cs-3",
-    title: "E-Commerce Headless Migration",
+    title: "Headless E-Commerce Migration",
     slug: "retail-headless",
-    industry: "Retail",
+    industry: "E-Commerce",
     serviceCategory: "Website Development",
-    client: "National E-Commerce Retailer",
-    isNDA: true,
-    heroImage: "https://images.unsplash.com/photo-1441986300917-64674bd600d8?auto=format&fit=crop&q=80&w=1200",
+    client: "Global Threads",
+    clientOverview: "Global Threads is a high-volume online fashion retailer serving a global customer base. They process thousands of transactions daily.",
+    heroImage: "https://images.unsplash.com/photo-1661956602116-aa6865609028?auto=format&fit=crop&q=80&w=1200",
     gallery: [
-      "https://images.unsplash.com/photo-1441986300917-64674bd600d8?auto=format&fit=crop&q=80&w=1200",
-      "https://images.unsplash.com/photo-1558769132-cb1fac0840f2?auto=format&fit=crop&q=80&w=1200"
+      "https://images.unsplash.com/photo-1661956602116-aa6865609028?auto=format&fit=crop&q=80&w=1200"
     ],
-    duration: "3 Months",
-    summary: {
-      client: "A fast-growing apparel brand.",
-      challenge: "Their standard Shopify theme was slow, hurting conversion rates and mobile experience.",
-      delivery: "A blazing fast, custom headless storefront designed for performance and conversion.",
-      impact: "Increased conversion rate by 22% and achieved perfect Core Web Vitals."
-    },
-    challenge: [
-      "Slow page load times on mobile",
-      "Poor mobile conversion rates",
-      "Inflexible design constraints",
-      "Dropping organic traffic due to Core Web Vitals"
+    duration: "4 Months",
+    businessChallenge: [
+      "Poor Core Web Vitals scores negatively impacting organic search rankings.",
+      "Slow time-to-interactive causing high bounce rates on mobile devices.",
+      "Inability to create highly customized, interactive product experiences within standard Shopify templates.",
+      "Difficulties in integrating multi-region pricing and content natively."
     ],
-    approach: [
-      {
-        category: "Performance Architecture",
-        description: "Decoupled the frontend from the backend to deliver instant page loads via edge caching and static generation."
-      },
-      {
-        category: "UX/UI Design",
-        description: "Mapped out a frictionless mobile checkout flow and introduced tactile micro-interactions to make shopping feel premium."
-      }
+    research: [
+      "Audited the existing Shopify monolithic architecture and identified massive javascript payloads from third-party apps.",
+      "Conducted user testing which revealed checkout abandonment due to slow cart loading times."
     ],
-    timeline: ["UX Research", "Prototyping", "Development", "QA", "Launch"],
+    strategy: [
+      "Decouple the frontend from the backend (Headless Architecture).",
+      "Use Next.js for blazing-fast static generation and server-side rendering.",
+      "Retain Shopify as the backend commerce engine via the Storefront API."
+    ],
+    execution: [
+      "Built a custom React-based design system from scratch.",
+      "Integrated Sanity CMS to give their marketing team total control over non-product pages.",
+      "Implemented Algolia for instant, typo-tolerant predictive search.",
+      "Redesigned the mobile checkout flow to reduce friction."
+    ],
     deliverables: [
-      "Headless Storefront",
-      "Custom Checkout Flow",
-      "Performance Optimization",
-      "Technical SEO"
+      "Custom Next.js Frontend",
+      "Headless Shopify Integration",
+      "Sanity CMS Implementation",
+      "Algolia Search Integration"
     ],
-    impact: [
-      { label: "Conversion Rate", value: "+22%", isQuantitative: true },
-      { label: "Load Time", value: "<1.2s", isQuantitative: true },
-      { label: "", value: "Flawless mobile shopping experience", isQuantitative: false }
+    outcome: [
+      { label: "Performance", value: "70% Faster Page Loads", isQuantitative: true },
+      { label: "Revenue", value: "+2.4% Conversion Rate Increase", isQuantitative: true },
+      { label: "SEO", value: "Passed all Core Web Vitals", isQuantitative: true }
     ],
-    testimonial: {
-      quote: "The speed of our new site is unbelievable. We saw an immediate uptick in sales the weekend after launch. Aarotech delivered exactly what they promised.",
-      author: "E-commerce Director",
-      role: "National Retail Brand"
-    },
-    lessonsLearned: "Speed is a feature, not a metric. By treating performance as a core design principle, we unlocked revenue that was previously being lost to bounce rates.",
-    relatedSlugs: ["nexus-branding"],
-    highlights: ["✓ Faster Load Times", "✓ Higher Conversions", "✓ Premium UX"]
+    lessonsLearned: [
+      "Headless migrations require rigorous QA to ensure state management (like cart syncing) remains flawless across different devices and network conditions.",
+      "Training the marketing team on the new CMS (Sanity) early in the process prevented launch delays."
+    ],
+    technologiesUsed: ["Next.js", "React", "Shopify Storefront API", "Sanity CMS", "Algolia"],
+    relatedServices: ["website-development", "seo"],
+    isNDA: true
   }
 ];

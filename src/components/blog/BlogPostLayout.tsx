@@ -1,12 +1,12 @@
-import { Metadata } from "next";
-import { notFound } from "next/navigation";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
-import { Contact } from "@/components/sections/Contact";
-import { blogPosts } from "@/data/blog";
+import { BlogPost, blogPosts } from "@/data/blog";
 import Link from "next/link";
-import { ArrowRight, Clock, Tag, ChevronLeft } from "lucide-react";
+import { ArrowRight, Clock, Tag } from "lucide-react";
 import React from "react";
+import { Breadcrumbs } from "@/components/shared/Breadcrumbs";
+import { FAQSection } from "@/components/shared/FAQSection";
+import { generateArticleSchema, generateFAQSchema } from "@/lib/seo";
 
 // Simple Markdown Renderer
 function renderMarkdown(content: string) {
@@ -69,36 +69,7 @@ function extractTOC(content: string) {
   return toc;
 }
 
-export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
-  const resolvedParams = await params;
-  const post = blogPosts.find(p => p.slug === resolvedParams.slug);
-  if (!post) return {};
-
-  return {
-    title: `${post.title} | Aarotech Blog`,
-    description: post.excerpt,
-    keywords: post.keywords,
-    openGraph: {
-      title: `${post.title} | Aarotech Blog`,
-      description: post.excerpt,
-      type: "article",
-      publishedTime: post.date,
-      authors: ["Aarotech Team"],
-    }
-  };
-}
-
-export async function generateStaticParams() {
-  return blogPosts.map((post) => ({
-    slug: post.slug,
-  }));
-}
-
-export default async function BlogPost({ params }: { params: Promise<{ slug: string }> }) {
-  const resolvedParams = await params;
-  const post = blogPosts.find(p => p.slug === resolvedParams.slug);
-  if (!post) notFound();
-
+export function BlogPostLayout({ post }: { post: BlogPost }) {
   const relatedPosts = blogPosts
     .filter(p => p.slug !== post.slug && (p.category === post.category || p.keywords.some(k => post.keywords.includes(k))))
     .slice(0, 2);
@@ -109,12 +80,28 @@ export default async function BlogPost({ params }: { params: Promise<{ slug: str
     <>
       <Header />
       <main className="flex-1 overflow-x-hidden pt-24 bg-white">
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(generateArticleSchema({
+            title: post.title,
+            headline: post.title,
+            image: post.featuredImage || "/images/placeholder.svg",
+            datePublished: post.date,
+            dateModified: post.updatedDate || post.date,
+            authorName: post.author || "Aarotech Team",
+            urlPath: `/${post.slug}`
+          })) }}
+        />
+        {post.faqs && post.faqs.length > 0 && (
+          <script
+            type="application/ld+json"
+            dangerouslySetInnerHTML={{ __html: JSON.stringify(generateFAQSchema(post.faqs)) }}
+          />
+        )}
         {/* Article Header */}
         <header className="bg-slate-50 py-16 border-b border-slate-100">
           <div className="container mx-auto px-4 max-w-4xl">
-            <Link href="/blog" className="inline-flex items-center text-sm font-medium text-slate-500 hover:text-primary mb-8 transition-colors">
-              <ChevronLeft className="w-4 h-4 mr-1" /> Back to all articles
-            </Link>
+            <Breadcrumbs items={[{ name: "Blog", item: "/blog" }, { name: post.title, item: `/${post.slug}` }]} />
             
             <div className="flex items-center gap-4 text-sm text-slate-500 mb-6">
               <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-primary/10 text-primary font-semibold">
@@ -192,7 +179,7 @@ export default async function BlogPost({ params }: { params: Promise<{ slug: str
                   </h4>
                   <div className="space-y-6">
                     {relatedPosts.map(related => (
-                      <Link href={`/blog/${related.slug}`} key={related.slug} className="group block">
+                      <Link href={`/${related.slug}`} key={related.slug} className="group block">
                         <div className="text-xs text-primary font-medium mb-1">{related.category}</div>
                         <h5 className="font-bold text-slate-900 leading-tight group-hover:text-primary transition-colors mb-2">
                           {related.title}
@@ -207,7 +194,14 @@ export default async function BlogPost({ params }: { params: Promise<{ slug: str
           </div>
         </div>
 
-        {/* Bottom CTA Section */}
+        {/* FAQs */}
+        {post.faqs && post.faqs.length > 0 && (
+          <div className="bg-slate-50 border-t border-slate-100">
+            <FAQSection faqs={post.faqs} title="Frequently Asked Questions" />
+          </div>
+        )}
+
+        {/* Next Steps CTA Section */}
         <section className="bg-slate-50 py-24 border-t border-slate-200 mt-12">
           <div className="container mx-auto px-4 max-w-4xl text-center">
             <h2 className="text-3xl md:text-4xl font-bold text-slate-900 mb-6">Did you find this article helpful?</h2>

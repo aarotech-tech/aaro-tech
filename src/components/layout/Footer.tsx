@@ -29,34 +29,34 @@ export function Footer() {
               />
             </Link>
             <p className="text-sm text-slate-400">
-              Helping businesses grow through data-driven digital marketing, SEO, and targeted advertising.
+              A Trichy-based digital marketing and technology agency helping businesses across Tamil Nadu grow online.
             </p>
           </div>
           <div>
             <h3 className="font-semibold text-white mb-4">Services</h3>
             <ul className="space-y-2 text-sm text-slate-400">
-              <li><Link href="/#services" className="hover:text-primary transition-colors focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none rounded-sm">Website Development</Link></li>
-              <li><Link href="/#services" className="hover:text-primary transition-colors focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none rounded-sm">SEO</Link></li>
-              <li><Link href="/#services" className="hover:text-primary transition-colors focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none rounded-sm">Google & Meta Ads</Link></li>
-              <li><Link href="/#services" className="hover:text-primary transition-colors focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none rounded-sm">Branding</Link></li>
+              <li><Link href="/services/website-development" className="hover:text-primary transition-colors focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none rounded-sm">Website Development</Link></li>
+              <li><Link href="/services/seo" className="hover:text-primary transition-colors focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none rounded-sm">SEO</Link></li>
+              <li><Link href="/services/digital-advertising" className="hover:text-primary transition-colors focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none rounded-sm">Google & Meta Ads</Link></li>
+              <li><Link href="/services/social-media" className="hover:text-primary transition-colors focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none rounded-sm">Social Media</Link></li>
             </ul>
           </div>
           <div>
-            <h3 className="font-semibold text-white mb-4">Resources</h3>
+            <h3 className="font-semibold text-white mb-4">Insights & Resources</h3>
             <ul className="space-y-2 text-sm text-slate-400">
               <li><Link href="/blog" className="hover:text-primary transition-colors focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none rounded-sm">Growth Blog</Link></li>
-              <li><Link href="/blog/seo-agency-chennai-dominate-local-search" className="hover:text-primary transition-colors focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none rounded-sm">SEO Guides</Link></li>
-              <li><Link href="/#process" className="hover:text-primary transition-colors focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none rounded-sm">How We Work</Link></li>
-              <li><Link href="/#work" className="hover:text-primary transition-colors focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none rounded-sm">Case Studies</Link></li>
+              <li><Link href="/resources" className="hover:text-primary transition-colors focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none rounded-sm">Free Checklists</Link></li>
+              <li><Link href="/compare/seo-vs-google-ads" className="hover:text-primary transition-colors focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none rounded-sm">Compare Strategies</Link></li>
+              <li><Link href="/industries/healthcare-hospitals" className="hover:text-primary transition-colors focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none rounded-sm">Healthcare Marketing</Link></li>
             </ul>
           </div>
           <div>
             <h3 className="font-semibold text-white mb-4">Locations</h3>
             <ul className="space-y-2 text-sm text-slate-400">
+              <li><Link href="/locations/trichy" className="hover:text-primary transition-colors font-medium text-white focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none rounded-sm">Trichy (HQ)</Link></li>
               <li><Link href="/locations/chennai" className="hover:text-primary transition-colors focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none rounded-sm">Chennai</Link></li>
               <li><Link href="/locations/coimbatore" className="hover:text-primary transition-colors focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none rounded-sm">Coimbatore</Link></li>
               <li><Link href="/locations/madurai" className="hover:text-primary transition-colors focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none rounded-sm">Madurai</Link></li>
-              <li><Link href="/locations/trichy" className="hover:text-primary transition-colors focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none rounded-sm">Trichy</Link></li>
             </ul>
           </div>
           <div>
@@ -74,8 +74,8 @@ export function Footer() {
                 <li><a href={process.env.NEXT_PUBLIC_LINKEDIN_URL} target="_blank" rel="noopener noreferrer" className="hover:text-primary transition-colors">LinkedIn</a></li>
               )}
               <li className="pt-2">
-                123 Business Avenue, Tech Park<br />
-                Chennai, Tamil Nadu, India
+                Thillai Nagar Main Road<br />
+                Trichy, Tamil Nadu, India
               </li>
             </ul>
           </div>

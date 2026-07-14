@@ -38,39 +38,15 @@ export const metadata: Metadata = {
 };
 
 import { ClerkProvider } from "@clerk/nextjs";
+import { generateOrganizationSchema, generateWebSiteSchema } from "@/lib/seo";
 
 export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const jsonLd = {
-    "@context": "https://schema.org",
-    "@type": "Organization",
-    "name": "Aarotech",
-    "url": "https://aarotech.in",
-    "logo": "https://aarotech.in/images/aarotech-logos/footer-logo-primary.png",
-    "contactPoint": {
-      "@type": "ContactPoint",
-      "telephone": process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || "",
-      "contactType": "customer service"
-    }
-  };
-
-  const localBusinessLd = {
-    "@context": "https://schema.org",
-    "@type": "LocalBusiness",
-    "name": "Aarotech",
-    "image": "https://aarotech.in/images/aarotech-logos/footer-logo-primary.png",
-    "@id": "https://aarotech.in",
-    "url": "https://aarotech.in",
-    "telephone": process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || "",
-    "address": {
-      "@type": "PostalAddress",
-      "addressLocality": "Tamil Nadu",
-      "addressCountry": "IN"
-    }
-  };
+  const organizationLd = generateOrganizationSchema();
+  const websiteLd = generateWebSiteSchema();
 
   return (
     <ClerkProvider>
@@ -78,11 +54,11 @@ export default function RootLayout({
         <body suppressHydrationWarning className="min-h-screen flex flex-col pb-20 sm:pb-0 overscroll-none bg-background">
           <script
             type="application/ld+json"
-            dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+            dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationLd) }}
           />
           <script
             type="application/ld+json"
-            dangerouslySetInnerHTML={{ __html: JSON.stringify(localBusinessLd) }}
+            dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteLd) }}
           />
           {children}
           <WhatsAppButton />

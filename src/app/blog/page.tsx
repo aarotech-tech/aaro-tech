@@ -4,6 +4,7 @@ import { blogPosts } from "@/data/blog";
 import Link from "next/link";
 import { ArrowRight, Clock, Tag } from "lucide-react";
 import type { Metadata } from "next";
+import { BlogList } from "@/components/blog/BlogList";
 
 export const metadata: Metadata = {
   title: "Digital Marketing & SEO Blog | Aarotech Insights",
@@ -38,24 +39,12 @@ export default function BlogIndex() {
         </section>
 
         <div className="container mx-auto px-4 py-16 max-w-7xl">
-          {/* Categories */}
-          <div className="flex flex-wrap gap-3 mb-16 justify-center">
-            <div className="px-4 py-2 rounded-full bg-slate-900 text-white text-sm font-medium cursor-pointer transition-colors">
-              All Articles
-            </div>
-            {categories.map(category => (
-              <div key={category} className="px-4 py-2 rounded-full bg-white border border-slate-200 text-slate-700 text-sm font-medium hover:border-primary hover:text-primary cursor-pointer transition-colors">
-                {category}
-              </div>
-            ))}
-          </div>
-
           {/* Featured Post */}
           <div className="mb-20">
             <h2 className="text-2xl font-bold text-slate-900 mb-8 flex items-center gap-2">
               <span className="w-8 h-1 bg-primary rounded-full"></span> Featured Article
             </h2>
-            <Link href={`/blog/${featuredPost.slug}`} className="group block bg-white rounded-3xl border border-slate-200 overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300">
+            <Link href={`/${featuredPost.slug}`} className="group block bg-white rounded-3xl border border-slate-200 overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300">
               <div className="flex flex-col lg:flex-row">
                 <div className="lg:w-1/2 p-10 lg:p-14 flex flex-col justify-center">
                   <div className="flex items-center gap-4 text-sm text-slate-500 mb-6">
@@ -92,39 +81,7 @@ export default function BlogIndex() {
             </Link>
           </div>
 
-          {/* Latest Posts Grid */}
-          <div>
-            <h2 className="text-2xl font-bold text-slate-900 mb-8 flex items-center gap-2">
-              <span className="w-8 h-1 bg-slate-300 rounded-full"></span> Latest Articles
-            </h2>
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {remainingPosts.map((post) => (
-                <Link href={`/blog/${post.slug}`} key={post.slug} className="group flex flex-col bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-300">
-                  <div className="p-8 flex-1 flex flex-col">
-                    <div className="flex items-center justify-between text-sm text-slate-500 mb-5">
-                      <span className="text-primary font-medium">{post.category}</span>
-                      <time dateTime={post.date}>{new Date(post.date).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}</time>
-                    </div>
-                    <h3 className="text-xl font-bold text-slate-900 mb-4 group-hover:text-primary transition-colors leading-snug">
-                      {post.title}
-                    </h3>
-                    <p className="text-slate-600 mb-6 line-clamp-3 text-sm">
-                      {post.excerpt}
-                    </p>
-                    <div className="mt-auto pt-6 border-t border-slate-100 flex items-center justify-between">
-                       <div className="flex items-center gap-2 text-slate-500 text-xs font-medium">
-                        <Clock className="w-3.5 h-3.5" />
-                        {post.readTime}
-                      </div>
-                      <span className="text-primary font-semibold text-sm flex items-center">
-                        Read <ArrowRight className="ml-1 w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
-                      </span>
-                    </div>
-                  </div>
-                </Link>
-              ))}
-            </div>
-          </div>
+          <BlogList initialPosts={remainingPosts} categories={categories} />
         </div>
       </main>
       <Footer />

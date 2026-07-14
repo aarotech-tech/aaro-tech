@@ -62,12 +62,10 @@ export function Header() {
           </Link>
         </div>
         <nav className="hidden lg:flex items-center gap-6 xl:gap-8 text-base font-bold">
-          <Link href="/#services" onClick={handleScroll} className="transition-colors hover:text-primary text-slate-300 focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none rounded-sm">Services</Link>
-          <Link href="/#industries" onClick={handleScroll} className="transition-colors hover:text-primary text-slate-300 focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none rounded-sm">Industries</Link>
-          <Link href="/#process" onClick={handleScroll} className="transition-colors hover:text-primary text-slate-300 focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none rounded-sm">Process</Link>
-          <Link href="/#work" onClick={handleScroll} className="transition-colors hover:text-primary text-slate-300 focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none rounded-sm">Case Studies</Link>
-          <Link href="/#testimonials" onClick={handleScroll} className="transition-colors hover:text-primary text-slate-300 focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none rounded-sm">Testimonials</Link>
-          <Link href="/#about" onClick={handleScroll} className="transition-colors hover:text-primary text-slate-300 focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none rounded-sm">About</Link>
+          <Link href="/#services" onClick={handleScroll} className="whitespace-nowrap transition-colors hover:text-primary text-slate-300 focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none rounded-sm">Services</Link>
+          <Link href="/#work" onClick={handleScroll} className="whitespace-nowrap transition-colors hover:text-primary text-slate-300 focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none rounded-sm">Case Studies</Link>
+          <Link href="/#about" onClick={handleScroll} className="whitespace-nowrap transition-colors hover:text-primary text-slate-300 focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none rounded-sm">About</Link>
+          <Link href="/resources" className="whitespace-nowrap transition-colors hover:text-primary text-slate-300 focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none rounded-sm">Insights & Resources</Link>
         </nav>
         <div className="hidden sm:flex items-center gap-4">
           <ContactPopup>
@@ -94,7 +92,7 @@ export function Header() {
             <Link href="/locations" onClick={() => setIsMobileMenuOpen(false)} className="transition-colors hover:text-primary text-slate-300 w-full text-center py-2 focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none">Locations</Link>
             <Link href="/#process" onClick={handleScroll} className="transition-colors hover:text-primary text-slate-300 w-full text-center py-2 focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none">Process</Link>
             <Link href="/#work" onClick={handleScroll} className="transition-colors hover:text-primary text-slate-300 w-full text-center py-2 focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none">Case Studies</Link>
-            <Link href="/blog" onClick={() => setIsMobileMenuOpen(false)} className="transition-colors hover:text-primary text-slate-300 w-full text-center py-2 focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none">Blog</Link>
+            <Link href="/resources" onClick={() => setIsMobileMenuOpen(false)} className="transition-colors hover:text-primary text-slate-300 w-full text-center py-2 focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none">Insights & Resources</Link>
             <Link href="/#testimonials" onClick={handleScroll} className="transition-colors hover:text-primary text-slate-300 w-full text-center py-2 focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none">Testimonials</Link>
             <Link href="/#about" onClick={handleScroll} className="transition-colors hover:text-primary text-slate-300 w-full text-center py-2 focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none">About</Link>
           </nav>

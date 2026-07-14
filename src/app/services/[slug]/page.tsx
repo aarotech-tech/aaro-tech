@@ -5,6 +5,8 @@ import { notFound } from "next/navigation";
 import { ArrowRight, CheckCircle2 } from "lucide-react";
 import { buttonVariants } from "@/components/ui/button";
 import { ContactPopup } from "@/components/shared/ContactPopup";
+import { Breadcrumbs } from "@/components/shared/Breadcrumbs";
+import { generateServiceSchema, generateFAQSchema } from "@/lib/seo";
 import type { Metadata } from "next";
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
@@ -50,6 +52,19 @@ export default async function ServicePage({ params }: { params: Promise<{ slug: 
       <Header />
       <main className="flex-1 pt-24 pb-16 bg-slate-50">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-5xl">
+          <Breadcrumbs items={[{ name: "Services", item: "/services" }, { name: service.title, item: `/services/${service.id}` }]} />
+          
+          <script
+            type="application/ld+json"
+            dangerouslySetInnerHTML={{ __html: JSON.stringify(generateServiceSchema(service.title, service.description, `/services/${service.id}`)) }}
+          />
+          {service.faqs && service.faqs.length > 0 && (
+            <script
+              type="application/ld+json"
+              dangerouslySetInnerHTML={{ __html: JSON.stringify(generateFAQSchema(service.faqs)) }}
+            />
+          )}
+
           <div className="bg-white rounded-3xl p-8 md:p-12 lg:p-16 border shadow-sm mb-12">
             <div className="inline-flex items-center rounded-full bg-primary/10 px-3 py-1 text-sm font-semibold text-primary mb-6">
               Our Services

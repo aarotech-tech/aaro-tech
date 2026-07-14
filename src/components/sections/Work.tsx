@@ -81,16 +81,16 @@ export function Work() {
                     </h3>
                     
                     <p className="text-slate-600 text-sm font-medium mb-6 line-clamp-2 leading-relaxed">
-                      {study.summary.impact}
+                      {study.clientOverview}
                     </p>
                     
                     <div className="space-y-4 flex-1">
                       <div>
-                        <h4 className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">Highlights</h4>
+                        <h4 className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">Key Outcomes</h4>
                         <ul className="space-y-1.5">
-                          {study.highlights.map((highlight, idx) => (
+                          {study.outcome.map((out, idx) => (
                             <li key={idx} className="text-sm font-medium text-slate-700 flex items-center">
-                              <span className="text-primary mr-2">✓</span> {highlight.replace('✓ ', '')}
+                              <span className="text-primary mr-2">✓</span> {out.value}
                             </li>
                           ))}
                         </ul>

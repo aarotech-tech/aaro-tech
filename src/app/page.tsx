@@ -15,11 +15,19 @@ import { Testimonials } from "@/components/sections/Testimonials";
 import { FAQ } from "@/components/sections/FAQ";
 import { Contact } from "@/components/sections/Contact";
 
+import { generateLocalBusinessSchema } from "@/lib/seo";
+
 export default function Home() {
+  const localBusinessSchema = generateLocalBusinessSchema();
+
   return (
     <>
       <Header />
       <main className="flex-1 overflow-x-hidden">
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(localBusinessSchema) }}
+        />
         <Hero />
         <ClientLogos />
         <Trust />
