@@ -1,0 +1,136 @@
+# Aarotech Business Operating System - Architecture & Vision
+
+## 1. Product Vision
+To transform Aarotech from a digital marketing website into a complete, highly scalable **Agency Operating System (SaaS)**. Rather than isolated tools, Aarotech will be a unified platform serving as the central nervous system for the agency. It connects the Founder, Employees, and Clients into a single source of truth for Sales, Project Delivery, Finance, Collaboration, and AI-driven automation over the next 5–10 years.
+
+---
+
+## 2. Architecture Philosophy: "The Organization Core"
+Every module in the system revolves around a single source of truth: **The Organization (Client)**.
+Whether it is a lead, project, task, invoice, file, meeting, or ticket, it must strictly relate back to an Organization record in the database. This guarantees a true 360-degree view of every client.
+
+---
+
+## 3. System Architecture & Tech Stack
+
+**Domain Strategy (Next.js Middleware Routing):**
+- `aarotech.in` → Marketing Website (Public)
+- `app.aarotech.in` → Client Portal (Client access)
+- `admin.aarotech.in` → Internal Workspace (Founder/Employee access)
+*Developed within a single Next.js monolithic repository. Middleware will rewrite routes based on the host header, giving the illusion of separate applications while sharing the same component library and database connections.*
+
+**Technology Stack:**
+- **Framework**: Next.js App Router (PWA ready)
+- **Authentication**: **Clerk** (Robust Organization & RBAC support)
+- **Database**: **PostgreSQL** (Neon or Supabase)
+- **ORM**: **Drizzle ORM** (Type-safe, edge-compatible)
+- **State Management**: **Zustand** (Global) + **React Query** (Server state)
+- **Forms & Validation**: **React Hook Form + Zod**
+- **Storage**: **Cloudflare R2** (Cost-effective object storage for Asset Library)
+- **Background Jobs**: **Trigger.dev** (Event-driven background tasks & automations)
+- **Email**: **Resend + React Email**
+
+---
+
+## 4. Extended Modules & Capabilities
+
+### Sales CRM & Proposals
+- **Lead Pipeline**: Kanban board for Discovery, Qualified, Negotiation, Won/Lost.
+- **Proposal Builder**: AI-assisted proposal generation, templates, PDF exports, and client approval workflows.
+- **Onboarding**: Automated transition from Won Deal to Active Client (Project creation).
+
+### Agency Workspace (Internal)
+- **Knowledge Base**: Centralized SOPs, checklists, brand guidelines, and client playbooks.
+- **Meetings**: Scheduled meetings, auto-generated meeting notes, action items, and history.
+- **Client Health**: Automated health scoring based on communication frequency, delivery speed, payment promptness, and satisfaction.
+
+### Finance
+- **Invoicing & Payments**: Outstanding payments, GST support, recurring revenue tracking.
+- **Financial Dashboards**: Revenue, expenses, and profit tracking per Organization.
+
+### Client Portal
+- **Asset Library**: Secure Cloudflare R2 storage for logos, brand assets, credentials, and marketing files.
+- **Dashboard**: Real-time project status, SEO/Ads reporting, support tickets, and invoice history.
+
+---
+
+## 5. Event-Driven Automation & AI Strategy
+
+**Automation (via Trigger.dev):**
+The architecture is inherently event-driven. Example flow:
+`Lead Submitted` → `Create CRM Entry` → `Assign Owner` → `Send Email` → `Schedule Reminder` → `Generate Proposal` → `Client Approval` → `Create Project` → `Create Invoice` → `Invite Client`.
+
+**AI Strategy (Embedded Intelligence):**
+AI will not be a simple chatbot wrapper. It will act as an invisible agent handling agency work:
+- **Sales**: Proposal generation based on discovery call transcripts.
+- **Operations**: Summarize meetings and extract action items (tasks).
+- **Marketing**: SEO recommendations, Ad copy generation, and predictive campaign performance.
+- **Reporting**: Monthly summary generation pulling data from connected APIs.
+- **Project Management**: Delay prediction and automated risk flagging.
+
+---
+
+## 6. Database Schema (High-Level Entity Relationships)
+
+**Core Entity:**
+- `organizations` (ID, Name, Type [Lead/Client], HealthScore, CreatedAt)
+
+**Related Entities (Many-to-One with Organizations):**
+- `users` (ID, OrgID, Role, Email, Name)
+- `deals` (ID, OrgID, PipelineStage, Value, ExpectedClose)
+- `proposals` (ID, DealID, DocumentData, Status, AI_Generated)
+- `projects` (ID, OrgID, Status, Timeline)
+- `tasks` (ID, ProjectID, AssigneeID, Status, DueDate)
+- `assets` (ID, OrgID, FileURL [Cloudflare R2], Type, UploadedBy)
+- `invoices` (ID, OrgID, Amount, Status, IsRecurring)
+- `meetings` (ID, OrgID, Date, Transcript, ActionItems)
+- `knowledge_base` (ID, OrgID_Optional, Title, Content, Category)
+
+---
+
+## 7. Folder Architecture (Next.js Monorepo)
+
+```text
+src/
+├── app/
+│   ├── (marketing)/       # aarotech.in routes
+│   ├── (client)/          # app.aarotech.in routes
+│   ├── (admin)/           # admin.aarotech.in routes
+│   └── api/               # Unified API routes (tRPC or standard Route Handlers)
+├── components/
+│   ├── ui/                # shadcn/ui components (shared)
+│   ├── marketing/         # Specific to marketing site
+│   ├── admin/             # CRM, Workspace, Finance components
+│   └── client/            # Portal components
+├── db/
+│   ├── schema/            # Drizzle ORM schemas (organizations, projects, etc.)
+│   └── index.ts           # DB connection
+├── lib/
+│   ├── clerk/             # Auth utilities
+│   ├── trigger/           # Trigger.dev automation workflows
+│   ├── ai/                # AI generation prompts & logic
+│   └── r2/                # Cloudflare R2 utilities
+└── types/                 # Global TypeScript definitions
+```
+
+---
+
+## 8. Development Roadmap
+
+1. **Phase 1: Marketing Website** (Completed)
+2. **Phase 2: Foundation** (Authentication via Clerk, Organizations setup, RBAC, Subdomain Routing).
+3. **Phase 3: Sales CRM** (Lead Pipeline, Proposals, Client Onboarding).
+4. **Phase 4: Client Portal** (Dashboard, Asset Library, View Invoices/Reports).
+5. **Phase 5: Agency Workspace** (Projects, Tasks, Knowledge Base, Meetings, Client Health).
+6. **Phase 6: Finance** (Invoices, Revenue Dashboards, Payments).
+7. **Phase 7: Automation** (Trigger.dev event pipelines).
+8. **Phase 8: AI Intelligence** (Proposal/Report generation, meeting summaries).
+9. **Phase 9: Mobile App** (Future - Evaluate PWA vs Expo).
+
+---
+
+> [!IMPORTANT]
+> ## User Review Required
+> The architecture has been significantly expanded to center entirely around the **Organization** entity, with comprehensive modules for Sales CRM, Finance, Proposal Building, and deep AI/Automation integration. 
+> 
+> If this updated foundation and 9-phase roadmap perfectly align with your vision for the Agency Operating System, please approve so we can officially begin execution on **Phase 2: Foundation (Authentication & Organizations)**.

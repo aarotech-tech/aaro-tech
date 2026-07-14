@@ -1,25 +1,14 @@
 "use client";
 
 import Link from "next/link";
-import { useRef } from "react";
+
 import { buttonVariants } from "@/components/ui/button";
 import { ArrowRight } from "lucide-react";
 import { TextReveal } from "@/components/ui/text-reveal";
+import { ContactPopup } from "@/components/shared/ContactPopup";
 
 export function Hero() {
-  const videoRef = useRef<HTMLVideoElement>(null);
 
-  const handleMouseEnter = () => {
-    if (videoRef.current) {
-      videoRef.current.pause();
-    }
-  };
-
-  const handleMouseLeave = () => {
-    if (videoRef.current) {
-      videoRef.current.play();
-    }
-  };
   return (
     <section className="relative overflow-hidden bg-[#6891b3] pt-24 pb-16">
       <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(255,255,255,0.1)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.1)_1px,transparent_1px)] bg-[size:24px_24px]"></div>
@@ -36,17 +25,24 @@ export function Hero() {
             </div>
             <TextReveal 
               text="Get More Leads, Customers, and Revenue for Your Business" 
-              className="text-4xl md:text-5xl lg:text-6xl font-extrabold tracking-tight max-w-3xl mb-4 [text-shadow:_0_4px_16px_rgb(0_0_0_/_30%)]" 
+              className="text-4xl md:text-5xl lg:text-6xl font-extrabold tracking-tighter leading-[1.1] max-w-3xl mb-4 [text-shadow:_0_4px_16px_rgb(0_0_0_/_30%)]" 
               delay={2}
             />
             <p className="text-lg md:text-xl text-white/90 max-w-2xl mb-6 leading-relaxed animate-slide-up-fade" style={{ animationDelay: "0.3s" }}>
               We help businesses generate more leads, improve online visibility, and grow revenue through high-converting websites, SEO, advertising, and social media.
             </p>
-            <div className="flex flex-col sm:flex-row gap-4 w-full sm:w-auto mb-5 animate-slide-up-fade" style={{ animationDelay: "0.4s" }}>
-              <Link href={process.env.NEXT_PUBLIC_WHATSAPP_NUMBER ? `https://wa.me/${process.env.NEXT_PUBLIC_WHATSAPP_NUMBER}?text=${encodeURIComponent("Hi Aarotech, I would like a free growth plan for my business.")}` : "/#contact"} className={`${buttonVariants({ size: "lg", className: "h-14 px-8 text-base shadow-xl hover:-translate-y-1 transition-all" })} bg-primary text-white hover:bg-primary/90`}>
-                Chat With a Founder
-                <ArrowRight className="ml-2 h-5 w-5" />
-              </Link>
+            <div className="flex flex-col sm:flex-row gap-4 w-full sm:w-auto mb-2 animate-slide-up-fade" style={{ animationDelay: "0.4s" }}>
+              <ContactPopup>
+                <button className={`${buttonVariants({ size: "lg", className: "h-14 px-8 w-full sm:w-auto text-base shadow-xl hover:-translate-y-1 transition-all" })} bg-primary text-white hover:bg-primary/90`}>
+                  Get Your Free Growth Plan
+                  <ArrowRight className="ml-2 h-5 w-5" />
+                </button>
+              </ContactPopup>
+              {process.env.NEXT_PUBLIC_WHATSAPP_NUMBER && (
+                <Link href={`https://wa.me/${process.env.NEXT_PUBLIC_WHATSAPP_NUMBER}?text=${encodeURIComponent("Hi Aarotech, I would like to chat about my business.")}`} className={`${buttonVariants({ size: "lg", variant: "outline", className: "h-14 px-8 w-full sm:w-auto text-base bg-transparent border-white/20 text-white hover:bg-white/10" })}`}>
+                  Chat With a Founder
+                </Link>
+              )}
             </div>
             <p className="text-xs font-bold text-white/50 uppercase tracking-widest mb-6 animate-slide-up-fade" style={{ animationDelay: "0.5s" }}>
               Proudly partnering with businesses in Trichy, Chennai, Coimbatore, Madurai, & across TN.
@@ -74,11 +70,8 @@ export function Hero() {
 
           <div 
             className="absolute inset-0 lg:static lg:w-[45%] flex justify-center items-center z-0 opacity-40 lg:opacity-100 pointer-events-none lg:pointer-events-auto overflow-hidden lg:overflow-visible"
-            onMouseEnter={handleMouseEnter}
-            onMouseLeave={handleMouseLeave}
           >
             <video
-              ref={videoRef}
               src="/animations/Red%20Floating%20Cube.mp4"
               autoPlay
               loop

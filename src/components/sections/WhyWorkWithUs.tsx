@@ -32,7 +32,7 @@ export function WhyWorkWithUs() {
           </AnimateOnScroll>
           <AnimateOnScroll delay="0.1s">
             <p className="text-lg md:text-xl text-slate-500 leading-relaxed">
-              We built this agency because we saw too many businesses getting burned by overpromising and underdelivering. We do things differently.
+              We're founders building for founders. No vanity metrics, no confusing jargon—just transparent execution that drives actual revenue.
             </p>
           </AnimateOnScroll>
         </div>

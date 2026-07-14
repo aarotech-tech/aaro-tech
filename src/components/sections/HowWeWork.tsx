@@ -11,11 +11,11 @@ export function HowWeWork() {
           <div className="flex flex-col space-y-12 relative z-10">
             <div>
               <AnimateOnScroll delay="0s">
-                <TextReveal text="The Roadmap to Predictable Growth" className="text-3xl md:text-4xl lg:text-5xl font-bold tracking-tight mb-6" />
+                <TextReveal text="The Blueprint for Predictable Revenue" className="text-3xl md:text-4xl lg:text-5xl font-bold tracking-tight mb-6" />
               </AnimateOnScroll>
               <AnimateOnScroll delay="0.1s">
                 <p className="text-lg md:text-xl text-slate-300 leading-relaxed max-w-xl">
-                  A simple, transparent process to take your business from where it is to where it needs to be.
+                  A transparent, proven execution plan designed to scale your business without the guesswork.
                 </p>
               </AnimateOnScroll>
             </div>

@@ -1,0 +1,50 @@
+# Phase 9: Mobile App Strategy (PWA vs. Expo)
+
+As the final phase of the Aarotech Business OS roadmap, we need to evaluate the best technical path forward for bringing this ecosystem to mobile devices. 
+
+Your clients and agency employees will want to access the CRM, Tasks, and Client Portal on the go. Below is a strategic comparison between building a **Progressive Web App (PWA)** versus a native app using **React Native (Expo)**.
+
+---
+
+## Option A: Progressive Web App (PWA)
+A PWA turns your existing Next.js web application into an installable mobile experience. Users can "Add to Home Screen" directly from their mobile browser without going through the App Store.
+
+### Pros
+- **Zero Extra Codebase**: You use the exact same Next.js React code we just wrote. Any update to the web app instantly updates the mobile app.
+- **Fastest Time to Market**: We simply add a `manifest.json` and a Service Worker to the existing Next.js project. It takes less than a day.
+- **No App Store Tax or Review**: You bypass Apple's strict review process and the 30% cut on in-app payments (relevant for client invoices).
+- **SEO Benefits**: The app remains fully indexable by Google.
+
+### Cons
+- **Limited Native Features**: While getting better, PWAs still struggle with advanced background syncing, Bluetooth, and deep OS-level integrations (especially on iOS).
+- **Push Notifications on iOS**: Apple only recently started supporting Web Push on iOS (requires iOS 16.4+), and it can be finicky compared to native push notifications.
+- **Brand Perception**: Some enterprise clients prefer the prestige of downloading a dedicated app from the iOS App Store.
+
+---
+
+## Option B: React Native (Expo)
+Expo is a framework for React Native that allows you to write React code that compiles down to true native iOS and Android applications.
+
+### Pros
+- **Premium Native Feel**: True native navigation, silky-smooth 120hz animations, and standard iOS/Android UI paradigms.
+- **App Store Presence**: Publishing "Aarotech OS" to the Apple App Store and Google Play Store adds significant legitimacy and brand prestige for your agency.
+- **Full Device Access**: Perfect push notifications, background location, camera access (e.g., snapping photos of physical receipts), and biometrics (FaceID for secure login).
+
+### Cons
+- **Separate Codebase**: While you can share some logic (e.g., Drizzle schema and tRPC/API calls), you have to rewrite the entire UI using `<View>` and `<Text>` instead of `<div>` and HTML.
+- **Slower Iteration**: Every major update requires submitting a new build to Apple/Google and waiting for review.
+- **Higher Maintenance**: You now have two codebases to maintain (Next.js Web + Expo Mobile).
+
+---
+
+## 🏆 Recommendation for Aarotech OS
+
+**Start with a PWA, plan for Expo later.**
+
+Given that Aarotech OS is primarily a B2B SaaS tool (CRM, Finance, Project Management), it heavily relies on data tables, dashboards, and document editing. These interfaces are notoriously difficult to squeeze into a 6-inch phone screen, and users typically prefer doing "heavy lifting" (like writing proposals) on a desktop anyway.
+
+1. **Short Term (Next 3 Months)**: Implement **PWA** support in your Next.js app. Make sure your Tailwind CSS is perfectly responsive on mobile. This gives your clients a convenient icon on their home screen to quickly check their "Project Health" or pay an invoice.
+2. **Long Term (12+ Months)**: Once the web platform is generating steady revenue and you want to offer a premium "Aarotech Client App" in the App Store as a major marketing play, hire a React Native developer to build a focused **Expo** app that purely handles Client Dashboard viewing and Chat.
+
+### Next Steps to implement PWA:
+To turn what we just built into a PWA, we simply need to install `next-pwa`, generate icons, and wrap our Next.js config!

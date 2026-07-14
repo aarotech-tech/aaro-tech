@@ -11,7 +11,7 @@ export function Contact() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-16">
           <div>
             <AnimateOnScroll delay="0s">
-              <TextReveal text="Ready to Grow?" className="text-3xl md:text-4xl lg:text-5xl font-bold tracking-tight mb-4 text-white" />
+              <TextReveal text="Ready to Grow?" className="text-3xl md:text-4xl lg:text-5xl font-bold tracking-tighter leading-tight mb-4 text-white" />
             </AnimateOnScroll>
             <AnimateOnScroll delay="0.1s">
               <p className="text-lg text-slate-300 mb-10">

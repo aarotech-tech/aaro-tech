@@ -33,12 +33,14 @@ export function ContactForm({ onSuccess }: { onSuccess?: () => void }) {
       return;
     }
 
-    // Re-validate phone at submit time
+    // Re-validate phone at submit time if provided
     const phoneVal = (e.currentTarget.elements.namedItem("phone") as HTMLInputElement)?.value?.trim() || "";
-    const digits = phoneVal.replace(/\D/g, "");
-    if (!phoneVal || digits.length < 7 || digits.length > 15) {
-      setPhoneError("Enter a valid phone number (7-15 digits).");
-      return;
+    if (phoneVal) {
+      const digits = phoneVal.replace(/\D/g, "");
+      if (digits.length < 7 || digits.length > 15) {
+        setPhoneError("Enter a valid phone number (7-15 digits).");
+        return;
+      }
     }
 
     setIsSubmitting(true);
@@ -127,21 +129,21 @@ export function ContactForm({ onSuccess }: { onSuccess?: () => void }) {
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="phone" className="text-white">Phone Number</Label>
+          <Label htmlFor="phone" className="text-white">Phone Number (Optional)</Label>
           <Input
             id="phone"
             name="phone"
             type="tel"
             placeholder="+91 98765 43210"
-            required
             className={`bg-slate-950 border-slate-800 text-white placeholder:text-slate-500 ${phoneError ? "border-red-500 focus:border-red-500" : ""}`}
             onBlur={(e) => {
               const val = e.target.value.trim();
-              // Accepts: optional +, digits, spaces, dashes, dots - 7 to 15 digits total
-              const digits = val.replace(/\D/g, "");
               if (!val) {
-                setPhoneError("Phone number is required.");
-              } else if (digits.length < 7 || digits.length > 15) {
+                setPhoneError("");
+                return;
+              }
+              const digits = val.replace(/\D/g, "");
+              if (digits.length < 7 || digits.length > 15) {
                 setPhoneError("Enter a valid phone number (7-15 digits).");
               } else {
                 setPhoneError("");

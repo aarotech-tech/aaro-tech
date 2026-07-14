@@ -12,7 +12,7 @@ export function Services() {
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         <div className="text-center max-w-3xl mx-auto mb-16 md:mb-20">
           <AnimateOnScroll delay="0s">
-            <TextReveal text="How We Help Businesses Grow" className="text-3xl md:text-4xl lg:text-5xl font-bold tracking-tight text-slate-900 mb-6 justify-center text-center" />
+            <TextReveal text="How We Help Businesses Grow" className="text-3xl md:text-4xl lg:text-5xl font-bold tracking-tighter leading-tight text-slate-900 mb-6 justify-center text-center" />
           </AnimateOnScroll>
           <AnimateOnScroll delay="0.1s">
             <p className="text-lg md:text-xl text-slate-500 leading-relaxed">

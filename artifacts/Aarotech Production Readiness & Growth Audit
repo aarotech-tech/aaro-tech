@@ -1,0 +1,81 @@
+# Aarotech Production Readiness & Growth Audit
+
+This plan outlines the critical steps required to make the Aarotech website production-ready, maximize organic visibility, implement robust tracking, and prepare for scaling. 
+
+The audit covers 11 phases, organized into 4 priority tiers as requested. 
+
+> [!IMPORTANT]
+> **User Review Required:** Please review the priority of these items and approve this plan. Once approved, I will begin implementing them sequentially.
+
+## 1. Critical (Must Fix Before Launch)
+
+These items are essential for the website to function correctly, be indexed properly by search engines, and track baseline metrics.
+
+### Technical SEO & Google Readiness (Phases 1 & 2)
+- **JSON-LD Schema Implementation:** (Code) Add Organization, Local Business, and Website schema to `layout.tsx`.
+- **Google Search Console & GA4 Setup:** 
+  - (Code) Integrate GA4 (via Next.js `@next/third-parties/google` or custom script).
+  - (Manual/DNS) Verify domain in Google Search Console via TXT record.
+- **Dynamic Metadata Enhancements:** (Code) Ensure `robots.ts` and `sitemap.ts` are robust. Add `manifest.webmanifest`, `theme-color`, and a proper `favicon.ico` / apple-touch-icon.
+
+### Production Readiness & Security (Phases 10 & 8)
+- **Error Handling:** (Code) Create `not-found.tsx` (404 page), `error.tsx` (500 handling), and `loading.tsx` to handle React Suspense boundaries.
+- **Security Headers:** (Code) Implement HTTP security headers (CSP, X-Frame-Options, Strict-Transport-Security) in `next.config.ts`.
+- **Link Auditing:** (Code) Ensure all internal links are working and remove any placeholder links (`#`).
+
+### Performance (Core Web Vitals) (Phase 3)
+- **Image Optimization:** (Code) Configure `next.config.ts` for remote patterns (if using external images) and ensure all `<img>` tags use `next/image` with proper `alt` tags and `priority` for above-the-fold images (LCP).
+
+## 2. High Priority (Within First Week)
+
+These items significantly impact user experience, conversion rates, and baseline local SEO.
+
+### Conversion Optimization (Phase 6)
+- **Friction Point Removal:** (Code) Audit the user journey from Landing -> Scroll -> CTA. Improve button visibility, ensure form submissions have immediate feedback (toast notifications/Thank You states), and verify contrast ratios.
+- **Sticky CTAs:** (Code) Ensure mobile has a sticky "Contact" or "WhatsApp" button that doesn't obstruct content.
+
+### Tracking (Phase 7)
+- **Event Tracking Plan:** (Code) Implement custom event tracking for:
+  - Form submissions
+  - WhatsApp button clicks (`tel:` and `wa.me`)
+  - Email clicks (`mailto:`)
+  - Navigation to Service/Industry pages.
+
+### Local SEO (Phase 4)
+- **Tamil Nadu Targeting:** (Code/Content) Organically weave locations (Chennai, Coimbatore, Madurai, etc.) into the `layout.tsx` metadata description and homepage copy where appropriate (e.g., "Serving businesses across Chennai, Coimbatore, and Tamil Nadu").
+- **Google Business Profile:** (Manual) Ensure the GMB profile is fully populated with services, matching the website's exact NAP (Name, Address, Phone) details.
+
+## 3. Medium Priority (Within First Month)
+
+These items focus on scaling content, improving accessibility, and deepening tracking insights.
+
+### Content Strategy (Phase 5)
+- **Service & Industry Pages:** (Code/Content) Expand current services/industries into dedicated dynamic routes (`/services/[slug]`) with deep content, FAQs, and targeted keywords rather than just anchoring on the homepage.
+- **FAQ Schema:** (Code) Add `FAQPage` JSON-LD schema to the FAQ section to win rich snippets in Google Search.
+- **Breadcrumbs:** (Code) Implement Breadcrumb navigation and `BreadcrumbList` schema for deeper pages.
+
+### Accessibility (Phase 9)
+- **WCAG Audit:** (Code) Ensure full keyboard navigability (focus states), ARIA labels on all interactive elements (especially modal dialogs or mobile menus), and semantic HTML (`<main>`, `<section>`, `<nav>`, `<aside>`).
+
+### Tracking Expansion (Phase 7 & 2)
+- **Microsoft Clarity:** (Code) Add the Microsoft Clarity tracking snippet to record user sessions and heatmaps to analyze scrolling and friction points.
+
+## 4. Future Improvements
+
+These items lay the groundwork for paid marketing and long-term organic dominance.
+
+### Digital Marketing Readiness (Phase 11)
+- **Dedicated Landing Pages:** (Code) Create reusable Next.js templates for Google Ads / Meta Ads that hide the main navigation and focus entirely on lead capture.
+- **Lead Magnets:** (Code/Content) Implement an email capture form for a free resource (e.g., "Digital Marketing Audit Checklist").
+- **CRM Integration:** (Code) Connect the contact form directly to a CRM (HubSpot, Zoho) or automation tool (Zapier/Make) instead of just sending an email.
+
+### Advanced Content Strategy (Phase 5 & 4)
+- **City-Specific Pages:** (Code) Create dynamic `/locations/[city]` pages for major hubs like Chennai, Coimbatore, and Madurai tailored to local search intent.
+- **Blog Architecture:** (Code) Implement a blog section (using a CMS like Sanity or Markdown) to capture long-tail keywords (e.g., "Best SEO practices for hospitals in Chennai").
+
+---
+
+## Next Steps
+
+If you approve this structure, we will begin with **Priority 1: Critical (Must Fix Before Launch)**. 
+I will start by writing the code for the JSON-LD schemas, GA4 integration, and the Next.js Error/Not-Found pages.

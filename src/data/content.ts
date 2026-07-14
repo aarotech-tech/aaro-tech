@@ -4,7 +4,7 @@ export const services = [
   {
     id: "content-creation",
     title: "Content Creation",
-    description: "High-quality, engaging content designed to capture attention and tell your brand's unique story.",
+    description: "Video and visual content that stops the scroll and drives measurable action.",
     icon: Video,
     h1: "High-Quality Content Creation Services",
     intro: "We produce engaging video, image, and text content that stops the scroll and drives meaningful interaction.",
@@ -15,7 +15,7 @@ export const services = [
   {
     id: "social-media",
     title: "Social Media Marketing",
-    description: "Engaging content and community management to build trust and loyalty.",
+    description: "Organic social strategies that turn casual followers into paying customers.",
     icon: Code,
     h1: "Organic Social Media Management",
     intro: "Grow an engaged following and build trust through consistent, high-quality organic social media content.",
@@ -26,7 +26,7 @@ export const services = [
   {
     id: "digital-advertising",
     title: "Meta & Google Ads",
-    description: "Data-driven advertising campaigns across Search, Facebook, and Instagram to generate qualified leads.",
+    description: "High-ROI campaigns on Google and Meta that put your business in front of buyers, not browsers.",
     icon: Megaphone,
     h1: "High-ROI Digital Advertising Campaigns",
     intro: "Capture high-intent searchers on Google and build massive brand awareness on Meta to generate qualified leads.",
@@ -37,7 +37,7 @@ export const services = [
   {
     id: "branding",
     title: "Branding & Creative Design",
-    description: "Professional logos, brand identity, and visual assets that make your business stand out.",
+    description: "Premium visual identities that command authority and trust from the very first impression.",
     icon: PenTool,
     h1: "Premium Brand Identity Design",
     intro: "Look like an industry leader with a cohesive, professional brand identity that builds immediate trust.",
@@ -52,14 +52,14 @@ export const services = [
     icon: LayoutTemplate,
     h1: "High-Converting Website Development",
     intro: "We build fast, scalable, and beautifully designed websites focused on lead generation and user experience.",
-    benefits: ["Lightning fast, optimized load times", "Flawless mobile-first responsive design", "Built-in SEO architecture from day one"],
+    benefits: ["Custom Enterprise Integrations", "Flawless mobile-first responsive design", "Built-in SEO architecture from day one"],
     faqs: [{ question: "How long does it take?", answer: "Usually 4-6 weeks depending on complexity." }],
     cta: "Get a Web Dev Quote"
   },
   {
     id: "seo",
     title: "Search Engine Optimization",
-    description: "Rank higher on Google and attract high-quality, organic traffic to your business.",
+    description: "Dominate search results and capture high-intent customers actively looking for your services.",
     icon: Search,
     h1: "SEO Services to Dominate Local Search",
     intro: "Stop paying for every click. Build long-term organic traffic with our proven SEO methodologies.",
@@ -169,7 +169,7 @@ export const founders = [
     name: "Aaron",
     fullName: "Aaron John",
     role: "Founder & Lead Strategist",
-    bio: "I don't believe in handing you off to a junior account manager. When you work with us, I personally oversee your strategy to ensure we are driving actual revenue, not just clicks.",
+    bio: "As an elite boutique agency, I personally oversee the high-level strategy for our enterprise and growth-stage clients, ensuring we drive measurable pipeline and revenue.",
     quote: "Helping businesses generate measurable growth through data-driven digital marketing.",
     linkedin: "",
     photo: "/images/crew/aaron.jpeg",

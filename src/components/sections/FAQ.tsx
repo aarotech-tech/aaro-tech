@@ -30,7 +30,7 @@ export function FAQ() {
             <TextReveal text="Radical Transparency: Clear Answers" className="text-3xl md:text-4xl lg:text-5xl font-bold tracking-tight mb-6 justify-center text-center" />
           </AnimateOnScroll>
           <AnimateOnScroll delay="0.1s">
-            <p className="text-lg md:text-xl text-slate-500 leading-relaxed">Everything you need to know before we partner up.</p>
+            <p className="text-lg md:text-xl text-slate-500 leading-relaxed">No fluff, no secrets. Just straight answers about how we operate.</p>
           </AnimateOnScroll>
         </div>
         <AnimateOnScroll delay="0.2s">
