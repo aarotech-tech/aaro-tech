@@ -3,7 +3,7 @@ import { services, industries } from "@/data/content";
 import { blogPosts } from "@/data/blog";
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://aarotech.in";
+  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || process.env.SITE_URL || "https://aarotech.in";
 
   const staticRoutes = [
     "",
@@ -50,7 +50,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
 
   const blogRoutes = blogPosts.map((post) => ({
     url: `${baseUrl}/blog/${post.slug}`,
-    lastModified: new Date(),
+    lastModified: post.updatedDate ? new Date(post.updatedDate) : (post.date ? new Date(post.date) : new Date()),
     changeFrequency: "weekly" as const,
     priority: 0.7,
   }));

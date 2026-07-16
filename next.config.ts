@@ -18,11 +18,10 @@ const nextConfig: NextConfig = {
             key: "X-Content-Type-Options",
             value: "nosniff",
           },
-          // Temporarily removed CSP for debugging Clerk JS load
-          // {
-          //   key: "Content-Security-Policy",
-          //   value: "...",
-          // },
+          {
+            key: "Content-Security-Policy",
+            value: "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://*.clerk.accounts.dev https://clerk.aarotech.in https://www.clarity.ms https://www.googletagmanager.com; connect-src 'self' https://*.clerk.accounts.dev https://clerk.aarotech.in wss://*.clerk.accounts.dev https://www.google-analytics.com https://*.clarity.ms; img-src 'self' data: blob: https://images.unsplash.com https://img.clerk.com; style-src 'self' 'unsafe-inline'; worker-src 'self' blob:; frame-ancestors 'none';",
+          },
           {
             key: "X-Frame-Options",
             value: "DENY",

@@ -7,12 +7,12 @@ import type { Metadata } from "next";
 import { BlogList } from "@/components/blog/BlogList";
 
 export const metadata: Metadata = {
-  title: "Digital Marketing & SEO Blog | Aarotech Insights",
-  description: "Actionable digital marketing strategies, local SEO tips, and business growth guides specifically tailored for companies in Tamil Nadu.",
-  keywords: ["Digital Marketing Blog", "SEO tips", "Tamil Nadu business growth", "Aarotech insights"],
+  title: "Digital Marketing & SEO Blog | Aarotech – Trichy's Growth Agency",
+  description: "Actionable digital marketing, local SEO, and web development insights from Aarotech – Trichy's leading growth agency. Strategies built for Tamil Nadu businesses.",
+  keywords: ["Digital Marketing Blog Trichy", "SEO tips Tiruchirappalli", "Tamil Nadu business growth", "Aarotech insights", "local SEO Trichy"],
   openGraph: {
-    title: "Digital Marketing & SEO Blog | Aarotech Insights",
-    description: "Actionable digital marketing strategies, local SEO tips, and business growth guides specifically tailored for companies in Tamil Nadu.",
+    title: "Digital Marketing & SEO Blog | Aarotech – Trichy's Growth Agency",
+    description: "Actionable digital marketing, local SEO, and web development insights from Aarotech – Trichy's leading growth agency.",
     type: "website",
   }
 };
@@ -70,12 +70,21 @@ export default function BlogIndex() {
                     </div>
                   </div>
                 </div>
-                <div className="lg:w-1/2 bg-slate-100 relative min-h-[300px] lg:min-h-full flex items-center justify-center overflow-hidden">
-                   {/* Abstract Featured Image Representation */}
-                   <div className="absolute inset-0 bg-gradient-to-br from-slate-200 to-slate-100 opacity-50"></div>
-                   <div className="w-64 h-64 bg-white rounded-full mix-blend-multiply filter blur-3xl opacity-70 animate-blob"></div>
-                   <div className="w-64 h-64 bg-primary/20 rounded-full mix-blend-multiply filter blur-3xl opacity-70 animate-blob animation-delay-2000 absolute top-10 right-10"></div>
-                   <div className="relative z-10 text-slate-400 font-medium tracking-widest uppercase text-sm">Aarotech Insights</div>
+                <div className="lg:w-1/2 relative min-h-[300px] lg:min-h-full overflow-hidden bg-slate-100">
+                  {featuredPost.featuredImage ? (
+                    <img
+                      src={featuredPost.featuredImage}
+                      alt={featuredPost.title}
+                      className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+                    />
+                  ) : (
+                    <>
+                      <div className="absolute inset-0 bg-gradient-to-br from-slate-200 to-slate-100 opacity-50"></div>
+                      <div className="w-64 h-64 bg-white rounded-full mix-blend-multiply filter blur-3xl opacity-70 animate-blob"></div>
+                      <div className="w-64 h-64 bg-primary/20 rounded-full mix-blend-multiply filter blur-3xl opacity-70 animate-blob animation-delay-2000 absolute top-10 right-10"></div>
+                      <div className="relative z-10 text-slate-400 font-medium tracking-widest uppercase text-sm">Aarotech Insights</div>
+                    </>
+                  )}
                 </div>
               </div>
             </Link>

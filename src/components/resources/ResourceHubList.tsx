@@ -59,7 +59,7 @@ export function ResourceHubList({
       <div className="flex flex-wrap gap-3 mb-16 justify-center">
         <button 
           onClick={() => setActiveCategory("All")}
-          className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${activeCategory === "All" ? "bg-slate-900 text-white" : "bg-white border border-slate-200 text-slate-700 hover:border-primary hover:text-primary"}`}
+          className={`px-4 py-2 rounded-full text-sm font-medium transition-colors cursor-pointer ${activeCategory === "All" ? "bg-slate-900 text-white" : "bg-white border border-slate-200 text-slate-700 hover:border-primary hover:text-primary"}`}
         >
           All Insights
         </button>
@@ -67,7 +67,7 @@ export function ResourceHubList({
           <button 
             key={category}
             onClick={() => setActiveCategory(category)}
-            className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${activeCategory === category ? "bg-slate-900 text-white" : "bg-white border border-slate-200 text-slate-700 hover:border-primary hover:text-primary"}`}
+            className={`px-4 py-2 rounded-full text-sm font-medium transition-colors cursor-pointer ${activeCategory === category ? "bg-slate-900 text-white" : "bg-white border border-slate-200 text-slate-700 hover:border-primary hover:text-primary"}`}
           >
             {category}
           </button>

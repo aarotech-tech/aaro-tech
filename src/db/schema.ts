@@ -49,8 +49,8 @@ export const organizationMembers = pgTable(
 
 export const deals = pgTable("deals", {
   id: uuid("id").primaryKey().defaultRandom(),
-  organizationId: uuid("organization_id").references(() => organizations.id).notNull(), // The Lead
-  ownerId: uuid("owner_id").references(() => users.id), // The Sales Agent
+  organizationId: uuid("organization_id").references(() => organizations.id, { onDelete: "cascade" }).notNull(), // The Lead
+  ownerId: uuid("owner_id").references(() => users.id, { onDelete: "set null" }), // The Sales Agent
   name: varchar("name", { length: 255 }).notNull(),
   stage: varchar("stage", { length: 50 }).default("discovery"), 
   value: integer("value").default(0), // Deal value
@@ -60,7 +60,7 @@ export const deals = pgTable("deals", {
 
 export const proposals = pgTable("proposals", {
   id: uuid("id").primaryKey().defaultRandom(),
-  dealId: uuid("deal_id").references(() => deals.id).notNull(),
+  dealId: uuid("deal_id").references(() => deals.id, { onDelete: "cascade" }).notNull(),
   status: varchar("status", { length: 50 }).default("draft"), // draft, sent, accepted, rejected
   documentData: text("document_data"), // JSON or Markdown
   pdfUrl: text("pdf_url"), // Cloudflare R2 link
@@ -75,8 +75,8 @@ export const proposals = pgTable("proposals", {
 
 export const clientAssets = pgTable("client_assets", {
   id: uuid("id").primaryKey().defaultRandom(),
-  organizationId: uuid("organization_id").references(() => organizations.id).notNull(),
-  uploadedById: uuid("uploaded_by_id").references(() => users.id),
+  organizationId: uuid("organization_id").references(() => organizations.id, { onDelete: "cascade" }).notNull(),
+  uploadedById: uuid("uploaded_by_id").references(() => users.id, { onDelete: "set null" }),
   name: varchar("name", { length: 255 }).notNull(),
   fileType: varchar("file_type", { length: 50 }).notNull(), // pdf, image, csv
   fileUrl: text("file_url").notNull(),
@@ -85,8 +85,8 @@ export const clientAssets = pgTable("client_assets", {
 
 export const projects = pgTable("projects", {
   id: uuid("id").primaryKey().defaultRandom(),
-  organizationId: uuid("organization_id").references(() => organizations.id).notNull(),
-  dealId: uuid("deal_id").references(() => deals.id), // The won deal that spawned this project
+  organizationId: uuid("organization_id").references(() => organizations.id, { onDelete: "cascade" }).notNull(),
+  dealId: uuid("deal_id").references(() => deals.id, { onDelete: "set null" }), // The won deal that spawned this project
   name: varchar("name", { length: 255 }).notNull(),
   status: varchar("status", { length: 50 }).default("active"), // active, paused, completed
   health: varchar("health", { length: 50 }).default("green"), // green, yellow, red
@@ -95,8 +95,8 @@ export const projects = pgTable("projects", {
 
 export const tasks = pgTable("tasks", {
   id: uuid("id").primaryKey().defaultRandom(),
-  projectId: uuid("project_id").references(() => projects.id).notNull(),
-  assigneeId: uuid("assignee_id").references(() => users.id),
+  projectId: uuid("project_id").references(() => projects.id, { onDelete: "cascade" }).notNull(),
+  assigneeId: uuid("assignee_id").references(() => users.id, { onDelete: "set null" }),
   title: varchar("title", { length: 255 }).notNull(),
   status: varchar("status", { length: 50 }).default("todo"), // todo, in_progress, done
   dueDate: timestamp("due_date"),
@@ -113,8 +113,8 @@ export const knowledgeBase = pgTable("knowledge_base", {
 
 export const invoices = pgTable("invoices", {
   id: uuid("id").primaryKey().defaultRandom(),
-  organizationId: uuid("organization_id").references(() => organizations.id).notNull(),
-  dealId: uuid("deal_id").references(() => deals.id),
+  organizationId: uuid("organization_id").references(() => organizations.id, { onDelete: "cascade" }).notNull(),
+  dealId: uuid("deal_id").references(() => deals.id, { onDelete: "set null" }),
   amount: integer("amount").notNull(), // Amount in dollars
   status: varchar("status", { length: 50 }).default("pending"), // pending, paid, overdue, cancelled
   dueDate: timestamp("due_date").notNull(),

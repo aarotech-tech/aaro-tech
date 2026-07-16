@@ -1,5 +1,8 @@
-export const DOMAIN = "https://aarotech.com"; // Change to actual domain if different
+export const DOMAIN = "https://aarotech.in";
 export const COMPANY_NAME = "Aarotech";
+export const PRIMARY_CITY = "Tiruchirappalli";
+export const PRIMARY_CITY_SHORT = "Trichy";
+export const PRIMARY_STATE = "Tamil Nadu";
 
 // Schema for the Organization
 export function generateOrganizationSchema() {
@@ -9,6 +12,12 @@ export function generateOrganizationSchema() {
     "name": COMPANY_NAME,
     "url": DOMAIN,
     "logo": `${DOMAIN}/icon.png`,
+    "address": {
+      "@type": "PostalAddress",
+      "addressLocality": PRIMARY_CITY,
+      "addressRegion": PRIMARY_STATE,
+      "addressCountry": "IN"
+    },
     "sameAs": [
       // Add social links here if available
     ]
@@ -31,7 +40,7 @@ export function generateWebSiteSchema() {
 }
 
 // Schema for Local Business (Homepage or City pages)
-export function generateLocalBusinessSchema(city = "Chennai", description = "Digital Marketing Agency") {
+export function generateLocalBusinessSchema(city = PRIMARY_CITY, description = "Digital Marketing Agency in Trichy") {
   return {
     "@context": "https://schema.org",
     "@type": "LocalBusiness",

@@ -73,7 +73,7 @@ export function Header() {
           </ContactPopup>
         </div>
         <button
-          className="lg:hidden p-2 text-slate-200 hover:text-white focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none rounded-md"
+          className="lg:hidden p-2 text-slate-200 hover:text-white focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none rounded-md cursor-pointer"
           onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
           aria-label={isMobileMenuOpen ? "Close menu" : "Open menu"}
           aria-expanded={isMobileMenuOpen}

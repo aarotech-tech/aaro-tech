@@ -15,39 +15,47 @@ function renderMarkdown(content: string) {
   return blocks.map((block, index) => {
     // Headings
     if (block.startsWith('### ')) {
-      return <h3 key={index} id={block.replace('### ', '').toLowerCase().replace(/[^a-z0-9]+/g, '-')} className="text-2xl font-bold text-slate-900 mt-8 mb-4">{block.replace('### ', '').replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')}</h3>;
+      return <h3 key={index} id={block.replace('### ', '').toLowerCase().replace(/[^a-z0-9]+/g, '-')} className="text-2xl font-bold text-slate-900 mt-8 mb-4 scroll-mt-32">{block.replace('### ', '').replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')}</h3>;
     }
     if (block.startsWith('#### ')) {
-      return <h4 key={index} className="text-xl font-bold text-slate-900 mt-6 mb-3">{block.replace('#### ', '').replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')}</h4>;
+      return <h4 key={index} className="text-xl font-bold text-slate-900 mt-6 mb-3 scroll-mt-32">{block.replace('#### ', '').replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')}</h4>;
     }
     if (block.startsWith('## ')) {
-      return <h2 key={index} id={block.replace('## ', '').toLowerCase().replace(/[^a-z0-9]+/g, '-')} className="text-3xl font-bold text-slate-900 mt-10 mb-6 border-b border-slate-100 pb-2">{block.replace('## ', '').replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')}</h2>;
+      return <h2 key={index} id={block.replace('## ', '').toLowerCase().replace(/[^a-z0-9]+/g, '-')} className="text-3xl font-bold text-slate-900 mt-10 mb-6 border-b border-slate-100 pb-2 scroll-mt-32">{block.replace('## ', '').replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')}</h2>;
     }
     
     // Lists
-    if (block.startsWith('* ') || block.startsWith('- ')) {
-      const items = block.split('\n').map(line => line.replace(/^[\*\-]\s+/, ''));
+    if (block.startsWith('* ') || block.startsWith('- ') || /^\d+\.\s/.test(block)) {
+      const isOrdered = /^\d+\.\s/.test(block);
+      const items = block.split('\n').map(line => {
+        const match = line.match(/^(\s*)(?:[\*\-]|\d+\.)\s+(.*)/);
+        return match ? { indent: match[1].length, text: match[2] } : null;
+      }).filter(Boolean);
+      
+      const ListTag = isOrdered ? 'ol' : 'ul' as any;
+      const listClass = isOrdered ? 'list-decimal' : 'list-disc';
+
       return (
-        <ul key={index} className="list-disc pl-6 mb-6 text-slate-700 space-y-2">
-          {items.map((item, i) => (
-            <li key={i} dangerouslySetInnerHTML={{ __html: item.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>') }} />
+        <ListTag key={index} className={`${listClass} pl-6 mb-6 text-slate-700 space-y-2`}>
+          {items.map((item: any, i: number) => (
+            <li 
+              key={i} 
+              className={item.indent > 0 ? "ml-6 md:ml-8 list-[circle] text-slate-600 mt-1" : ""}
+              dangerouslySetInnerHTML={{ __html: item.text
+              .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+              .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" class="text-primary font-semibold hover:underline">$1</a>') }} 
+            />
           ))}
-        </ul>
-      );
-    }
-    if (/^\d+\.\s/.test(block)) {
-      const items = block.split('\n').map(line => line.replace(/^\d+\.\s+/, ''));
-      return (
-        <ol key={index} className="list-decimal pl-6 mb-6 text-slate-700 space-y-2">
-          {items.map((item, i) => (
-            <li key={i} dangerouslySetInnerHTML={{ __html: item.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>') }} />
-          ))}
-        </ol>
+        </ListTag>
       );
     }
     
-    // Paragraphs
-    return <p key={index} className="mb-6 text-slate-700 leading-relaxed" dangerouslySetInnerHTML={{ __html: block.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>').replace(/\`(.*?)\`/g, '<code class="bg-slate-100 px-1.5 py-0.5 rounded text-sm text-primary">$1</code>') }} />;
+    // Paragraphs — also handle inline bold, code, and markdown links
+    const inlineHtml = block
+      .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+      .replace(/\`(.*?)\`/g, '<code class="bg-slate-100 px-1.5 py-0.5 rounded text-sm text-primary">$1</code>')
+      .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" class="text-primary font-semibold hover:underline">$1</a>');
+    return <p key={index} className="mb-6 text-slate-700 leading-relaxed" dangerouslySetInnerHTML={{ __html: inlineHtml }} />;
   });
 }
 
@@ -79,7 +87,7 @@ export function BlogPostLayout({ post }: { post: BlogPost }) {
   return (
     <>
       <Header />
-      <main className="flex-1 overflow-x-hidden pt-24 bg-white">
+      <main className="flex-1 pt-24 bg-white">
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(generateArticleSchema({
@@ -103,11 +111,15 @@ export function BlogPostLayout({ post }: { post: BlogPost }) {
           <div className="container mx-auto px-4 max-w-4xl">
             <Breadcrumbs items={[{ name: "Blog", item: "/blog" }, { name: post.title, item: `/${post.slug}` }]} />
             
-            <div className="flex items-center gap-4 text-sm text-slate-500 mb-6">
+            <div className="flex items-center flex-wrap gap-3 text-sm text-slate-500 mb-6">
               <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-primary/10 text-primary font-semibold">
                 <Tag className="w-3.5 h-3.5" />
                 {post.category}
               </span>
+              {post.author && (
+                <span className="font-medium text-slate-700">By {post.author}</span>
+              )}
+              <span>•</span>
               <time dateTime={post.date}>{new Date(post.date).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })}</time>
               <span>•</span>
               <span className="flex items-center gap-1"><Clock className="w-3.5 h-3.5"/> {post.readTime}</span>
@@ -123,11 +135,24 @@ export function BlogPostLayout({ post }: { post: BlogPost }) {
           </div>
         </header>
 
+        {/* Featured Hero Image */}
+        {post.featuredImage && (
+          <div className="w-full max-w-5xl mx-auto px-4 pt-10 pb-0">
+            <div className="w-full rounded-2xl md:rounded-3xl overflow-hidden shadow-xl">
+              <img
+                src={post.featuredImage}
+                alt={post.title}
+                className="w-full h-auto block"
+              />
+            </div>
+          </div>
+        )}
+
         <div className="container mx-auto px-4 py-16 max-w-7xl">
-          <div className="flex flex-col lg:flex-row gap-12">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 relative">
             
             {/* Sidebar TOC */}
-            <aside className="lg:w-1/4 hidden lg:block">
+            <aside className="hidden lg:block lg:col-span-3">
               <div className="sticky top-32">
                 <h4 className="text-sm font-bold uppercase tracking-wider text-slate-900 mb-4">Table of Contents</h4>
                 <nav className="space-y-3 border-l-2 border-slate-100 pl-4">
@@ -145,7 +170,7 @@ export function BlogPostLayout({ post }: { post: BlogPost }) {
             </aside>
 
             {/* Main Content */}
-            <article className="lg:w-2/4">
+            <article className="lg:col-span-6">
               <div className="prose prose-lg prose-slate max-w-none">
                 {renderMarkdown(post.content)}
               </div>
@@ -161,35 +186,37 @@ export function BlogPostLayout({ post }: { post: BlogPost }) {
             </article>
 
             {/* Right Sidebar - CTA & Related */}
-            <aside className="lg:w-1/4 space-y-10">
-              {/* Sidebar CTA */}
-              <div className="bg-slate-900 text-white rounded-3xl p-8 text-center shadow-xl">
-                <h3 className="text-xl font-bold mb-3">Ready to grow your business?</h3>
-                <p className="text-slate-300 text-sm mb-6">Get a free, custom digital marketing plan tailored to your goals.</p>
-                <Link href="/#contact" className="block w-full py-3 px-4 bg-primary text-white text-sm font-bold rounded-xl hover:bg-primary/90 transition-colors">
-                  Get Free Strategy
-                </Link>
-              </div>
-
-              {/* Related Posts */}
-              {relatedPosts.length > 0 && (
-                <div>
-                  <h4 className="text-lg font-bold text-slate-900 mb-6 flex items-center gap-2">
-                    <span className="w-4 h-1 bg-primary rounded-full"></span> Related Reads
-                  </h4>
-                  <div className="space-y-6">
-                    {relatedPosts.map(related => (
-                      <Link href={`/${related.slug}`} key={related.slug} className="group block">
-                        <div className="text-xs text-primary font-medium mb-1">{related.category}</div>
-                        <h5 className="font-bold text-slate-900 leading-tight group-hover:text-primary transition-colors mb-2">
-                          {related.title}
-                        </h5>
-                        <div className="text-xs text-slate-500">{related.readTime}</div>
-                      </Link>
-                    ))}
-                  </div>
+            <aside className="lg:col-span-3">
+              <div className="sticky top-32 space-y-10">
+                {/* Sidebar CTA */}
+                <div className="bg-slate-900 text-white rounded-3xl p-8 text-center shadow-xl">
+                  <h3 className="text-xl font-bold mb-3">Ready to grow your business?</h3>
+                  <p className="text-slate-300 text-sm mb-6">Get a free, custom digital marketing plan tailored to your goals.</p>
+                  <Link href="/#contact" className="block w-full py-3 px-4 bg-primary text-white text-sm font-bold rounded-xl hover:bg-primary/90 transition-colors">
+                    Get Free Strategy
+                  </Link>
                 </div>
-              )}
+
+                {/* Related Posts */}
+                {relatedPosts.length > 0 && (
+                  <div>
+                    <h4 className="text-lg font-bold text-slate-900 mb-6 flex items-center gap-2">
+                      <span className="w-4 h-1 bg-primary rounded-full"></span> Related Reads
+                    </h4>
+                    <div className="space-y-6">
+                      {relatedPosts.map(related => (
+                        <Link href={`/${related.slug}`} key={related.slug} className="group block">
+                          <div className="text-xs text-primary font-medium mb-1">{related.category}</div>
+                          <h5 className="font-bold text-slate-900 leading-tight group-hover:text-primary transition-colors mb-2">
+                            {related.title}
+                          </h5>
+                          <div className="text-xs text-slate-500">{related.readTime}</div>
+                        </Link>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
             </aside>
           </div>
         </div>

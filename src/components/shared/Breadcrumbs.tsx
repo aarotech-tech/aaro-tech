@@ -23,7 +23,7 @@ export function Breadcrumbs({ items }: BreadcrumbsProps) {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}
       />
-      <nav aria-label="Breadcrumb" className="mb-6 flex items-center text-sm text-slate-400 overflow-x-auto whitespace-nowrap pb-2">
+      <nav aria-label="Breadcrumb" className="mb-6 flex items-center text-sm text-slate-500 overflow-x-auto whitespace-nowrap pb-2">
         <ol className="flex items-center space-x-2">
           <li>
             <Link href="/" className="flex items-center hover:text-primary transition-colors">
@@ -33,9 +33,9 @@ export function Breadcrumbs({ items }: BreadcrumbsProps) {
           </li>
           {items.map((item, index) => (
             <li key={item.item} className="flex items-center space-x-2">
-              <ChevronRight className="w-4 h-4 text-slate-600 flex-shrink-0" />
+              <ChevronRight className="w-4 h-4 text-slate-400 flex-shrink-0" />
               {index === items.length - 1 ? (
-                <span className="text-slate-200 font-medium" aria-current="page">
+                <span className="text-slate-800 font-semibold" aria-current="page">
                   {item.name}
                 </span>
               ) : (

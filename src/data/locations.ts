@@ -26,6 +26,55 @@ export interface LocationData {
 }
 
 export const locationData: Record<string, LocationData> = {
+  trichy: {
+    id: "trichy",
+    cityName: "Trichy",
+    metaTitle: "Digital Marketing Agency in Trichy | Aarotech – HQ & Home Base",
+    metaDescription: "Aarotech is headquartered in Trichy (Tiruchirappalli). We are the city's most trusted digital marketing agency, offering SEO, web design, and paid ads tailored for local and national growth.",
+    heroSubtitle: "Aarotech HQ — Trichy, Tamil Nadu",
+    heroDescription: "Aarotech is built and based in Trichy. We are the only digital marketing agency in Tiruchirappalli that combines deep local roots with enterprise-grade growth strategies for SEO, web development, and performance marketing.",
+    overview: {
+      title: "Trichy's Own Digital Growth Engine",
+      content: [
+        "Tiruchirappalli is our home. We are not a satellite office or a remote team serving Trichy from elsewhere — this is where Aarotech was founded, and it is where our core team operates every single day.",
+        "Trichy's economy is anchored by BHEL, leading educational institutions, thriving healthcare facilities, and an expanding SME ecosystem. All of these sectors are actively competing for digital visibility, and the businesses that invest in it early will dominate for years.",
+        "As a Trichy-first agency, we have an unmatched understanding of the city's local market dynamics, consumer behavior, and the specific search intent of Trichy-based buyers. That depth of local knowledge is something no outside agency can replicate."
+      ]
+    },
+    whyNeed: {
+      title: "Why Trichy Businesses Must Invest in Digital Marketing Now",
+      content: [
+        "Whether you are an engineering firm near BHEL, a clinic in Srirangam, a school in Woraiyur, or a retail shop in Chathiram Bus Stand — your customers are searching for you on Google before they ever call. If you are not on page one, you are invisible.",
+        "Trichy's competitive landscape is intensifying rapidly. Businesses that delay building their digital presence are already losing ground to peers who rank higher in search and run smarter ad campaigns.",
+        "Digital marketing in Trichy offers some of the best ROI in Tamil Nadu because local competition is still lower than Chennai or Coimbatore, meaning every rupee you spend goes further and faster."
+      ]
+    },
+    localSeoAdvantages: {
+      title: "Local SEO That Puts Trichy Businesses on the Map",
+      content: [
+        "When someone in Trichy searches 'best dental clinic near me' or 'web design company Tiruchirappalli', they are ready to act. Local SEO ensures your business is the first answer they see.",
+        "We optimize your Google Business Profile from the ground up, build consistent NAP citations across Sulekha, JustDial, and local directories, and create geo-targeted content for neighborhoods like Thillai Nagar, Srirangam, Palakkarai, and KK Nagar.",
+        "Our Trichy-based team runs proximity-aware local SEO strategies that outside agencies simply cannot execute with the same depth."
+      ]
+    },
+    whyChooseUs: {
+      title: "We Are Trichy. We Understand Your Market.",
+      content: [
+        "We are not a distant vendor managing your business through a dashboard. We are your neighbors. We understand the local festivals, the business culture, and the neighborhoods your customers live in.",
+        "Our founders are from Trichy. Our team attends your local events. And our strategies are built for the Trichy market, not recycled from a generic playbook designed for a different city.",
+        "When you partner with Aarotech, you get a team that has genuine personal stake in the success of Trichy's business community."
+      ]
+    },
+    faqs: [
+      { question: "Is Aarotech actually based in Trichy?", answer: "Yes, absolutely. Trichy is our headquarters and home base. Our founding team and core operations are rooted here in Tiruchirappalli, which gives us a genuine edge in understanding and serving local businesses." },
+      { question: "How does digital marketing benefit manufacturing companies near BHEL Trichy?", answer: "We use targeted SEO and LinkedIn marketing to position your firm in front of procurement managers and decision-makers nationally, generating high-value B2B leads. We understand the BHEL ecosystem and the industrial buyer journey deeply." },
+      { question: "Can you help educational institutions in Trichy increase admissions?", answer: "Yes. We design specialized lead-generation funnels and targeted social media campaigns to engage prospective students and parents effectively during admission seasons. We have worked with institutions in and around Trichy." },
+      { question: "How do you ensure our marketing budget is not wasted?", answer: "We focus on rigorous conversion tracking and continuous A/B testing. We quickly identify what is driving ROI and reallocate budget away from underperforming channels. You always know where every rupee is going." },
+      { question: "Do you require long-term contracts?", answer: "We prefer to let our results speak for themselves. We offer flexible engagements, though we recommend a 3-6 month commitment for strategies like SEO to see full compounding effects." },
+      { question: "What is included in your free digital audit for Trichy businesses?", answer: "Our audit covers your current website performance, local SEO standing, Google Business Profile health, competitive landscape in Trichy, and a prioritized roadmap for immediate growth opportunities." }
+    ],
+    nearbyCities: ["Thanjavur", "Karur", "Pudukkottai", "Ariyalur", "Perambalur"]
+  },
   chennai: {
     id: "chennai",
     cityName: "Chennai",
@@ -172,54 +221,5 @@ export const locationData: Record<string, LocationData> = {
       { question: "How do we get started?", answer: "We begin with a comprehensive digital audit of your current presence and competitors, followed by a customized strategy presentation." }
     ],
     nearbyCities: ["Dindigul", "Virudhunagar", "Sivakasi", "Theni"]
-  },
-  trichy: {
-    id: "trichy",
-    cityName: "Trichy",
-    metaTitle: "Digital Marketing Agency in Trichy | Aarotech SEO Services",
-    metaDescription: "Accelerate your Trichy business growth with Aarotech's ROI-focused digital marketing, local SEO, and custom web development solutions.",
-    heroSubtitle: "Serving Trichy, Tamil Nadu",
-    heroDescription: "Aarotech provides elite, data-driven digital marketing, advanced local SEO, and conversion-optimized web development services tailored specifically for the strategic Trichy market.",
-    overview: {
-      title: "Accelerating Growth in Trichy",
-      content: [
-        "Tiruchirappalli (Trichy) occupies a strategic position in central Tamil Nadu, serving as a critical hub for manufacturing, education, and heavy engineering. The city's economic vitality makes it a prime location for ambitious businesses.",
-        "As Trichy's infrastructure and industrial base expand, the digital landscape is simultaneously maturing. Companies are realizing that digital visibility is critical for both B2B lead generation and B2C customer acquisition.",
-        "Aarotech provides the sophisticated digital marketing strategies required to stand out in this evolving market, turning online visibility into a predictable revenue stream."
-      ]
-    },
-    whyNeed: {
-      title: "The Strategic Advantage of Digital Marketing in Trichy",
-      content: [
-        "Whether you are an engineering firm seeking national contracts or a local educational institution looking to boost enrollments, digital marketing provides the tools to reach your precise target audience.",
-        "It levels the playing field, allowing proactive local businesses to outcompete larger, slower-moving competitors by being more visible and engaging online.",
-        "Through data-driven campaigns, we help you articulate your unique value proposition clearly and compellingly to the people who matter most to your business growth."
-      ]
-    },
-    localSeoAdvantages: {
-      title: "Maximizing Visibility with Local SEO in Trichy",
-      content: [
-        "Local SEO ensures that when a potential client or customer in Trichy needs your services, your business is the first one they see. This is especially crucial for service providers and local retailers.",
-        "We employ advanced optimization techniques to ensure your Google Business Profile ranks in the top 3 (the Local Pack) for your most valuable keywords.",
-        "This localized visibility builds immediate credibility and drives a consistent flow of high-quality, high-intent inquiries directly to your sales team."
-      ]
-    },
-    whyChooseUs: {
-      title: "Your Premier Marketing Partner in Trichy",
-      content: [
-        "Aarotech is dedicated to delivering measurable results. We build comprehensive, multi-channel strategies that align perfectly with your broader business objectives.",
-        "We pride ourselves on our technical expertise, creative problem-solving, and a data-first approach that ensures continuous optimization and improvement.",
-        "When you partner with us, you gain a dedicated team committed to making your Trichy business the undisputed leader in your sector."
-      ]
-    },
-    faqs: [
-      { question: "How does digital marketing benefit manufacturing companies in Trichy?", answer: "We use targeted SEO and LinkedIn marketing to position your firm in front of procurement managers and decision-makers globally, generating high-value B2B leads." },
-      { question: "Can you help educational institutions increase admissions?", answer: "Yes. We design specialized lead-generation funnels and targeted social media campaigns to engage prospective students and parents effectively during admission seasons." },
-      { question: "Is content marketing important for local businesses?", answer: "Content marketing establishes your authority and helps answer the questions your potential customers are asking, which strongly supports both SEO and conversion rates." },
-      { question: "How do you ensure our marketing budget isn't wasted?", answer: "We focus on rigorous conversion tracking and continuous A/B testing. We quickly identify what is driving ROI and reallocate budget away from underperforming channels." },
-      { question: "Do you require long-term contracts?", answer: "We prefer to let our results speak for themselves. We offer flexible engagements, though we recommend a 3-6 month commitment for strategies like SEO to see full compounding effects." },
-      { question: "What is included in your free digital audit?", answer: "Our audit analyzes your current website performance, SEO standing, competitive landscape, and identifies immediate opportunities for growth." }
-    ],
-    nearbyCities: ["Thanjavur", "Karur", "Pudukkottai", "Ariyalur"]
   }
 };

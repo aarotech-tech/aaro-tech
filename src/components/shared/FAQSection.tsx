@@ -1,4 +1,7 @@
-import { generateFAQSchema } from "@/lib/seo";
+"use client";
+
+import { useState } from "react";
+import { ChevronDown } from "lucide-react";
 
 export interface FAQItem {
   question: string;
@@ -12,31 +15,45 @@ interface FAQSectionProps {
 }
 
 export function FAQSection({ faqs, title = "Frequently Asked Questions", description }: FAQSectionProps) {
-  if (!faqs || faqs.length === 0) return null;
+  const [openIndex, setOpenIndex] = useState<number | null>(null);
 
-  const schema = generateFAQSchema(faqs);
+  if (!faqs || faqs.length === 0) return null;
 
   return (
     <section className="py-20 bg-slate-950 text-white">
-      {schema && (
-        <script
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}
-        />
-      )}
-      <div className="container mx-auto px-4 max-w-4xl">
+      <div className="container mx-auto px-4 max-w-3xl">
         <div className="text-center mb-12">
           <h2 className="text-3xl md:text-4xl font-bold mb-4">{title}</h2>
           {description && <p className="text-slate-400 text-lg">{description}</p>}
         </div>
-        
-        <div className="space-y-6">
-          {faqs.map((faq, index) => (
-            <div key={index} className="bg-slate-900 border border-slate-800 rounded-xl p-6 transition-all hover:border-slate-700">
-              <h3 className="text-xl font-semibold mb-3 text-slate-100">{faq.question}</h3>
-              <p className="text-slate-400 leading-relaxed">{faq.answer}</p>
-            </div>
-          ))}
+
+        <div className="bg-slate-900 border border-slate-800 rounded-2xl p-4 md:p-6 space-y-1">
+          {faqs.map((faq, index) => {
+            const isOpen = openIndex === index;
+            return (
+              <div
+                key={index}
+                className={`rounded-xl border transition-all duration-200 ${isOpen ? "border-slate-700 bg-slate-800" : "border-transparent"}`}
+              >
+                <button
+                  onClick={() => setOpenIndex(isOpen ? null : index)}
+                  className="w-full flex items-center justify-between gap-4 text-left px-5 py-4 hover:text-primary transition-colors cursor-pointer"
+                >
+                  <span className={`font-bold text-base md:text-lg ${isOpen ? "text-primary" : "text-slate-100"}`}>
+                    {faq.question}
+                  </span>
+                  <ChevronDown
+                    className={`w-5 h-5 flex-shrink-0 text-primary transition-transform duration-200 ${isOpen ? "rotate-180" : ""}`}
+                  />
+                </button>
+                {isOpen && (
+                  <div className="px-5 pb-5">
+                    <p className="text-slate-400 leading-relaxed text-sm md:text-base">{faq.answer}</p>
+                  </div>
+                )}
+              </div>
+            );
+          })}
         </div>
       </div>
     </section>
