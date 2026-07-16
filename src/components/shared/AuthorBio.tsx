@@ -17,10 +17,11 @@ export function AuthorBio({
   return (
     <div className="bg-slate-50 border border-slate-100 rounded-2xl p-8 my-12 flex flex-col sm:flex-row gap-6 items-center sm:items-start">
       <div className="w-20 h-20 relative flex-shrink-0 bg-white rounded-full p-2 shadow-sm border border-slate-200">
-        <img
+        <Image
           src={avatarUrl}
           alt={authorName}
-          className="w-full h-full object-cover rounded-full"
+          fill
+          className="object-cover rounded-full p-2"
         />
       </div>
       <div>

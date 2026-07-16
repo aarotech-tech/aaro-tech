@@ -5,6 +5,7 @@ import Link from "next/link";
 import { ArrowRight, Clock, Tag } from "lucide-react";
 import type { Metadata } from "next";
 import { BlogList } from "@/components/blog/BlogList";
+import { FallbackImage as Image } from "@/components/ui/fallback-image";
 
 export const metadata: Metadata = {
   title: "Digital Marketing & SEO Blog | Aarotech – Trichy's Growth Agency",
@@ -72,10 +73,12 @@ export default function BlogIndex() {
                 </div>
                 <div className="lg:w-1/2 relative min-h-[300px] lg:min-h-full overflow-hidden bg-slate-100">
                   {featuredPost.featuredImage ? (
-                    <img
+                    <Image
                       src={featuredPost.featuredImage}
                       alt={featuredPost.title}
-                      className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+                      fill
+                      priority
+                      className="object-cover group-hover:scale-105 transition-transform duration-700"
                     />
                   ) : (
                     <>

@@ -7,8 +7,31 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { CheckCircle2 } from "lucide-react";
 import { sendGAEvent } from "@next/third-parties/google";
+import { submitContactForm } from "@/app/actions/contact";
 
-export function ContactForm({ onSuccess }: { onSuccess?: () => void }) {
+export interface ContactFormProps {
+  onSuccess?: () => void;
+  ctaText?: string;
+  successTitle?: string;
+  successMessage?: string;
+  challengeLabel?: string;
+  challengeOptions?: string[];
+}
+
+export function ContactForm({
+  onSuccess,
+  ctaText = "Get My Free Growth Plan",
+  successTitle = "Message Sent!",
+  successMessage = "Thank you for reaching out. We will get back to you with your free growth plan shortly.",
+  challengeLabel = "What is your biggest challenge right now?",
+  challengeOptions = [
+    "We need more qualified leads",
+    "We are wasting money on ads",
+    "Our website is outdated",
+    "We have low website traffic (SEO)",
+    "Other",
+  ],
+}: ContactFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
   const [selectedChallenge, setSelectedChallenge] = useState<string>("");
@@ -49,19 +72,16 @@ export function ContactForm({ onSuccess }: { onSuccess?: () => void }) {
     const formData = new FormData(form);
 
     try {
-      const response = await fetch("/api/contact", {
-        method: "POST",
-        body: formData,
-      });
+      const result = await submitContactForm(formData);
 
-      if (response.ok) {
+      if (result.success) {
         setIsSuccess(true);
         form.reset();
         setSubmitError("");
         sendGAEvent("event", "generate_lead", { value: 1, currency: "USD" });
         if (onSuccess) onSuccess();
       } else {
-        setSubmitError("Oops! There was a problem submitting your form. Please try again.");
+        setSubmitError(result.error || "Oops! There was a problem submitting your form. Please try again.");
       }
     } catch {
       setSubmitError("Oops! There was a problem submitting your form. Please check your connection and try again.");
@@ -76,9 +96,9 @@ export function ContactForm({ onSuccess }: { onSuccess?: () => void }) {
         <div className="w-16 h-16 bg-green-500/10 text-green-400 rounded-full flex items-center justify-center mb-6">
           <CheckCircle2 className="w-8 h-8" />
         </div>
-        <h3 className="text-2xl font-bold mb-4 text-white">Message Sent!</h3>
+        <h3 className="text-2xl font-bold mb-4 text-white">{successTitle}</h3>
         <p className="text-slate-300 mb-8">
-          Thank you for reaching out. We will get back to you with your free growth plan shortly.
+          {successMessage}
         </p>
         <button
           onClick={() => setIsSuccess(false)}
@@ -157,17 +177,17 @@ export function ContactForm({ onSuccess }: { onSuccess?: () => void }) {
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="challenge" className="text-white">What is your biggest challenge right now?</Label>
+          <Label htmlFor="challenge" className="text-white">{challengeLabel}</Label>
           <Select name="challenge" required onValueChange={(val) => setSelectedChallenge(val ? String(val) : "")}>
             <SelectTrigger className="w-full bg-slate-950 border-slate-800 text-white">
-              <SelectValue placeholder="Select your biggest challenge..." />
+              <SelectValue placeholder="Select an option..." />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="We need more qualified leads">We need more qualified leads</SelectItem>
-              <SelectItem value="We are wasting money on ads">We are wasting money on ads</SelectItem>
-              <SelectItem value="Our website is outdated">Our website is outdated</SelectItem>
-              <SelectItem value="We have low website traffic (SEO)">We have low website traffic (SEO)</SelectItem>
-              <SelectItem value="Other">Other</SelectItem>
+              {challengeOptions.map((option) => (
+                <SelectItem key={option} value={option}>
+                  {option}
+                </SelectItem>
+              ))}
             </SelectContent>
           </Select>
         </div>
@@ -186,7 +206,7 @@ export function ContactForm({ onSuccess }: { onSuccess?: () => void }) {
         )}
 
         <Button type="submit" size="lg" className="w-full text-base bg-primary text-white hover:bg-primary/90" disabled={isSubmitting}>
-          {isSubmitting ? "Sending..." : "Get My Free Growth Plan"}
+          {isSubmitting ? "Sending..." : ctaText}
         </Button>
       </form>
     </>

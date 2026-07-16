@@ -7,15 +7,18 @@ import {
   DialogContent,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { ContactForm } from "@/components/shared/ContactForm";
+import { ContactForm, ContactFormProps } from "@/components/shared/ContactForm";
 
 export function ContactPopup({
   children,
   onOpenChange,
+  popupTitle = "Request Your Free Growth Plan",
+  ...formProps
 }: {
   children: React.ReactNode;
   onOpenChange?: (open: boolean) => void;
-}) {
+  popupTitle?: string;
+} & ContactFormProps) {
   const [open, setOpen] = useState(false);
   const [formKey, setFormKey] = useState(0);
   const successTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -89,9 +92,9 @@ export function ContactPopup({
           "
           onClick={(e) => e.stopPropagation()}
         >
-          <DialogTitle className="sr-only">Request Your Free Growth Plan</DialogTitle>
+          <DialogTitle className="sr-only">{popupTitle}</DialogTitle>
           <div className="flex items-center justify-between px-5 sm:px-8 pt-6 pb-4 border-b border-slate-800 shrink-0">
-            <h2 className="text-lg font-bold text-white">Request Your Free Growth Plan</h2>
+            <h2 className="text-lg font-bold text-white">{popupTitle}</h2>
             <button
               onClick={() => handleOpenChange(false)}
               className="w-8 h-8 flex items-center justify-center rounded-full bg-slate-700 hover:bg-slate-600 text-slate-300 hover:text-white transition-colors cursor-pointer shrink-0 ml-4"
@@ -101,7 +104,7 @@ export function ContactPopup({
             </button>
           </div>
           <div className="p-5 sm:p-8 overflow-y-auto flex-1 pb-[max(1.25rem,env(safe-area-inset-bottom))]">
-            <ContactForm key={formKey} onSuccess={handleSuccess} />
+            <ContactForm key={formKey} onSuccess={handleSuccess} {...formProps} />
           </div>
         </DialogContent>
       </Dialog>

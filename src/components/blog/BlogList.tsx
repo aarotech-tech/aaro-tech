@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { ArrowRight, Clock } from "lucide-react";
 import { BlogPost } from "@/data/blog";
+import { FallbackImage as Image } from "@/components/ui/fallback-image";
 
 export function BlogList({ initialPosts, categories }: { initialPosts: BlogPost[], categories: string[] }) {
   const [activeCategory, setActiveCategory] = useState<string>("All Articles");
@@ -50,10 +51,11 @@ export function BlogList({ initialPosts, categories }: { initialPosts: BlogPost[
               <Link href={`/${post.slug}`} key={post.slug} className="group flex flex-col bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-300">
                 {post.featuredImage ? (
                   <div className="relative h-48 w-full overflow-hidden">
-                    <img
+                    <Image
                       src={post.featuredImage}
                       alt={post.title}
-                      className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                      fill
+                      className="object-cover group-hover:scale-105 transition-transform duration-500"
                     />
                   </div>
                 ) : (

@@ -139,3 +139,15 @@ export const trackingEvents = pgTable("tracking_events", {
   eventType: varchar("event_type", { length: 50 }).notNull(), // 'viewed', 'downloaded'
   createdAt: timestamp("created_at").defaultNow(),
 });
+
+export const websiteLeads = pgTable("website_leads", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  name: varchar("name", { length: 255 }).notNull(),
+  businessName: varchar("business_name", { length: 255 }),
+  email: varchar("email", { length: 255 }).unique().notNull(), // Unique to prevent simple duplicates
+  phone: varchar("phone", { length: 50 }),
+  challenge: text("challenge"),
+  status: varchar("status", { length: 50 }).default("new"), // new, contacted, archived
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});

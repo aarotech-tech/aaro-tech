@@ -25,6 +25,7 @@ export function Footer() {
                 alt="Aarotech"
                 width={240}
                 height={70}
+                priority
                 className="h-14 md:h-20 w-auto object-contain block"
               />
             </Link>
