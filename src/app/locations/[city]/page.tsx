@@ -7,6 +7,7 @@ import { buttonVariants } from "@/components/ui/button";
 import Link from "next/link";
 import { ArrowRight, CheckCircle2 } from "lucide-react";
 import { Breadcrumbs } from "@/components/shared/Breadcrumbs";
+import { FAQSection } from "@/components/shared/FAQSection";
 import { generateLocalBusinessSchema, generateFAQSchema } from "@/lib/seo";
 import { locationData } from "@/data/locations";
 import { serviceLocations } from "@/data/service-locations";
@@ -69,9 +70,9 @@ export default async function LocationPage({ params }: { params: Promise<{ city:
         {/* Hero Section */}
         <section className="py-20 lg:py-32 bg-slate-950 text-white relative overflow-hidden">
            <div className="absolute inset-0 bg-gradient-to-b from-primary/20 to-transparent opacity-30"></div>
-           <div className="container mx-auto px-4 relative z-10 text-center max-w-4xl">
+           <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10 text-center">
              <div className="mb-8 flex justify-center">
-               <Breadcrumbs items={[{ name: "Locations", item: "/locations" }, { name: cityName, item: `/locations/${city}` }]} />
+               <Breadcrumbs theme="dark" items={[{ name: "Locations", item: "/locations" }, { name: cityName, item: `/locations/${city}` }]} />
              </div>
              <div className="inline-flex items-center rounded-full border border-white/20 px-3 py-1 text-sm text-white/80 mb-6 bg-white/10 backdrop-blur-sm">
                {data.heroSubtitle}
@@ -91,7 +92,7 @@ export default async function LocationPage({ params }: { params: Promise<{ city:
         
         {/* Overview Section */}
         <section className="py-24 bg-white text-slate-900">
-          <div className="container mx-auto px-4 max-w-4xl">
+          <div className="container mx-auto px-4 sm:px-6 lg:px-8">
             <h2 className="text-3xl md:text-5xl font-bold mb-8 text-center">{data.overview.title}</h2>
             <div className="space-y-6 text-lg text-slate-600 leading-relaxed">
               {data.overview.content.map((paragraph, index) => (
@@ -103,7 +104,7 @@ export default async function LocationPage({ params }: { params: Promise<{ city:
 
         {/* Why Need Digital Marketing Section */}
         <section className="py-24 bg-slate-50 text-slate-900 border-y border-slate-200">
-          <div className="container mx-auto px-4 max-w-4xl">
+          <div className="container mx-auto px-4 sm:px-6 lg:px-8">
             <h2 className="text-3xl md:text-4xl font-bold mb-8">{data.whyNeed.title}</h2>
             <div className="space-y-6 text-lg text-slate-600 leading-relaxed">
               {data.whyNeed.content.map((paragraph, index) => (
@@ -133,7 +134,7 @@ export default async function LocationPage({ params }: { params: Promise<{ city:
 
         {/* Local SEO Advantages Section */}
         <section className="py-24 bg-white text-slate-900">
-          <div className="container mx-auto px-4 max-w-4xl">
+          <div className="container mx-auto px-4 sm:px-6 lg:px-8">
             <h2 className="text-3xl md:text-5xl font-bold mb-8 text-center">{data.localSeoAdvantages.title}</h2>
             <div className="space-y-6 text-lg text-slate-600 leading-relaxed mb-12">
               {data.localSeoAdvantages.content.map((paragraph, index) => (
@@ -168,7 +169,7 @@ export default async function LocationPage({ params }: { params: Promise<{ city:
 
         {/* Why Choose Us Section */}
         <section className="py-24 bg-slate-950 text-white border-y border-slate-800">
-          <div className="container mx-auto px-4 max-w-4xl">
+          <div className="container mx-auto px-4 sm:px-6 lg:px-8 text-center">
             <h2 className="text-3xl md:text-5xl font-bold mb-8 text-center">{data.whyChooseUs.title}</h2>
             <div className="space-y-6 text-lg text-slate-300 leading-relaxed">
               {data.whyChooseUs.content.map((paragraph, index) => (
@@ -179,26 +180,13 @@ export default async function LocationPage({ params }: { params: Promise<{ city:
         </section>
 
         {/* FAQ Section */}
-        <section className="py-24 bg-white text-slate-900">
-          <div className="container mx-auto px-4 max-w-3xl">
-            <div className="text-center mb-16">
-              <h2 className="text-3xl md:text-4xl font-bold mb-4">Frequently Asked Questions</h2>
-              <p className="text-lg text-slate-600">Common questions about working with Aarotech in {cityName}.</p>
-            </div>
-            <div className="space-y-6">
-              {data.faqs.map((faq, index) => (
-                <div key={index} className="bg-slate-50 rounded-2xl p-6 border border-slate-100">
-                  <h3 className="text-xl font-bold mb-3 text-slate-900">{faq.question}</h3>
-                  <p className="text-slate-600 leading-relaxed">{faq.answer}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
+        <div className="bg-white border-y border-slate-200">
+          <FAQSection faqs={data.faqs} description={`Common questions about working with Aarotech in ${cityName}.`} />
+        </div>
         
         {/* Related Links & Nearby Cities */}
         <section className="py-16 bg-slate-50 border-t border-slate-200">
-          <div className="container mx-auto px-4 max-w-4xl">
+          <div className="container mx-auto px-4 sm:px-6 lg:px-8">
             <h3 className="text-xl font-bold mb-6">Also Serving Nearby Areas</h3>
             <div className="flex flex-wrap gap-3">
               {data.nearbyCities.map((city, idx) => (

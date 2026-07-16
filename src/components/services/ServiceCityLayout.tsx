@@ -39,11 +39,14 @@ export function ServiceCityLayout({ data, cityName, serviceName }: ServiceCityLa
           <div className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-primary/20 via-transparent to-transparent pointer-events-none"></div>
           <div className="container mx-auto px-4 max-w-4xl relative z-10 text-center">
             <div className="mb-8 flex justify-center">
-              <Breadcrumbs items={[
-                { name: "Services", item: "/#services" }, 
-                { name: serviceName, item: `/services/${data.serviceSlug}` },
-                { name: cityName, item: `/${data.flatSlug}` }
-              ]} />
+              <Breadcrumbs 
+                theme="dark"
+                items={[
+                  { name: "Services", item: "/#services" }, 
+                  { name: serviceName, item: `/services/${data.serviceSlug}` },
+                  { name: cityName, item: `/${data.flatSlug}` }
+                ]} 
+              />
             </div>
             <div className="inline-flex items-center rounded-full border border-white/20 px-4 py-1.5 text-sm font-semibold text-white/80 mb-6 bg-white/10 backdrop-blur-md">
               <MapPin className="w-4 h-4 mr-2" />

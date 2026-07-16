@@ -6,6 +6,7 @@ import { ArrowRight, CheckCircle2 } from "lucide-react";
 import { buttonVariants } from "@/components/ui/button";
 import { ContactPopup } from "@/components/shared/ContactPopup";
 import { Breadcrumbs } from "@/components/shared/Breadcrumbs";
+import { FAQSection } from "@/components/shared/FAQSection";
 import { generateServiceSchema, generateFAQSchema } from "@/lib/seo";
 import type { Metadata } from "next";
 
@@ -51,7 +52,7 @@ export default async function ServicePage({ params }: { params: Promise<{ slug: 
     <>
       <Header />
       <main className="flex-1 pt-24 pb-16 bg-slate-50">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-5xl">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <Breadcrumbs items={[{ name: "Services", item: "/services" }, { name: service.title, item: `/services/${service.id}` }]} />
           
           <script
@@ -65,21 +66,21 @@ export default async function ServicePage({ params }: { params: Promise<{ slug: 
             />
           )}
 
-          <div className="bg-white rounded-3xl p-8 md:p-12 lg:p-16 border shadow-sm mb-12">
+          <div className="bg-white rounded-3xl p-8 md:p-12 lg:p-16 border shadow-sm mb-12 flex flex-col items-center text-center">
             <div className="inline-flex items-center rounded-full bg-primary/10 px-3 py-1 text-sm font-semibold text-primary mb-6">
               Our Services
             </div>
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight mb-6">
               {service.h1 || service.title}
             </h1>
-            <p className="text-xl md:text-2xl text-muted-foreground leading-relaxed max-w-3xl mb-10">
+            <p className="text-xl md:text-2xl text-slate-600 leading-relaxed max-w-4xl mb-10 text-justify md:text-center">
               {service.intro || service.description}
             </p>
             <div className="flex flex-col sm:flex-row gap-4">
               <ContactPopup>
-                <button className={buttonVariants({ size: "lg", className: "h-12 px-8 text-base" })}>
+                <button className={buttonVariants({ size: "lg", className: "h-14 px-8 text-lg font-bold shadow-lg" })}>
                   {service.cta || "Get My Free Growth Plan"}
-                  <ArrowRight className="ml-2 h-4 w-4" />
+                  <ArrowRight className="ml-2 h-5 w-5" />
                 </button>
               </ContactPopup>
             </div>
@@ -116,20 +117,29 @@ export default async function ServicePage({ params }: { params: Promise<{ slug: 
             </div>
           </div>
 
-          {service.faqs && service.faqs.length > 0 && (
-            <div className="bg-white rounded-3xl p-8 md:p-12 lg:p-16 border shadow-sm mb-24">
-              <h2 className="text-3xl font-bold mb-8">Frequently Asked Questions</h2>
-              <div className="space-y-6">
-                {service.faqs.map((faq, index) => (
-                  <div key={index} className="border-b border-slate-100 pb-6 last:border-0 last:pb-0">
-                    <h3 className="text-xl font-bold text-slate-900 mb-2">{faq.question}</h3>
-                    <p className="text-slate-600 leading-relaxed">{faq.answer}</p>
+          {/* @ts-ignore - Ignore if deliveryProcess is missing in some old mock data */}
+          {service.deliveryProcess && service.deliveryProcess.length > 0 && (
+            <div className="bg-white rounded-3xl p-8 md:p-12 lg:p-16 border shadow-sm mb-16">
+              <h2 className="text-3xl font-bold mb-8">Our Delivery Process</h2>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                {service.deliveryProcess.map((step: any, index: number) => (
+                  <div key={index} className="bg-slate-50 rounded-2xl p-6 border border-slate-100">
+                    <div className="text-primary font-bold text-xl mb-2">{step.step}</div>
+                    <h3 className="text-xl font-bold text-slate-900 mb-3">{step.title}</h3>
+                    <p className="text-slate-600 leading-relaxed">{step.description}</p>
                   </div>
                 ))}
               </div>
             </div>
           )}
+
         </div>
+
+        {service.faqs && service.faqs.length > 0 && (
+          <div className="bg-white border-t border-slate-200">
+            <FAQSection faqs={service.faqs} />
+          </div>
+        )}
       </main>
       <Footer />
     </>

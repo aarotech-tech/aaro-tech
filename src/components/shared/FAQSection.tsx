@@ -20,26 +20,26 @@ export function FAQSection({ faqs, title = "Frequently Asked Questions", descrip
   if (!faqs || faqs.length === 0) return null;
 
   return (
-    <section className="py-20 bg-slate-950 text-white">
-      <div className="container mx-auto px-4 max-w-3xl">
+    <section className="py-20 text-slate-900">
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-12">
           <h2 className="text-3xl md:text-4xl font-bold mb-4">{title}</h2>
-          {description && <p className="text-slate-400 text-lg">{description}</p>}
+          {description && <p className="text-slate-600 text-lg">{description}</p>}
         </div>
 
-        <div className="bg-slate-900 border border-slate-800 rounded-2xl p-4 md:p-6 space-y-1">
+        <div className="bg-white border border-slate-200 rounded-2xl p-4 md:p-6 space-y-1 shadow-sm">
           {faqs.map((faq, index) => {
             const isOpen = openIndex === index;
             return (
               <div
                 key={index}
-                className={`rounded-xl border transition-all duration-200 ${isOpen ? "border-slate-700 bg-slate-800" : "border-transparent"}`}
+                className={`rounded-xl border transition-all duration-200 ${isOpen ? "border-slate-200 bg-slate-50" : "border-transparent"}`}
               >
                 <button
                   onClick={() => setOpenIndex(isOpen ? null : index)}
                   className="w-full flex items-center justify-between gap-4 text-left px-5 py-4 hover:text-primary transition-colors cursor-pointer"
                 >
-                  <span className={`font-bold text-base md:text-lg ${isOpen ? "text-primary" : "text-slate-100"}`}>
+                  <span className={`font-bold text-base md:text-lg ${isOpen ? "text-primary" : "text-slate-900"}`}>
                     {faq.question}
                   </span>
                   <ChevronDown
@@ -48,7 +48,7 @@ export function FAQSection({ faqs, title = "Frequently Asked Questions", descrip
                 </button>
                 {isOpen && (
                   <div className="px-5 pb-5">
-                    <p className="text-slate-400 leading-relaxed text-sm md:text-base">{faq.answer}</p>
+                    <p className="text-slate-600 leading-relaxed text-sm md:text-base">{faq.answer}</p>
                   </div>
                 )}
               </div>

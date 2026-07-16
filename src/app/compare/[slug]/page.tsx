@@ -69,7 +69,7 @@ export default async function ComparisonPage({ params }: { params: Promise<{ slu
         {/* Hero Section */}
         <section className="bg-slate-50 py-20 lg:py-32 border-b border-slate-100 relative overflow-hidden">
           <div className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-primary/5 via-transparent to-transparent pointer-events-none"></div>
-          <div className="container mx-auto px-4 max-w-4xl relative z-10 text-center">
+          <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10 text-center">
             <div className="mb-8 flex justify-center">
               <Breadcrumbs items={[{ name: "Compare", item: "#" }, { name: comparison.title, item: `/compare/${comparison.slug}` }]} />
             </div>
@@ -88,7 +88,7 @@ export default async function ComparisonPage({ params }: { params: Promise<{ slu
 
         {/* Introduction */}
         <section className="py-24 bg-white">
-          <div className="container mx-auto px-4 max-w-4xl">
+          <div className="container mx-auto px-4 sm:px-6 lg:px-8">
              <div className="prose prose-lg max-w-none text-slate-600">
                <p className="text-xl leading-relaxed">{comparison.intro}</p>
              </div>
@@ -97,7 +97,7 @@ export default async function ComparisonPage({ params }: { params: Promise<{ slu
 
         {/* Comparison Table */}
         <section className="py-24 bg-slate-50 border-y border-slate-100">
-          <div className="container mx-auto px-4 max-w-5xl">
+          <div className="container mx-auto px-4 sm:px-6 lg:px-8">
             <h2 className="text-3xl font-bold text-center mb-12">Side-by-Side Analysis</h2>
             <div className="overflow-x-auto bg-white rounded-2xl shadow-sm border border-slate-200">
               <table className="w-full min-w-[800px] text-left border-collapse">
@@ -124,7 +124,7 @@ export default async function ComparisonPage({ params }: { params: Promise<{ slu
 
         {/* Pros & Cons */}
         <section className="py-24 bg-white">
-          <div className="container mx-auto px-4 max-w-6xl">
+          <div className="container mx-auto px-4 sm:px-6 lg:px-8">
             <div className="grid md:grid-cols-2 gap-8">
               {/* Option A */}
               <div className="bg-slate-50 rounded-3xl p-8 border border-slate-100 shadow-sm">
@@ -177,7 +177,7 @@ export default async function ComparisonPage({ params }: { params: Promise<{ slu
 
         {/* Verdict */}
         <section className="py-24 bg-slate-950 text-white relative">
-           <div className="container mx-auto px-4 max-w-4xl text-center relative z-10">
+           <div className="container mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10">
              <h2 className="text-3xl md:text-5xl font-bold mb-8 text-primary">The Final Verdict</h2>
              <p className="text-xl md:text-2xl text-slate-300 leading-relaxed max-w-3xl mx-auto font-medium">
                {comparison.recommendation}
@@ -192,7 +192,7 @@ export default async function ComparisonPage({ params }: { params: Promise<{ slu
 
         {/* FAQs & Related */}
         <section className="py-24 bg-slate-50 border-t border-slate-100">
-          <div className="container mx-auto px-4 max-w-5xl">
+          <div className="container mx-auto px-4 sm:px-6 lg:px-8">
             {comparison.faqs && comparison.faqs.length > 0 && (
               <div className="mb-24">
                 <FAQSection faqs={comparison.faqs} title="Frequently Asked Questions" />

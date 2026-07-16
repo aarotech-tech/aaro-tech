@@ -20,7 +20,7 @@ export function ResourceLayout({ resource }: { resource: Resource }) {
         {/* Hero Section */}
         <section className="bg-slate-50 py-20 lg:py-32 border-b border-slate-100 relative overflow-hidden">
           <div className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-primary/5 via-transparent to-transparent pointer-events-none"></div>
-          <div className="container mx-auto px-4 max-w-4xl relative z-10 text-center">
+          <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10 text-center">
             <div className="mb-8 flex justify-center">
               <Breadcrumbs items={[{ name: "Insights & Resources", item: "/resources" }, { name: resource.title, item: `/${resource.slug}` }]} />
             </div>
@@ -47,7 +47,7 @@ export function ResourceLayout({ resource }: { resource: Resource }) {
 
         {/* Content & Checklist */}
         <section className="py-24 bg-white">
-          <div className="container mx-auto px-4 max-w-4xl">
+          <div className="container mx-auto px-4 sm:px-6 lg:px-8">
              <div className="prose prose-lg max-w-none text-slate-600 mb-16">
                <p className="text-xl leading-relaxed text-slate-700">{resource.intro}</p>
              </div>
@@ -83,7 +83,7 @@ export function ResourceLayout({ resource }: { resource: Resource }) {
 
         {/* E-E-A-T Author & Related */}
         <section className="py-24 bg-slate-50 border-t border-slate-100">
-          <div className="container mx-auto px-4 max-w-5xl">
+          <div className="container mx-auto px-4 sm:px-6 lg:px-8">
             <AuthorBio authorName="Aarotech Strategy Team" role={`Expert ${resource.category} Consultants`} />
             
             <RelatedLinks 

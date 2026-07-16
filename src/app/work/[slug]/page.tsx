@@ -135,7 +135,7 @@ export default async function WorkPage({ params }: Props) {
 
       {/* 2. Client Overview & Challenge */}
       <section className="py-24 bg-white text-slate-900 border-b border-slate-100">
-        <div className="container mx-auto px-4 max-w-6xl">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid lg:grid-cols-2 gap-16">
             <div>
                <h2 className="text-3xl font-bold mb-6">Client Overview</h2>
@@ -158,7 +158,7 @@ export default async function WorkPage({ params }: Props) {
 
       {/* 3. Research & Strategy */}
       <section className="py-24 bg-slate-50 text-slate-900 border-b border-slate-100">
-        <div className="container mx-auto px-4 max-w-5xl">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="mb-16">
             <h2 className="text-3xl font-bold mb-6 text-center">Research & Strategy</h2>
             <div className="bg-white rounded-2xl p-8 border border-slate-200 shadow-sm mb-8">
@@ -179,7 +179,7 @@ export default async function WorkPage({ params }: Props) {
 
       {/* 4. Execution & Deliverables */}
       <section className="py-24 bg-white text-slate-900">
-        <div className="container mx-auto px-4 max-w-6xl">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid lg:grid-cols-2 gap-16">
             <div>
                <h2 className="text-3xl font-bold mb-6">Execution</h2>
@@ -217,7 +217,7 @@ export default async function WorkPage({ params }: Props) {
 
       {/* 5. Outcome & Impact */}
       <section className="py-24 bg-primary text-white">
-        <div className="container mx-auto px-4 max-w-5xl text-center">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h2 className="text-3xl md:text-5xl font-bold mb-16">Business Outcome & Impact</h2>
           <div className="grid md:grid-cols-2 gap-8">
             {study.outcome.map((stat, idx) => (
@@ -232,7 +232,7 @@ export default async function WorkPage({ params }: Props) {
 
       {/* 6. Lessons Learned & Links */}
       <section className="py-24 bg-white border-t border-slate-100">
-        <div className="container mx-auto px-4 max-w-5xl">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="bg-slate-50 p-10 rounded-3xl border border-slate-200 mb-16">
             <h2 className="text-2xl font-bold mb-6">Lessons Learned</h2>
             <ul className="list-disc pl-5 space-y-4 text-slate-700 text-lg">

@@ -108,7 +108,7 @@ export function BlogPostLayout({ post }: { post: BlogPost }) {
         )}
         {/* Article Header */}
         <header className="bg-slate-50 py-16 border-b border-slate-100">
-          <div className="container mx-auto px-4 max-w-4xl">
+          <div className="container mx-auto px-4 sm:px-6 lg:px-8">
             <Breadcrumbs items={[{ name: "Blog", item: "/blog" }, { name: post.title, item: `/${post.slug}` }]} />
             
             <div className="flex items-center flex-wrap gap-3 text-sm text-slate-500 mb-6">
@@ -137,7 +137,7 @@ export function BlogPostLayout({ post }: { post: BlogPost }) {
 
         {/* Featured Hero Image */}
         {post.featuredImage && (
-          <div className="w-full max-w-5xl mx-auto px-4 pt-10 pb-0">
+          <div className="container mx-auto px-4 sm:px-6 lg:px-8 pt-10 pb-0">
             <div className="w-full rounded-2xl md:rounded-3xl overflow-hidden shadow-xl">
               <img
                 src={post.featuredImage}
@@ -148,7 +148,7 @@ export function BlogPostLayout({ post }: { post: BlogPost }) {
           </div>
         )}
 
-        <div className="container mx-auto px-4 py-16 max-w-7xl">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-16 max-w-7xl">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 relative">
             
             {/* Sidebar TOC */}
@@ -230,7 +230,7 @@ export function BlogPostLayout({ post }: { post: BlogPost }) {
 
         {/* Next Steps CTA Section */}
         <section className="bg-slate-50 py-24 border-t border-slate-200 mt-12">
-          <div className="container mx-auto px-4 max-w-4xl text-center">
+          <div className="container mx-auto px-4 sm:px-6 lg:px-8 text-center">
             <h2 className="text-3xl md:text-4xl font-bold text-slate-900 mb-6">Did you find this article helpful?</h2>
             <p className="text-xl text-slate-600 mb-10 max-w-2xl mx-auto">
               Implement these strategies to see growth, or let our experts handle it for you. Schedule a free consultation today.

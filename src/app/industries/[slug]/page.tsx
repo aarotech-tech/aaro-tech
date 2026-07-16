@@ -69,7 +69,7 @@ export default async function IndustryPage({ params }: { params: Promise<{ slug:
         {/* Hero Section */}
         <section className="bg-slate-50 py-20 lg:py-32 border-b border-slate-100 relative overflow-hidden">
           <div className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-primary/5 via-transparent to-transparent pointer-events-none"></div>
-          <div className="container mx-auto px-4 max-w-4xl relative z-10 text-center">
+          <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10 text-center">
             <div className="mb-8 flex justify-center">
               <Breadcrumbs items={[{ name: "Industries", item: "#" }, { name: industry.name, item: `/industries/${industry.slug}` }]} />
             </div>
@@ -93,7 +93,7 @@ export default async function IndustryPage({ params }: { params: Promise<{ slug:
 
         {/* Overview & Challenges */}
         <section className="py-24">
-          <div className="container mx-auto px-4 max-w-6xl">
+          <div className="container mx-auto px-4 sm:px-6 lg:px-8">
             <div className="grid lg:grid-cols-2 gap-16 items-start">
               <div>
                 <h2 className="text-3xl font-bold text-slate-900 mb-6">Navigating the Digital Landscape</h2>
@@ -123,7 +123,7 @@ export default async function IndustryPage({ params }: { params: Promise<{ slug:
         {/* Solutions */}
         <section className="py-24 bg-slate-950 text-white relative overflow-hidden">
            <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom_left,_var(--tw-gradient-stops))] from-primary/20 via-transparent to-transparent pointer-events-none"></div>
-           <div className="container mx-auto px-4 max-w-6xl relative z-10">
+           <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
              <div className="text-center mb-16 max-w-3xl mx-auto">
                <h2 className="text-3xl md:text-5xl font-bold mb-6">How Aarotech Drives Growth</h2>
                <p className="text-xl text-slate-400">Our specialized approach designed exclusively for the {industry.name} sector.</p>
@@ -144,7 +144,7 @@ export default async function IndustryPage({ params }: { params: Promise<{ slug:
 
         {/* Process */}
         <section className="py-24 bg-white">
-          <div className="container mx-auto px-4 max-w-4xl">
+          <div className="container mx-auto px-4 sm:px-6 lg:px-8">
             <h2 className="text-3xl font-bold text-center mb-16 text-slate-900">Our Proven Execution Process</h2>
             <div className="space-y-8 relative before:absolute before:inset-0 before:ml-5 before:-translate-x-px md:before:mx-auto md:before:translate-x-0 before:h-full before:w-0.5 before:bg-gradient-to-b before:from-transparent before:via-slate-200 before:to-transparent">
               {industry.process.map((step, idx) => (
@@ -163,7 +163,7 @@ export default async function IndustryPage({ params }: { params: Promise<{ slug:
 
         {/* FAQs & Related Content */}
         <section className="py-24 bg-slate-50 border-t border-slate-100">
-          <div className="container mx-auto px-4 max-w-5xl">
+          <div className="container mx-auto px-4 sm:px-6 lg:px-8">
             {industry.faqs && industry.faqs.length > 0 && (
               <div className="mb-24">
                 <FAQSection faqs={industry.faqs} title="Common Questions" />

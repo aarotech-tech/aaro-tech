@@ -60,7 +60,7 @@ export default function LocationsIndex() {
         </section>
 
         <section className="py-24">
-          <div className="container mx-auto px-4 max-w-6xl">
+          <div className="container mx-auto px-4 sm:px-6 lg:px-8">
             <div className="grid md:grid-cols-2 gap-8">
               {locations.map((location) => (
                 <Link href={`/locations/${location.slug}`} key={location.slug} className="group relative bg-white rounded-3xl border border-slate-200 p-8 md:p-12 overflow-hidden shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
