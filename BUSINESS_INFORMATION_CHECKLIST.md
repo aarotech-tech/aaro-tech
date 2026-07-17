@@ -42,12 +42,12 @@ This document serves as the master checklist for collecting all real business in
 
 | Item | Required | Current Status | File(s) | Priority |
 |------|----------|---------------|----------|----------|
-| Service Descriptions | 100-200 word technical description | MOCK (Shallow text) | `src/data/content.ts` | P0 |
-| Service Benefits | 3-5 clear bullet points | MOCK | `src/data/content.ts` | P0 |
-| Delivery Process | Step-by-step workflow | MOCK (`processSteps`) | `src/data/content.ts` | P1 |
+| Service Descriptions | 100-200 word technical description | COMPLETE | `src/data/content.ts` | P0 |
+| Service Benefits | 3-5 clear bullet points | COMPLETE | `src/data/content.ts` | P0 |
+| Delivery Process | Step-by-step workflow | COMPLETE | `src/data/content.ts` | P1 |
 | Pricing / Plans | Base pricing or "Starting at" | MISSING | `src/data/content.ts` | P1 |
-| Service FAQs | 5-7 specific Q&As per service | MISSING for most | `src/data/content.ts` | P1 |
-| CTA Text | Unique Call-To-Action per service | MOCK | `src/data/content.ts` | P0 |
+| Service FAQs | 5-7 specific Q&As per service | COMPLETE | `src/data/content.ts` | P1 |
+| CTA Text | Unique Call-To-Action per service | COMPLETE | `src/data/content.ts` | P0 |
 
 ## 4. Portfolio (Case Studies)
 
@@ -67,11 +67,11 @@ This document serves as the master checklist for collecting all real business in
 
 | Item | Required | Current Status | File(s) | Priority |
 |------|----------|---------------|----------|----------|
-| Client Name | Full name of reviewer | MOCK | `src/data/content.ts` | P0 |
-| Company | Reviewer's company | MOCK | `src/data/content.ts` | P0 |
-| Designation | Job Title | MOCK | `src/data/content.ts` | P1 |
-| Review Text | Exact quote/testimonial | MOCK | `src/data/content.ts` | P0 |
-| Photo | Headshot of reviewer | MOCK (`client-logos/*.jpeg`)| `src/data/content.ts` | P1 |
+| Client Name | Full name of reviewer | COMPLETE | `src/data/content.ts` | P0 |
+| Company | Reviewer's company | COMPLETE | `src/data/content.ts` | P0 |
+| Designation | Job Title | COMPLETE | `src/data/content.ts` | P1 |
+| Review Text | Exact quote/testimonial | COMPLETE | `src/data/content.ts` | P0 |
+| Photo | Headshot of reviewer | COMPLETE | `src/data/content.ts` | P1 |
 | Rating | Star rating (out of 5) | MISSING | `src/data/content.ts` | P1 |
 
 ## 6. Blog
@@ -80,11 +80,11 @@ This document serves as the master checklist for collecting all real business in
 
 | Item | Required | Current Status | File(s) | Priority |
 |------|----------|---------------|----------|----------|
-| Real Articles (x20) | Replace 17 placeholder topics | MOCK | `src/data/blog.ts` | P0 |
-| Authors | Real names and bios | MOCK ("Aarotech Strategy Team") | `src/data/blog.ts` | P0 |
-| Publish Dates | Accurate chronological dates | MOCK (Future 2026 dates) | `src/data/blog.ts` | P0 |
-| Featured Images | High-quality thumbnails | MOCK (`placeholder.svg`) | `src/components/blog/BlogPostLayout.tsx` | P0 |
-| Internal Links | Links to relevant services | MISSING | `src/data/blog.ts` | P1 |
+| Real Articles (x20) | Replace 17 placeholder topics | COMPLETE (21 articles) | `src/data/blog.ts` | P0 |
+| Authors | Real names and bios | COMPLETE | `src/data/blog.ts` | P0 |
+| Publish Dates | Accurate chronological dates | COMPLETE | `src/data/blog.ts` | P0 |
+| Featured Images | High-quality thumbnails | COMPLETE | `src/components/blog/BlogPostLayout.tsx` | P0 |
+| Internal Links | Links to relevant services | COMPLETE | `src/data/blog.ts` | P1 |
 
 ## 7. Team
 
@@ -92,9 +92,9 @@ This document serves as the master checklist for collecting all real business in
 |------|----------|---------------|----------|----------|
 | Full Names | Suriyanarayanan, Aaron, Susinthiran | COMPLETE | `src/data/content.ts` | P0 |
 | Roles | Exact job titles | COMPLETE | `src/data/content.ts` | P0 |
-| Bios | Real background / experience | MOCK / Generic | `src/data/content.ts` | P1 |
+| Bios | Real background / experience | COMPLETE | `src/data/content.ts` | P1 |
 | LinkedIn URLs | Direct links to profiles | MISSING (Empty strings) | `src/data/content.ts` | P1 |
-| Team Photos | Real headshots | MOCK (`*.jpeg`) | `src/data/content.ts` | P0 |
+| Team Photos | Real headshots | COMPLETE | `src/data/content.ts` | P0 |
 
 ## 8. Contact
 
@@ -109,9 +109,9 @@ This document serves as the master checklist for collecting all real business in
 | Item | Required | Current Status | File(s) | Priority |
 |------|----------|---------------|----------|----------|
 | Global Title | Site-wide title | COMPLETE | `src/app/layout.tsx` | P0 |
-| Global Description | Site-wide meta description | MOCK (Generic) | `src/app/layout.tsx` | P0 |
-| OG Image | Social sharing image | MOCK | `src/app/opengraph-image.tsx` | P0 |
-| Location Page Data | Unique content for city pages | MOCK (Duplicate pages) | `src/app/locations/[city]/page.tsx` | P0 |
+| Global Description | Site-wide meta description | COMPLETE | `src/app/layout.tsx` | P0 |
+| OG Image | Social sharing image | COMPLETE | `src/app/opengraph-image.tsx` | P0 |
+| Location Page Data | Unique content for city pages | COMPLETE | `src/app/locations/[city]/page.tsx` | P0 |
 | Industry Page Data | Unique content for industries | COMPLETE | `src/data/industries.ts`, `src/app/industries/page.tsx` | P0 |
 
 ## 10. CRM
@@ -129,8 +129,8 @@ This document serves as the master checklist for collecting all real business in
 
 | Item | Required | Current Status | File(s) | Priority |
 |------|----------|---------------|----------|----------|
-| Privacy Policy | Legally compliant text | MISSING/MOCK | `src/app/privacy-policy/page.tsx` | P0 |
-| Terms of Service | Legally compliant text | MISSING/MOCK | `src/app/terms/page.tsx` | P0 |
+| Privacy Policy | Legally compliant text | COMPLETE (Template added) | `src/app/privacy-policy/page.tsx` | P0 |
+| Terms of Service | Legally compliant text | COMPLETE (Template added) | `src/app/terms/page.tsx` | P0 |
 | Refund Policy | Specific to digital services | MISSING | N/A | P0 |
 | Cookie Banner Text | Consent description | MISSING | N/A | P1 |
 

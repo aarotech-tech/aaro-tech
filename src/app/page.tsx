@@ -9,8 +9,6 @@ import { Industries } from "@/components/sections/Industries";
 import { HowWeWork } from "@/components/sections/HowWeWork";
 import { Work } from "@/components/sections/Work";
 import { WhyWorkWithUs } from "@/components/sections/WhyWorkWithUs";
-import { MeetFounders } from "@/components/sections/MeetFounders";
-
 import { Testimonials } from "@/components/sections/Testimonials";
 import { FAQ } from "@/components/sections/FAQ";
 import { Contact } from "@/components/sections/Contact";
@@ -38,7 +36,6 @@ export default function Home() {
         <Testimonials />
         <Work />
         <WhyWorkWithUs />
-        <MeetFounders />
         <FAQ />
         <Contact />
       </main>
