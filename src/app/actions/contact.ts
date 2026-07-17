@@ -13,6 +13,7 @@ export async function submitContactForm(formData: FormData) {
     const businessName = formData.get("businessName") as string;
     const email = formData.get("email") as string;
     const phone = formData.get("phone") as string;
+    const websiteUrl = formData.get("websiteUrl") as string;
     const challenge = formData.get("challenge") as string;
     const otherChallenge = formData.get("otherChallenge") as string;
 
@@ -26,7 +27,8 @@ export async function submitContactForm(formData: FormData) {
           .set({ 
             name, 
             businessName, 
-            phone, 
+            phone,
+            websiteUrl,
             challenge: actualChallenge,
             updatedAt: new Date()
           })
@@ -37,6 +39,7 @@ export async function submitContactForm(formData: FormData) {
           businessName,
           email,
           phone,
+          websiteUrl,
           challenge: actualChallenge,
         });
       }
@@ -50,6 +53,7 @@ export async function submitContactForm(formData: FormData) {
       <p><strong>Business Name:</strong> ${businessName}</p>
       <p><strong>Email:</strong> ${email}</p>
       <p><strong>Phone:</strong> ${phone || "Not provided"}</p>
+      <p><strong>Website URL:</strong> ${websiteUrl || "Not provided"}</p>
       <p><strong>Challenge/Interest:</strong> ${actualChallenge}</p>
     `;
 

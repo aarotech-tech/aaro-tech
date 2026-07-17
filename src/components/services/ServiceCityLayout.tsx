@@ -1,6 +1,7 @@
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import { Contact } from "@/components/sections/Contact";
+import { ContactPopup } from "@/components/shared/ContactPopup";
 import { buttonVariants } from "@/components/ui/button";
 import Link from "next/link";
 import { ArrowRight, MapPin } from "lucide-react";
@@ -59,9 +60,11 @@ export function ServiceCityLayout({ data, cityName, serviceName }: ServiceCityLa
               {data.heroDescription}
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Link href="/#contact" className={buttonVariants({ size: "lg", className: "bg-primary hover:bg-primary/90 text-white h-14 px-8 text-lg font-bold shadow-lg" })}>
-                Get Your {cityName} Growth Plan
-              </Link>
+              <ContactPopup>
+                <button className={buttonVariants({ size: "lg", className: "bg-primary hover:bg-primary/90 text-white h-14 px-8 text-lg font-bold shadow-lg" })}>
+                  Get Your {cityName} Growth Plan
+                </button>
+              </ContactPopup>
             </div>
           </div>
         </section>

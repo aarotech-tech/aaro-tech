@@ -9,6 +9,7 @@ import { ArrowRight, CheckCircle2, Factory } from "lucide-react";
 import { Breadcrumbs } from "@/components/shared/Breadcrumbs";
 import { FAQSection } from "@/components/shared/FAQSection";
 import { RelatedLinks } from "@/components/shared/RelatedLinks";
+import { ContactPopup } from "@/components/shared/ContactPopup";
 import { generateArticleSchema, generateFAQSchema } from "@/lib/seo";
 import { industries } from "@/data/industries";
 
@@ -84,9 +85,11 @@ export default async function IndustryPage({ params }: { params: Promise<{ slug:
               {industry.heroDescription}
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Link href="/#contact" className={buttonVariants({ size: "lg", className: "h-14 px-8 text-lg font-bold shadow-lg" })}>
-                Get a Free Strategy Audit
-              </Link>
+              <ContactPopup>
+                <button className={buttonVariants({ size: "lg", className: "h-14 px-8 text-lg font-bold shadow-lg" })}>
+                  Get a Free Strategy Audit
+                </button>
+              </ContactPopup>
             </div>
           </div>
         </section>

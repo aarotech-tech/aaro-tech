@@ -1,4 +1,5 @@
-import Link from 'next/link';
+import { ArrowRight, ThumbsUp, ThumbsDown } from "lucide-react";
+import { ContactPopup } from "@/components/shared/ContactPopup";
 
 export function ArticleFeedback() {
   return (
@@ -8,9 +9,11 @@ export function ArticleFeedback() {
         <p className="text-slate-600 text-sm">Have more questions? Our experts are here to help.</p>
       </div>
       <div className="flex items-center gap-3 w-full sm:w-auto">
-        <Link href="/#contact" className="flex-1 sm:flex-none text-center px-6 py-2.5 bg-primary text-white text-sm font-bold rounded-lg hover:bg-primary/90 transition-colors">
-          Speak to an Expert
-        </Link>
+        <ContactPopup>
+          <button className="flex-1 sm:flex-none text-center px-6 py-2.5 bg-primary text-white text-sm font-bold rounded-lg hover:bg-primary/90 transition-colors">
+            Ask Us Anything
+          </button>
+        </ContactPopup>
       </div>
     </div>
   );

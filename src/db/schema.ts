@@ -146,6 +146,7 @@ export const websiteLeads = pgTable("website_leads", {
   businessName: varchar("business_name", { length: 255 }),
   email: varchar("email", { length: 255 }).unique().notNull(), // Unique to prevent simple duplicates
   phone: varchar("phone", { length: 50 }),
+  websiteUrl: text("website_url"), // Optional website URL
   challenge: text("challenge"),
   status: varchar("status", { length: 50 }).default("new"), // new, contacted, archived
   createdAt: timestamp("created_at").defaultNow(),

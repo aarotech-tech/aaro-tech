@@ -8,6 +8,7 @@ import Link from "next/link";
 import { ArrowRight, CheckCircle2, XCircle, Scale } from "lucide-react";
 import { Breadcrumbs } from "@/components/shared/Breadcrumbs";
 import { FAQSection } from "@/components/shared/FAQSection";
+import { ContactPopup } from "@/components/shared/ContactPopup";
 import { RelatedLinks } from "@/components/shared/RelatedLinks";
 import { generateArticleSchema, generateFAQSchema } from "@/lib/seo";
 import { comparisons } from "@/data/comparisons";
@@ -183,9 +184,11 @@ export default async function ComparisonPage({ params }: { params: Promise<{ slu
                {comparison.recommendation}
              </p>
              <div className="mt-12">
-               <Link href="/#contact" className={buttonVariants({ size: "lg", className: "h-14 px-8 text-lg font-bold shadow-lg" })}>
-                 Discuss Your Strategy with Us
-               </Link>
+               <ContactPopup>
+                 <button className={buttonVariants({ size: "lg", className: "h-14 px-8 text-lg font-bold shadow-lg" })}>
+                   Get Your Free Strategy Audit
+                 </button>
+               </ContactPopup>
              </div>
            </div>
         </section>

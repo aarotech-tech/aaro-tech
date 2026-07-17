@@ -3,13 +3,14 @@
 import { useState } from "react";
 import Link from "next/link";
 import { FallbackImage as Image } from "@/components/ui/fallback-image";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { buttonVariants } from "@/components/ui/button";
 import { Menu, X } from "lucide-react";
 import { ContactPopup } from "@/components/shared/ContactPopup";
 
 export function Header() {
   const pathname = usePathname();
+  const router = useRouter();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const handleLogoClick = (e: React.MouseEvent<HTMLAnchorElement, MouseEvent>) => {
@@ -41,6 +42,9 @@ export function Header() {
           top: targetPosition,
           behavior: "smooth"
         });
+        
+        // Update URL to reflect the new hash without triggering Next.js router jumps
+        router.push(href, { scroll: false });
       }
     }
   };

@@ -1,4 +1,4 @@
-import { industries } from "@/data/content";
+import { industries } from "@/data/industries";
 import { Card, CardContent } from "@/components/ui/card";
 import { CheckCircle2, XCircle, ArrowRight } from "lucide-react";
 import Link from "next/link";
@@ -21,11 +21,11 @@ export function Industries() {
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
           {industries.map((industry, index) => (
-            <AnimateOnScroll key={industry.id} delay={`${index * 0.1 + 0.2}s`} className="h-full">
-              <Link href={`/industries/${industry.id}`} className="block group focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none rounded-2xl h-full">
+            <AnimateOnScroll key={industry.slug} delay={`${index * 0.1 + 0.2}s`} className="h-full">
+              <Link href={`/industries/${industry.slug}`} className="block group focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none rounded-2xl h-full">
                 <Card className="h-full border border-slate-200 shadow-sm group-hover:shadow-md transition-all duration-300 group-hover:-translate-y-1 rounded-2xl bg-white">
                   <CardContent className="p-6 sm:p-8 flex flex-col h-full">
-                    <h3 className="text-2xl font-bold mb-8 text-slate-900 group-hover:text-primary transition-colors">{industry.title}</h3>
+                    <h3 className="text-2xl font-bold mb-8 text-slate-900 group-hover:text-primary transition-colors">{industry.name}</h3>
                     <div className="space-y-6 flex-1">
                       <div className="flex items-start bg-destructive/5 p-4 rounded-xl border border-destructive/10">
                         <XCircle className="w-5 h-5 text-destructive shrink-0 mt-0.5 mr-3" />

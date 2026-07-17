@@ -1,5 +1,6 @@
 import { MetadataRoute } from "next";
-import { services, industries } from "@/data/content";
+import { services } from "@/data/content";
+import { industries } from "@/data/industries";
 import { blogPosts } from "@/data/blog";
 
 export default function sitemap(): MetadataRoute.Sitemap {
@@ -25,7 +26,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
   }));
 
   const industryRoutes = industries.map((industry) => ({
-    url: `${baseUrl}/industries/${industry.id}`,
+    url: `${baseUrl}/industries/${industry.slug}`,
     lastModified: new Date(),
     changeFrequency: "monthly" as const,
     priority: 0.9,

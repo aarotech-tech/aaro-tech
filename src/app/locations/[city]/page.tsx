@@ -8,6 +8,7 @@ import Link from "next/link";
 import { ArrowRight, CheckCircle2 } from "lucide-react";
 import { Breadcrumbs } from "@/components/shared/Breadcrumbs";
 import { FAQSection } from "@/components/shared/FAQSection";
+import { ContactPopup } from "@/components/shared/ContactPopup";
 import { generateLocalBusinessSchema, generateFAQSchema } from "@/lib/seo";
 import { locationData } from "@/data/locations";
 import { serviceLocations } from "@/data/service-locations";
@@ -83,10 +84,12 @@ export default async function LocationPage({ params }: { params: Promise<{ city:
              <p className="text-xl text-slate-300 mb-10 max-w-2xl mx-auto">
                {data.heroDescription}
              </p>
-             <Link href="/#contact" className={buttonVariants({ size: "lg", className: "bg-primary text-white hover:bg-primary/90 h-14 px-8 text-lg shadow-xl" })}>
-               Get Your Free {cityName} Growth Plan
-               <ArrowRight className="ml-2 w-5 h-5" />
-             </Link>
+             <ContactPopup>
+               <button className={buttonVariants({ size: "lg", className: "bg-primary text-white hover:bg-primary/90 h-14 px-8 text-lg shadow-xl" })}>
+                 Get Your Free {cityName} Growth Plan
+                 <ArrowRight className="ml-2 w-5 h-5" />
+               </button>
+             </ContactPopup>
            </div>
         </section>
         

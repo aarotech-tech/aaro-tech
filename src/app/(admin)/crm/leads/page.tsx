@@ -29,6 +29,7 @@ export default async function LeadsDashboard() {
                 <th className="px-6 py-4">Business</th>
                 <th className="px-6 py-4">Email</th>
                 <th className="px-6 py-4">Phone</th>
+                <th className="px-6 py-4">Website</th>
                 <th className="px-6 py-4">Challenge</th>
                 <th className="px-6 py-4">Status</th>
                 <th className="px-6 py-4">Last Updated</th>
@@ -38,7 +39,7 @@ export default async function LeadsDashboard() {
             <tbody className="divide-y divide-gray-100">
               {allLeads.length === 0 ? (
                 <tr>
-                  <td colSpan={8} className="px-6 py-8 text-center text-gray-500">
+                  <td colSpan={9} className="px-6 py-8 text-center text-gray-500">
                     No leads found. When users submit the contact form, they will appear here.
                   </td>
                 </tr>
@@ -49,6 +50,13 @@ export default async function LeadsDashboard() {
                     <td className="px-6 py-4 text-gray-600">{lead.businessName || "-"}</td>
                     <td className="px-6 py-4 text-gray-600">{lead.email}</td>
                     <td className="px-6 py-4 text-gray-600">{lead.phone || "-"}</td>
+                    <td className="px-6 py-4 text-blue-600">
+                      {lead.websiteUrl ? (
+                        <a href={lead.websiteUrl.startsWith('http') ? lead.websiteUrl : `https://${lead.websiteUrl}`} target="_blank" rel="noopener noreferrer" className="hover:underline">
+                          Link
+                        </a>
+                      ) : "-"}
+                    </td>
                     <td className="px-6 py-4 text-gray-600 max-w-xs truncate" title={lead.challenge || ""}>
                       {lead.challenge || "-"}
                     </td>

@@ -130,10 +130,11 @@ export function ContactForm({
             name="email"
             type="email"
             placeholder="you@company.com"
+            required
             className={`bg-slate-950 border-slate-800 text-white placeholder:text-slate-500 ${emailError ? "border-red-500 focus:border-red-500" : ""}`}
             onBlur={(e) => {
               const val = e.target.value.trim();
-              if (!val) { setEmailError(""); return; } // optional field
+              if (!val) { setEmailError(""); return; } // Handled by HTML5 required attribute now
               const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
               if (!emailRegex.test(val)) {
                 setEmailError("Enter a valid email address (e.g. you@company.com).");
@@ -146,6 +147,17 @@ export function ContactForm({
           {emailError && (
             <p className="text-red-400 text-xs mt-1">{emailError}</p>
           )}
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="websiteUrl" className="text-white">Website URL (Optional)</Label>
+          <Input
+            id="websiteUrl"
+            name="websiteUrl"
+            type="url"
+            placeholder="https://yourwebsite.com"
+            className="bg-slate-950 border-slate-800 text-white placeholder:text-slate-500"
+          />
         </div>
 
         <div className="space-y-2">

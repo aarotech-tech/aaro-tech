@@ -112,7 +112,7 @@ This document serves as the master checklist for collecting all real business in
 | Global Description | Site-wide meta description | MOCK (Generic) | `src/app/layout.tsx` | P0 |
 | OG Image | Social sharing image | MOCK | `src/app/opengraph-image.tsx` | P0 |
 | Location Page Data | Unique content for city pages | MOCK (Duplicate pages) | `src/app/locations/[city]/page.tsx` | P0 |
-| Industry Page Data | Unique content for industries | MOCK | `src/data/content.ts` | P0 |
+| Industry Page Data | Unique content for industries | COMPLETE | `src/data/industries.ts`, `src/app/industries/page.tsx` | P0 |
 
 ## 10. CRM
 

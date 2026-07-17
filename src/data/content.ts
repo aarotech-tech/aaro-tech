@@ -183,41 +183,7 @@ export const services = [
   }
 ];
 
-export const industries = [
-  {
-    id: "healthcare",
-    title: "Healthcare",
-    problem: "Struggling to attract new patients consistently in a competitive market.",
-    solution: "We build trust-focused websites and run targeted local SEO and Google Ads to connect you with patients seeking care.",
-    h1: "Digital Marketing for Healthcare Clinics",
-    intro: "Attract more patients and build trust before they even step into your waiting room.",
-    benefits: ["Strict HIPAA compliant marketing practices", "Local SEO dominance for 'near me' patient searches", "Strategies built around establishing patient trust"],
-    faqs: [{ question: "Do you understand medical advertising rules?", answer: "Yes, we navigate platform restrictions carefully." }],
-    cta: "Get a Healthcare Growth Plan"
-  },
-  {
-    id: "education",
-    title: "Education",
-    problem: "Low enrollment rates and high competition from other institutions.",
-    solution: "We implement lead-generation funnels and Meta Ads to reach parents and students effectively.",
-    h1: "Digital Marketing for Schools & Colleges",
-    intro: "Maximize your admissions season with targeted lead generation campaigns.",
-    benefits: ["Funnels specifically designed to increase enrollments", "Precise parent and student demographic targeting", "Proactive brand reputation management"],
-    faqs: [{ question: "Can you handle seasonal enrollment spikes?", answer: "Yes, we plan campaigns months in advance for peak admissions." }],
-    cta: "Increase Enrollments"
-  },
-  {
-    id: "local-businesses",
-    title: "Local Businesses",
-    problem: "Losing foot traffic to competitors with stronger online visibility.",
-    solution: "We dominate local search results (Google Business Profile) to ensure you're the top choice in your area.",
-    h1: "Local SEO & Ads for Retail Businesses",
-    intro: "Dominate your neighborhood and become the #1 choice when locals search for your services.",
-    benefits: ["Complete Google Business Profile optimization", "Dominating local keywords in your neighborhood", "Accurate foot traffic and lead tracking"],
-    faqs: [{ question: "Do I need a big budget?", answer: "No, local SEO provides massive ROI even for single-location shops." }],
-    cta: "Dominate Local Search"
-  },
-];
+
 
 export const processSteps = [
   {

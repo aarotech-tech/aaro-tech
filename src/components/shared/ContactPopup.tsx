@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { X } from "lucide-react";
 import {
   Dialog,
@@ -8,6 +8,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { ContactForm, ContactFormProps } from "@/components/shared/ContactForm";
+import { cn } from "@/lib/utils";
 
 export function ContactPopup({
   children,
@@ -72,15 +73,17 @@ export function ContactPopup({
 
   return (
     <>
-      <span
-        onClick={(e) => {
+      {React.isValidElement(children) ? React.cloneElement(children as React.ReactElement<any>, {
+        onClick: (e: React.MouseEvent) => {
           e.stopPropagation();
           handleOpenChange(true);
-        }}
-        style={{ display: "contents" }}
-      >
-        {children}
-      </span>
+          const childOnClick = (children as React.ReactElement<any>).props.onClick;
+          if (childOnClick) {
+            childOnClick(e);
+          }
+        },
+        className: cn((children as React.ReactElement<any>).props.className, "cursor-pointer")
+      }) : children}
       <Dialog open={open} onOpenChange={handleOpenChange}>
         <DialogContent
           showCloseButton={false}

@@ -4,6 +4,7 @@ import { Contact } from "@/components/sections/Contact";
 import { buttonVariants } from "@/components/ui/button";
 import Link from "next/link";
 import { ArrowRight, CheckCircle2 } from "lucide-react";
+import { ContactPopup } from "@/components/shared/ContactPopup";
 
 const campaigns = {
   "lead-generation": {
@@ -59,10 +60,12 @@ export default async function CampaignPage({ params }: { params: Promise<{ campa
            <div className="bg-slate-900 border border-slate-800 p-8 rounded-2xl shadow-2xl flex flex-col justify-center items-center">
              <h3 className="text-2xl font-bold mb-6 text-center">Ready to Grow?</h3>
              <div className="text-center w-full">
-                <Link href="#contact" className={buttonVariants({ size: "lg", className: "w-full bg-primary text-white hover:bg-primary/90 h-14 text-lg shadow-xl" })}>
-                  Claim Your Free Plan Now
-                  <ArrowRight className="ml-2 w-5 h-5" />
-                </Link>
+                <ContactPopup>
+                  <button className={buttonVariants({ size: "lg", className: "w-full bg-primary text-white hover:bg-primary/90 h-14 text-lg shadow-xl" })}>
+                    Claim Your Free Plan Now
+                    <ArrowRight className="ml-2 w-5 h-5" />
+                  </button>
+                </ContactPopup>
                 <p className="text-sm text-slate-500 mt-4">No commitment required. Speak directly with a founder.</p>
              </div>
            </div>
