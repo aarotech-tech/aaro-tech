@@ -8,9 +8,9 @@ import { eq } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 
 export async function submitClientReviewAction(
-  deliverableId: string, 
-  versionId: string, 
-  action: "approve" | "request_changes", 
+  deliverableId: string,
+  versionId: string,
+  action: "approve" | "request_changes",
   commentText?: string
 ) {
   // 1. Fetch Deliverable to determine ownership FIRST
@@ -73,7 +73,7 @@ export async function submitClientReviewAction(
   });
 
   // Send Email Notification outside transaction
-  await sendDeliverableClientResponseEmail("admin@aarotech.com", deliverable.name, newDeliverableStatus);
+  await sendDeliverableClientResponseEmail("info@aarotech.in", deliverable.name, newDeliverableStatus);
 
   revalidatePath(`/portal/deliverables/${deliverableId}`);
   return { success: true };

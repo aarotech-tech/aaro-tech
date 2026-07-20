@@ -23,7 +23,7 @@ export class ForbiddenError extends Error {
  */
 export async function requireAuthenticatedUser() {
   const { userId, redirectToSignIn } = await auth();
-  
+
   if (!userId) {
     return redirectToSignIn();
   }
@@ -44,7 +44,32 @@ export async function requireAuthenticatedUser() {
   }
 
   if (!dbUser) {
-    throw new UnauthorizedError("User database record not found");
+    // Auto-create user if they exist in Clerk but not in DB
+    const email = clerkUser.emailAddresses[0]?.emailAddress;
+    if (!email) {
+      throw new UnauthorizedError("User database record not found and no email available");
+    }
+
+    // Check if this should be an internal user
+    const isInternal = email.endsWith("@aarotech.in") || email === "info.aarotech@gmail.com";
+
+    try {
+      const [newUser] = await db.insert(users).values({
+        clerkId: clerkUser.id,
+        email: email,
+        firstName: clerkUser.firstName || "",
+        lastName: clerkUser.lastName || "",
+        avatarUrl: clerkUser.imageUrl,
+        userType: isInternal ? "internal" : "client",
+        role: isInternal ? "superadmin" : "client",
+        globalRole: isInternal ? "owner" : null
+      }).returning();
+
+      dbUser = newUser;
+    } catch (insertError) {
+      console.error("Failed to auto-create missing user:", insertError);
+      throw new UnauthorizedError("User database record not found and auto-creation failed");
+    }
   }
 
   if (dbUser.status === "suspended") {
@@ -136,7 +161,7 @@ export async function requireOrganizationMember(orgId: string) {
  */
 export async function requireOrganizationPermission(orgId: string, requiredRole: string) {
   const result = await requireOrganizationMember(orgId);
-  
+
   if (result.user.userType === "internal") {
     return result; // Internal users have all permissions implicitly for now
   }
