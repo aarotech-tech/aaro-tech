@@ -38,40 +38,38 @@ export async function submitClientReviewAction(
   // 2. Verify that the authenticated user belongs to this org
   const { user } = await requireOrganizationMember(orgId);
 
-  // 3. Mutate safely in a transaction
-  await db.transaction(async (tx) => {
-    // If they left a comment, add it
-    if (commentText && commentText.trim() !== "") {
-      await tx.insert(comments).values({
-        deliverableId,
-        versionId,
-        userId: user.id,
-        text: commentText,
-        visibility: "client_visible"
-      });
-    }
-
-    // Update Version Status
-    const newReviewStatus = action === "approve" ? "approved" : "changes_requested";
-    await tx.update(deliverableVersions)
-      .set({ reviewStatus: newReviewStatus })
-      .where(eq(deliverableVersions.id, versionId));
-
-    // Update Deliverable Status
-    const newDeliverableStatus = action === "approve" ? "approved" : "changes_requested";
-    await tx.update(deliverables)
-      .set({ status: newDeliverableStatus })
-      .where(eq(deliverables.id, deliverableId));
-
-    // Activity Log
-    await tx.insert(activityLogs).values({
-      organizationId: orgId,
+  // 3. Mutate safely (sequential without transaction for neon-http compatibility)
+  // If they left a comment, add it
+  if (commentText && commentText.trim() !== "") {
+    await db.insert(comments).values({
+      deliverableId,
+      versionId,
       userId: user.id,
-      action: `deliverable.${newDeliverableStatus}`,
-      entityType: "deliverable",
-      entityId: deliverableId,
-      metadata: JSON.stringify({ versionId })
+      text: commentText,
+      visibility: "client_visible"
     });
+  }
+
+  // Update Version Status
+  const newReviewStatus = action === "approve" ? "approved" : "changes_requested";
+  await db.update(deliverableVersions)
+    .set({ reviewStatus: newReviewStatus })
+    .where(eq(deliverableVersions.id, versionId));
+
+  // Update Deliverable Status
+  const newDeliverableStatus = action === "approve" ? "approved" : "changes_requested";
+  await db.update(deliverables)
+    .set({ status: newDeliverableStatus })
+    .where(eq(deliverables.id, deliverableId));
+
+  // Activity Log
+  await db.insert(activityLogs).values({
+    organizationId: orgId,
+    userId: user.id,
+    action: `deliverable.${newDeliverableStatus}`,
+    entityType: "deliverable",
+    entityId: deliverableId,
+    metadata: JSON.stringify({ versionId })
   });
 
   // Send Email Notification outside transaction

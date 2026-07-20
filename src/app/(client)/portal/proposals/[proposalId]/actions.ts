@@ -43,69 +43,67 @@ export async function approveProposalAction(proposalId: string, formData: FormDa
 
     // ip is already extracted above
 
-    await db.transaction(async (tx) => {
-      // 1. Mark Proposal as accepted
-      await tx.update(proposals)
-        .set({ 
-          status: "accepted",
-          approvedAt: new Date(),
-          signatureText: signature,
-          approvedByIp: ip,
-        })
-        .where(eq(proposals.id, proposalId));
+    // 1. Mark Proposal as accepted
+    await db.update(proposals)
+      .set({ 
+        status: "accepted",
+        approvedAt: new Date(),
+        signatureText: signature,
+        approvedByIp: ip,
+      })
+      .where(eq(proposals.id, proposalId));
 
-      // 2. Mark Deal as Won
-      await tx.update(deals)
-        .set({ stage: "won" })
-        .where(eq(deals.id, deal.id));
+    // 2. Mark Deal as Won
+    await db.update(deals)
+      .set({ stage: "won" })
+      .where(eq(deals.id, deal.id));
 
-      // 3. Perform Lead to Client Conversion (if they are a lead)
-      const org = await tx.query.organizations.findFirst({
-        where: eq(organizations.id, deal.organizationId)
-      });
+    // 3. Perform Lead to Client Conversion (if they are a lead)
+    const org = await db.query.organizations.findFirst({
+      where: eq(organizations.id, deal.organizationId)
+    });
 
-      if (org && org.type === "lead") {
-        await tx.update(organizations)
-          .set({ type: "client" })
-          .where(eq(organizations.id, deal.organizationId));
+    if (org && org.type === "lead") {
+      await db.update(organizations)
+        .set({ type: "client" })
+        .where(eq(organizations.id, deal.organizationId));
 
-        await tx.insert(organizationStatusHistory).values({
-          organizationId: deal.organizationId,
-          fromStatus: "lead",
-          toStatus: "client",
-        });
-
-        const [onboarding] = await tx.insert(clientOnboardings).values({
-          organizationId: deal.organizationId,
-          status: "pending"
-        }).returning({ id: clientOnboardings.id });
-
-        if (onboarding) {
-          await tx.insert(onboardingSteps).values([
-            { onboardingId: onboarding.id, title: "Initial Deposit Paid", status: "pending" },
-            { onboardingId: onboarding.id, title: "Brand Assets Collected", status: "pending" },
-            { onboardingId: onboarding.id, title: "Kickoff Call Scheduled", status: "pending" },
-            { onboardingId: onboarding.id, title: "Project Brief Signed", status: "pending" },
-          ]);
-        }
-      }
-
-      // 4. Create a corresponding Project for the newly won deal
-      await tx.insert(projects).values({
+      await db.insert(organizationStatusHistory).values({
         organizationId: deal.organizationId,
-        dealId: deal.id,
-        name: `${deal.name} Fulfillment`,
-        status: "active",
-        health: "green",
+        fromStatus: "lead",
+        toStatus: "client",
       });
 
-      // 5. Trigger background job real pending state
-      await tx.insert(automationLogs).values({
-        jobName: "deal-won-alert",
-        status: "queued",
-        payload: JSON.stringify({ dealId: deal.id, clientName: deal.name }),
-        completedAt: null,
-      });
+      const [onboarding] = await db.insert(clientOnboardings).values({
+        organizationId: deal.organizationId,
+        status: "pending"
+      }).returning({ id: clientOnboardings.id });
+
+      if (onboarding) {
+        await db.insert(onboardingSteps).values([
+          { onboardingId: onboarding.id, title: "Initial Deposit Paid", status: "pending" },
+          { onboardingId: onboarding.id, title: "Brand Assets Collected", status: "pending" },
+          { onboardingId: onboarding.id, title: "Kickoff Call Scheduled", status: "pending" },
+          { onboardingId: onboarding.id, title: "Project Brief Signed", status: "pending" },
+        ]);
+      }
+    }
+
+    // 4. Create a corresponding Project for the newly won deal
+    await db.insert(projects).values({
+      organizationId: deal.organizationId,
+      dealId: deal.id,
+      name: `${deal.name} Fulfillment`,
+      status: "active",
+      health: "green",
+    });
+
+    // 5. Trigger background job real pending state
+    await db.insert(automationLogs).values({
+      jobName: "deal-won-alert",
+      status: "queued",
+      payload: JSON.stringify({ dealId: deal.id, clientName: deal.name }),
+      completedAt: null,
     });
 
     revalidatePath(`/portal/proposals/${proposalId}`);

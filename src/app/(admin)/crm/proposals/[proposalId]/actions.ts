@@ -22,26 +22,24 @@ export async function addDealLineItem(
   return withActionErrorHandling('addDealLineItem', async () => {
     await requireInternalUser();
 
-    await db.transaction(async (tx) => {
-      // 1. Add the line item
-      await tx.insert(dealLineItems).values({
-        dealId,
-        serviceId: data.serviceId || null,
-        title: data.title,
-        description: data.description || null,
-        unitPrice: data.unitPrice,
-        quantity: data.quantity,
-        total: data.unitPrice * data.quantity,
-        isRecurring: data.isRecurring,
-      });
-
-      // 2. Recalculate total deal value
-      const items = await tx.query.dealLineItems.findMany({
-        where: eq(dealLineItems.dealId, dealId)
-      });
-      const totalValue = items.reduce((acc, item) => acc + (item.unitPrice * item.quantity), 0);
-      await tx.update(deals).set({ value: totalValue }).where(eq(deals.id, dealId));
+    // 1. Add the line item
+    await db.insert(dealLineItems).values({
+      dealId,
+      serviceId: data.serviceId || null,
+      title: data.title,
+      description: data.description || null,
+      unitPrice: data.unitPrice,
+      quantity: data.quantity,
+      total: data.unitPrice * data.quantity,
+      isRecurring: data.isRecurring,
     });
+
+    // 2. Recalculate total deal value
+    const items = await db.query.dealLineItems.findMany({
+      where: eq(dealLineItems.dealId, dealId)
+    });
+    const totalValue = items.reduce((acc, item) => acc + (item.unitPrice * item.quantity), 0);
+    await db.update(deals).set({ value: totalValue }).where(eq(deals.id, dealId));
 
     revalidatePath(`/crm/proposals/${proposalId}`);
     return true;
@@ -52,15 +50,13 @@ export async function removeDealLineItem(proposalId: string, dealId: string, lin
   return withActionErrorHandling('removeDealLineItem', async () => {
     await requireInternalUser();
 
-    await db.transaction(async (tx) => {
-      await tx.delete(dealLineItems).where(eq(dealLineItems.id, lineItemId));
-      
-      const items = await tx.query.dealLineItems.findMany({
-        where: eq(dealLineItems.dealId, dealId)
-      });
-      const totalValue = items.reduce((acc, item) => acc + (item.unitPrice * item.quantity), 0);
-      await tx.update(deals).set({ value: totalValue }).where(eq(deals.id, dealId));
+    await db.delete(dealLineItems).where(eq(dealLineItems.id, lineItemId));
+    
+    const items = await db.query.dealLineItems.findMany({
+      where: eq(dealLineItems.dealId, dealId)
     });
+    const totalValue = items.reduce((acc, item) => acc + (item.unitPrice * item.quantity), 0);
+    await db.update(deals).set({ value: totalValue }).where(eq(deals.id, dealId));
     
     revalidatePath(`/crm/proposals/${proposalId}`);
     return true;

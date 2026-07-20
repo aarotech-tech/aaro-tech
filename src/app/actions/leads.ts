@@ -32,37 +32,35 @@ export async function promoteLeadToDeal(leadId: string) {
     });
 
     try {
-      // 3. Database Transaction
-      await db.transaction(async (tx) => {
-        const [newOrg] = await tx.insert(organizations).values({
-          name: orgName,
-          clerkOrgId: clerkOrg.id,
-          slug,
-          type: "lead",
-        }).returning();
+      // 3. Sequential Database Operations (Transaction not supported by neon-http)
+      const [newOrg] = await db.insert(organizations).values({
+        name: orgName,
+        clerkOrgId: clerkOrg.id,
+        slug,
+        type: "lead",
+      }).returning();
 
-        const dealName = lead.challenge ? `Lead: ${lead.challenge.substring(0, 50)}` : `New Deal: ${orgName}`;
-        
-        await tx.insert(deals).values({
-          organizationId: newOrg.id,
-          name: dealName,
-          stage: "discovery",
-          value: 0,
-        });
-
-        await tx.update(websiteLeads)
-          .set({ status: "promoted", updatedAt: new Date() })
-          .where(eq(websiteLeads.id, leadId));
-          
-        try {
-          const { redis } = await import("@/lib/redis");
-          if (redis) {
-            await redis.del(`org:${newOrg.id}:activeProjects`);
-          }
-        } catch (err) {
-          console.error("Failed to invalidate Redis cache:", err);
-        }
+      const dealName = lead.challenge ? `Lead: ${lead.challenge.substring(0, 50)}` : `New Deal: ${orgName}`;
+      
+      await db.insert(deals).values({
+        organizationId: newOrg.id,
+        name: dealName,
+        stage: "discovery",
+        value: 0,
       });
+
+      await db.update(websiteLeads)
+        .set({ status: "promoted", updatedAt: new Date() })
+        .where(eq(websiteLeads.id, leadId));
+        
+      try {
+        const { redis } = await import("@/lib/redis");
+        if (redis) {
+          await redis.del(`org:${newOrg.id}:activeProjects`);
+        }
+      } catch (err) {
+        console.error("Failed to invalidate Redis cache:", err);
+      }
     } catch (dbError) {
       // 4. Rollback Clerk Org if DB fails
       console.error("DB Transaction failed, rolling back Clerk Organization...", dbError);
