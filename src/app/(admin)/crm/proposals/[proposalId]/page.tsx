@@ -1,4 +1,4 @@
-"use server";
+
 import { db } from "@/db";
 import { trackingEvents, proposals, deals, organizations, services, dealLineItems } from "@/db/schema";
 import { eq, desc } from "drizzle-orm";
@@ -79,7 +79,8 @@ export default async function ProposalEditorPage({ params }: { params: Promise<{
             {proposal.status}
           </span>
           <form action={async () => {
-                        await generateAction();
+            "use server";
+            await generateAction();
           }}>
             <Button type="submit" variant="outline" className="border-purple-200 text-purple-700 hover:bg-purple-50 shadow-sm transition-colors">
               ✨ Auto-Generate with AI

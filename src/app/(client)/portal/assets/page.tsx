@@ -1,4 +1,4 @@
-"use server";
+
 import { db } from "@/db";
 import { clientAssets, organizations, organizationMembers } from "@/db/schema";
 import { eq, desc } from "drizzle-orm";

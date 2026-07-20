@@ -1,4 +1,4 @@
-"use server";
+
 import { db } from "@/db";
 import { proposals, deals, organizations, trackingEvents } from "@/db/schema";
 import { eq } from "drizzle-orm";
@@ -95,7 +95,8 @@ export default async function ClientProposalViewPage({ params }: { params: Promi
               </p>
               
               <form action={async (fd) => {
-                                await approveAction(fd);
+                "use server";
+                await approveAction(fd);
               }} className="max-w-md">
                 <div className="mb-4">
                   <label className="block text-sm font-medium text-gray-700 mb-1">
