@@ -1,12 +1,20 @@
 import { neon } from "@neondatabase/serverless";
 import { drizzle } from "drizzle-orm/neon-http";
 import * as schema from "./schema";
+import { validateEnv } from "@/env";
+
+// Validate env vars immediately upon backend initialization
+validateEnv();
 
 function getDb() {
   if (!process.env.DATABASE_URL) {
     throw new Error("DATABASE_URL must be a Neon postgres connection string");
   }
-  const sql = neon(process.env.DATABASE_URL);
+  const sql = neon(process.env.DATABASE_URL, {
+    fetchOptions: {
+      cache: "no-store",
+    },
+  });
   return drizzle(sql, { schema });
 }
 

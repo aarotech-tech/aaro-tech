@@ -1,107 +1,166 @@
 "use server";
+import { withActionErrorHandling, AppError } from '@/lib/errors';
 
 import { db } from "@/db";
 import { deals, organizations } from "@/db/schema";
 import { eq } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
+import { requireInternalUser } from "@/lib/auth";
 
 export async function updateDealStage(dealId: string, newStage: string) {
-  try {
-    await db.update(deals)
-      .set({ stage: newStage })
-      .where(eq(deals.id, dealId));
+  return withActionErrorHandling('updateDealStage', async () => {
+    const user = await requireInternalUser();
     
-    // If the deal is won, automatically convert the organization to a client
-    if (newStage === "won") {
-      const dealData = await db.query.deals.findFirst({
-        where: eq(deals.id, dealId),
-        columns: { organizationId: true, name: true }
-      });
+    await db.transaction(async (tx) => {
+      await tx.update(deals)
+        .set({ stage: newStage })
+        .where(eq(deals.id, dealId));
       
-      if (dealData) {
-        await db.update(organizations)
-          .set({ type: "client" })
-          .where(eq(organizations.id, dealData.organizationId));
-          
-        // Phase 5 Automation: Create a corresponding Project for the newly won deal
-        const { projects, automationLogs } = await import("@/db/schema");
-        await db.insert(projects).values({
-          organizationId: dealData.organizationId,
-          dealId: dealId,
-          name: `${dealData.name} Fulfillment`, // Use the deal name for the project
-          status: "active",
-          health: "green",
+      // If the deal is won, automatically convert the organization to a client
+      if (newStage === "won") {
+        const dealData = await tx.query.deals.findFirst({
+          where: eq(deals.id, dealId),
+          columns: { organizationId: true, name: true }
         });
+        
+        if (dealData) {
+          // 1. Check if the org is still a lead
+          const org = await tx.query.organizations.findFirst({
+            where: eq(organizations.id, dealData.organizationId)
+          });
 
-        // Phase 7 Automation: Trigger background job mock
-        await db.insert(automationLogs).values({
-          jobName: "deal-won-alert",
-          status: "success",
-          payload: JSON.stringify({ dealId, clientName: dealData.name }),
-          completedAt: new Date(),
-        });
+          if (org && org.type === "lead") {
+            // Update organization type
+            await tx.update(organizations)
+              .set({ type: "client" })
+              .where(eq(organizations.id, dealData.organizationId));
+
+            // Log the status history
+            const { organizationStatusHistory, clientOnboardings, onboardingSteps } = await import("@/db/schema");
+            
+            await tx.insert(organizationStatusHistory).values({
+              organizationId: dealData.organizationId,
+              fromStatus: "lead",
+              toStatus: "client",
+              changedById: user.id
+            });
+
+            // Create an Onboarding Checklist
+            const [onboarding] = await tx.insert(clientOnboardings).values({
+              organizationId: dealData.organizationId,
+              status: "pending"
+            }).returning({ id: clientOnboardings.id });
+
+            if (onboarding) {
+              await tx.insert(onboardingSteps).values([
+                { onboardingId: onboarding.id, title: "Initial Deposit Paid", status: "pending" },
+                { onboardingId: onboarding.id, title: "Brand Assets Collected", status: "pending" },
+                { onboardingId: onboarding.id, title: "Kickoff Call Scheduled", status: "pending" },
+                { onboardingId: onboarding.id, title: "Project Brief Signed", status: "pending" },
+              ]);
+            }
+          }
+            
+          // Phase 5 Automation: Create a corresponding Project for the newly won deal
+          const { projects, automationLogs } = await import("@/db/schema");
+          await tx.insert(projects).values({
+            organizationId: dealData.organizationId,
+            dealId: dealId,
+            name: `${dealData.name} Fulfillment`, // Use the deal name for the project
+            status: "active",
+            health: "green",
+          });
+
+          // Phase 7 Automation: Trigger background job mock
+          await tx.insert(automationLogs).values({
+            jobName: "deal-won-alert",
+            status: "success",
+            payload: JSON.stringify({ dealId, clientName: dealData.name }),
+            completedAt: new Date(),
+          });
+        }
+      }
+    });
+    const dealData = await db.query.deals.findFirst({
+      where: eq(deals.id, dealId),
+      columns: { organizationId: true }
+    });
+
+    if (dealData) {
+      try {
+        const { redis } = await import("@/lib/redis");
+        if (redis) {
+          await redis.del(`org:${dealData.organizationId}:activeProjects`);
+        }
+      } catch (err) {
+        console.error("Failed to invalidate Redis cache:", err);
       }
     }
     
     revalidatePath("/crm");
-    return { success: true };
-  } catch (error) {
-    console.error("Failed to update deal stage:", error);
-    return { success: false, error: "Failed to update deal stage" };
-  }
+    revalidatePath("/crm/clients");
+    return true;
+  });
 }
 
 export async function createDeal(formData: FormData) {
-  const name = formData.get("name") as string;
-  const value = parseInt(formData.get("value") as string) || 0;
-  const organizationName = formData.get("organizationName") as string;
+  return withActionErrorHandling('createDeal', async () => {
+    await requireInternalUser();
+    const name = formData.get("name") as string;
+    const value = parseInt(formData.get("value") as string) || 0;
+    const organizationName = formData.get("organizationName") as string;
 
-  if (!name || !organizationName) {
-    return { success: false, error: "Missing required fields" };
-  }
-
-  try {
-    // Check if organization exists, otherwise create it
-    let orgId: string;
-    
-    // Using Drizzle to find the organization
-    // Note: We need to import 'organizations' from schema in this file
-    const { organizations } = await import("@/db/schema");
-    const existingOrg = await db.query.organizations.findFirst({
-      where: eq(organizations.name, organizationName)
-    });
-
-    if (existingOrg) {
-      orgId = existingOrg.id;
-    } else {
-      const slug = organizationName.toLowerCase().replace(/[^a-z0-9]+/g, "-") + "-" + Date.now();
-      const newOrg = await db.insert(organizations).values({
-        name: organizationName,
-        type: "lead",
-        clerkOrgId: `lead_${Date.now()}`,
-        slug: slug,
-      }).returning({ id: organizations.id });
-      orgId = newOrg[0].id;
+    if (!name || !organizationName) {
+      throw new AppError("Missing required fields", 400);
     }
 
-    await db.insert(deals).values({
-      name,
-      value,
-      organizationId: orgId,
-      stage: "discovery",
+    await db.transaction(async (tx) => {
+      let orgId: string;
+      const { organizations } = await import("@/db/schema");
+      
+      const existingOrg = await tx.query.organizations.findFirst({
+        where: eq(organizations.name, organizationName)
+      });
+
+      if (existingOrg) {
+        orgId = existingOrg.id;
+      } else {
+        const slug = organizationName.toLowerCase().replace(/[^a-z0-9]+/g, "-") + "-" + Date.now();
+        const newOrg = await tx.insert(organizations).values({
+          name: organizationName,
+          type: "lead",
+          clerkOrgId: `lead_${Date.now()}`,
+          slug: slug,
+        }).returning({ id: organizations.id });
+        orgId = newOrg[0].id;
+      }
+
+      await tx.insert(deals).values({
+        name,
+        value,
+        organizationId: orgId,
+        stage: "discovery",
+      });
+      
+      try {
+        const { redis } = await import("@/lib/redis");
+        if (redis) {
+          await redis.del(`org:${orgId}:activeProjects`);
+        }
+      } catch (err) {
+        console.error("Failed to invalidate Redis cache:", err);
+      }
     });
     
     revalidatePath("/crm");
-    return { success: true };
-  } catch (error) {
-    console.error("Failed to create deal:", error);
-    return { success: false, error: "Failed to create deal" };
-  }
+    return true;
+  });
 }
 
 export async function generateProposal(dealId: string) {
-  const { proposals } = await import("@/db/schema");
-  try {
+  return withActionErrorHandling('generateProposal', async () => {
+    await requireInternalUser();
+    const { proposals } = await import("@/db/schema");
     const newProposal = await db.insert(proposals).values({
       dealId,
       status: "draft",
@@ -109,9 +168,7 @@ export async function generateProposal(dealId: string) {
     }).returning({ id: proposals.id });
     
     revalidatePath("/crm/proposals");
-    return { success: true, proposalId: newProposal[0].id };
-  } catch (error) {
-    console.error("Failed to generate proposal:", error);
-    return { success: false, error: "Failed to generate proposal" };
-  }
+    return { proposalId: newProposal[0].id };
+  });
 }
+

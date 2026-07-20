@@ -5,7 +5,12 @@ import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { AlertCircleIcon, CheckCircleIcon, ClockIcon } from "lucide-react";
 
-export default async function ProjectsPage() {
+export default async function ProjectsPage(props: { searchParams?: Promise<{ page?: string }> }) {
+  const searchParams = props.searchParams ? await props.searchParams : {};
+  const page = searchParams.page ? parseInt(searchParams.page) : 1;
+  const limit = 10;
+  const offset = (page - 1) * limit;
+
   const allProjects = await db
     .select({
       id: projects.id,
@@ -17,7 +22,9 @@ export default async function ProjectsPage() {
     })
     .from(projects)
     .innerJoin(organizations, eq(projects.organizationId, organizations.id))
-    .orderBy(desc(projects.createdAt));
+    .orderBy(desc(projects.createdAt))
+    .limit(limit)
+    .offset(offset);
 
   return (
     <div className="max-w-6xl mx-auto h-full flex flex-col">
@@ -87,6 +94,23 @@ export default async function ProjectsPage() {
             )}
           </tbody>
         </table>
+        <div className="px-6 py-4 border-t border-gray-200 flex justify-between items-center bg-gray-50">
+          <span className="text-sm text-gray-500">
+            Showing Page {page}
+          </span>
+          <div className="space-x-2">
+            {page > 1 && (
+              <a href={`/crm/projects?page=${page - 1}`} className="px-3 py-1 bg-white border border-gray-300 rounded text-sm text-gray-700 hover:bg-gray-50">
+                Previous
+              </a>
+            )}
+            {allProjects.length === 10 && (
+              <a href={`/crm/projects?page=${page + 1}`} className="px-3 py-1 bg-white border border-gray-300 rounded text-sm text-gray-700 hover:bg-gray-50">
+                Next
+              </a>
+            )}
+          </div>
+        </div>
       </div>
     </div>
   );

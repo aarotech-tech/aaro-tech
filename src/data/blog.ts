@@ -22,7 +22,7 @@ export const blogPosts: BlogPost[] = [
     keywords: ["SEO for Hospitals in Trichy", "hospital marketing Tiruchirappalli", "healthcare SEO Trichy", "medical digital marketing Tamil Nadu", "clinic SEO Tiruchirappalli"],
     date: "2023-01-15", featuredImage: "/images/blogs/blog-seo-hospitals-trichy.png",
     updatedDate: "2023-07-15",
-    author: "Suriyanarayanan",
+    author: "Suriyanarayanan Gurusamy",
     readTime: "12 min read",
     faqs: [
       { question: "How long does it take for a hospital to rank on page one?", answer: "Healthcare SEO is highly competitive (YMYL category). It typically takes 4-8 months to see significant movement for high-value keywords in a major city like Trichy." },
@@ -93,7 +93,7 @@ It is time to treat your digital presence with the same level of care and precis
     keywords: ["Website Cost in Tamil Nadu", "web development pricing", "business website cost", "web design agency Trichy", "web development Tiruchirappalli"],
     date: "2023-02-20", featuredImage: "/images/blogs/blog-website-cost-tamil-nadu.png",
     updatedDate: "2023-07-16",
-    author: "Aaron Joseph",
+    author: "Aaron John",
     readTime: "9 min read",
     faqs: [
       { question: "Can I get a website built for ₹10,000?", answer: "While freelancers might offer basic template sites for this price, they often lack proper SEO architecture, custom branding, and robust security, which are essential for a growing business." },
@@ -169,7 +169,7 @@ Before you ask for a quote, define exactly what you need the website to *do*. If
     keywords: ["Local SEO guide", "Tamil Nadu SEO", "local SEO Trichy", "SEO agency Tiruchirappalli", "Google Business Profile optimization", "local search ranking"],
     date: "2023-03-10", featuredImage: "/images/blogs/blog-local-seo-tamil-nadu.png",
     updatedDate: "2023-07-17",
-    author: "Suriyanarayanan",
+    author: "Suriyanarayanan Gurusamy",
     readTime: "11 min read",
     faqs: [
       { question: "What is the 'Local Pack'?", answer: "The Local Pack is the box of 3 business listings that appears at the top of Google results for local searches, right next to a map. Getting into it requires a well-optimized Google Business Profile, consistent NAP data, and steady review velocity. For most small businesses in Trichy and Tamil Nadu, landing in that box is the single highest-ROI move in all of digital marketing." },
@@ -228,7 +228,7 @@ Local SEO is not a one-time task; it is an ongoing process of optimization, revi
     keywords: ["Google Business Profile optimization Trichy", "GBP ranking Tiruchirappalli", "local SEO Tamil Nadu", "digital marketing Trichy", "SEO Tiruchirappalli", "GBP tips Trichy", "local search marketing Trichy", "Google Maps SEO Trichy", "local SEO Tiruchirappalli"],
     date: "2026-01-05",
     featuredImage: "/images/blogs/blog-gbp-optimization.png",
-    author: "Suriyanarayanan",
+    author: "Suriyanarayanan Gurusamy",
     readTime: "9 min read",
     faqs: [
       { question: "How often should I post updates on my Google Business Profile?", answer: "Businesses in competitive Trichy categories like restaurants, clinics, and salons should post at least twice a week. Regular posts signal to Google that the profile is active and well-maintained, which can positively influence local rankings. Consistency matters more than volume, so a steady weekly rhythm outperforms sporadic bursts of activity. Aarotech recommends pairing posts with seasonal offers relevant to Tamil Nadu festivals for maximum engagement." },
@@ -297,7 +297,7 @@ Google Business Profile optimization is not a one-time setup task; it's an ongoi
     keywords: ["technical SEO checklist 2026", "Core Web Vitals Trichy", "website audit Tamil Nadu", "technical SEO Trichy", "SEO agency Trichy", "technical SEO Tiruchirappalli", "site speed optimization India"],
     date: "2026-01-20",
     featuredImage: "/images/blogs/blog-technical-seo.png",
-    author: "Rahul Krishnamurthy",
+    author: "Reethika Srinivasan",
     readTime: "10 min read",
     faqs: [
       { question: "What is the difference between technical SEO and on-page SEO?", answer: "Technical SEO focuses on the infrastructure that allows search engines to crawl, index, and render your website correctly, such as site speed, mobile-friendliness, and structured data. On-page SEO deals with content-level elements like keyword usage, headings, and internal linking on individual pages. Both work together, but technical SEO issues can prevent even the best content from ranking if search engines cannot properly access it. A comprehensive strategy addresses both layers simultaneously." },
@@ -382,7 +382,7 @@ Technical SEO isn't a checklist you complete once and forget; it's an ongoing ma
     keywords: ["SEO pricing Trichy", "SEO cost Tiruchirappalli", "SEO packages cost India", "affordable SEO services Tamil Nadu", "SEO packages Trichy", "digital marketing Tiruchirappalli", "monthly SEO retainer Trichy", "SEO agency pricing Trichy"],
     date: "2026-02-03",
     featuredImage: "/images/blogs/blog-seo-pricing.png",
-    author: "Priya Rajan",
+    author: "Mohammad Shafik",
     readTime: "8 min read",
     faqs: [
       { question: "What is a reasonable monthly SEO budget for a small business in Trichy?", answer: "Small businesses in Trichy typically see effective results with monthly budgets ranging from ₹15,000 to ₹40,000, depending on competition levels in their industry. Highly competitive sectors like real estate or healthcare may require higher investment to see meaningful movement. It's important to view this as a sustained investment rather than a one-time expense, since SEO compounds over 6-12 months. Agencies offering sustainable long-term strategies within this range are generally more trustworthy than those promising overnight results at bargain prices." },
@@ -447,7 +447,7 @@ The right SEO investment for your Trichy business depends on your specific compe
     keywords: ["website launch checklist Trichy", "website development Tiruchirappalli", "business website Tamil Nadu", "business website Trichy", "web development checklist India", "new website launch tips", "website testing before launch"],
     date: "2026-02-17",
     featuredImage: "/images/blogs/blog-website-launch.png",
-    author: "Aaron Joseph",
+    author: "Aaron John",
     readTime: "8 min read",
     faqs: [
       { question: "How long before launch should I start testing my website?", answer: "Testing should begin at least two to three weeks before your planned launch date, giving your team enough time to identify and fix issues without rushing. This includes functional testing, cross-browser checks, mobile responsiveness, and load testing under realistic traffic conditions. Rushed testing in the final days before launch often leads to overlooked bugs that surface only after real customers start using the site. Building testing time into your project timeline from the start prevents last-minute scrambling." },
@@ -518,7 +518,7 @@ A successful website launch isn't about perfection; it's about eliminating the p
     keywords: ["custom website development Trichy", "web development Tiruchirappalli", "WordPress vs custom website", "business website platform India", "scalable website Tamil Nadu"],
     date: "2026-03-02",
     featuredImage: "/images/blogs/blog-custom-vs-wordpress.png",
-    author: "Suriyanarayanan",
+    author: "Suriyanarayanan Gurusamy",
     readTime: "9 min read",
     faqs: [
       { question: "Is WordPress secure enough for a growing Trichy business?", answer: "WordPress can be very secure when properly maintained, but its popularity makes it a frequent target for automated attacks, so regular updates and security plugins are essential. Businesses handling sensitive customer data or high transaction volumes may find custom development offers tighter control over security architecture. For most small to mid-sized businesses, a well-maintained WordPress site with proper hosting and security practices is more than sufficient. The key factor is ongoing maintenance discipline rather than the platform choice itself." },
@@ -597,7 +597,7 @@ There is no universally correct answer between WordPress and custom development.
     keywords: ["business website Trichy 2026", "website development Tiruchirappalli", "why businesses need websites", "online presence Tamil Nadu", "online presence Trichy", "small business website India", "website vs social media"],
     date: "2026-03-16",
     featuredImage: "/images/blogs/blog-why-website.png",
-    author: "Priya Rajan",
+    author: "Mohammad Shafik",
     readTime: "7 min read",
     faqs: [
       { question: "Isn't a Facebook or Instagram page enough instead of a website?", answer: "Social media pages are valuable for engagement, but they don't offer the same level of control, credibility, or search visibility as an owned website. Platforms can change algorithms overnight, restricting how many followers actually see your content, whereas your website remains entirely under your control. Also, many customers still research businesses through Google before making a purchase decision, and a website builds far more trust than a social profile alone. The strongest strategy uses both channels together rather than relying on social media exclusively." },
@@ -666,7 +666,7 @@ In the current Tamil Nadu business landscape, a website isn't a luxury reserved 
     keywords: ["Instagram marketing for clinics Trichy", "hospital social media Tiruchirappalli", "healthcare social media Tamil Nadu", "clinic marketing Trichy", "patient acquisition Instagram India", "doctor branding social media"],
     date: "2026-03-30",
     featuredImage: "/images/blogs/blog-instagram-clinics.png",
-    author: "Rahul Krishnamurthy",
+    author: "Reethika Srinivasan",
     readTime: "8 min read",
     faqs: [
       { question: "What content can healthcare clinics legally post on Instagram in India?", answer: "Clinics can share general health education, procedure explanations, facility tours, and team introductions without violating medical advertising norms. That said, before-and-after patient photos require explicit written consent, and certain specialties like cosmetic procedures have additional regulatory considerations under Indian Medical Council guidelines. It's always advisable to have content reviewed against current MCI or relevant council advertising guidelines before publishing. Working with a marketing team familiar with healthcare compliance reduces risk significantly." },
@@ -741,7 +741,7 @@ For healthcare clinics in Trichy, Instagram represents a genuine opportunity to 
     keywords: ["social media marketing schools Trichy", "college admissions marketing Tamil Nadu", "education institution branding India", "school social media strategy", "student enrollment marketing Trichy"],
     date: "2026-04-13",
     featuredImage: "/images/blogs/blog-social-schools.png",
-    author: "Aaron Joseph",
+    author: "Aaron John",
     readTime: "8 min read",
     faqs: [
       { question: "Which social media platform works best for school and college marketing?", answer: "Instagram and YouTube typically perform best for reaching both students and parents, with Instagram driving visual engagement and YouTube supporting longer educational or campus tour content. Facebook remains relevant for reaching parent demographics directly, particularly for school-level admissions rather than college marketing. The ideal platform mix depends on your specific target audience, whether that's school-going children's parents or college-bound students themselves. Most institutions benefit from a multi-platform presence rather than concentrating entirely on one channel." },
@@ -820,7 +820,7 @@ For schools and colleges across Tamil Nadu, social media has evolved from a nice
     keywords: ["restaurant marketing Trichy", "food business marketing Tiruchirappalli", "digital marketing for restaurants Tamil Nadu", "food business social media India", "restaurant Instagram marketing"],
     date: "2026-04-27",
     featuredImage: "/images/blogs/blog-restaurant-marketing.png",
-    author: "Suriyanarayanan",
+    author: "Suriyanarayanan Gurusamy",
     readTime: "8 min read",
     faqs: [
       { question: "How important are food delivery app reviews compared to Google reviews for restaurants?", answer: "Both matter significantly but serve different purposes; delivery app reviews (Zomato, Swiggy) directly influence order conversion within those platforms, while Google reviews affect broader search visibility and dine-in decision-making. A restaurant should actively manage its reputation across both ecosystems rather than focusing exclusively on one. Encouraging satisfied customers to leave reviews on both platforms, ideally right after a positive experience, tends to produce the best combined results. Consistency in food quality and service remains the underlying driver of positive reviews across every platform." },
@@ -896,7 +896,7 @@ For Trichy restaurants, digital marketing success comes from consistent, authent
     keywords: ["LinkedIn marketing B2B Trichy", "B2B lead generation Tamil Nadu", "LinkedIn ads India", "business networking Trichy digital", "LinkedIn content strategy B2B"],
     date: "2026-05-05",
     featuredImage: "/images/blogs/blog-linkedin-b2b.png",
-    author: "Priya Rajan",
+    author: "Mohammad Shafik",
     readTime: "9 min read",
     faqs: [
       { question: "How much should a B2B company in Trichy budget for LinkedIn advertising?", answer: "LinkedIn advertising costs more per click than platforms like Facebook or Instagram, typically ranging from ₹200 to ₹600 per click depending on targeting specificity and industry competitiveness. Most B2B companies see reasonable results starting with monthly budgets of ₹30,000 to ₹50,000, allowing enough data collection to optimize campaigns effectively. Because LinkedIn excels at reaching decision-makers rather than broad consumer audiences, the higher cost per click often translates to significantly higher quality leads. Starting with a focused audience and clear conversion goal helps maximize budget efficiency from the outset." },
@@ -973,7 +973,7 @@ For Trichy's B2B companies, LinkedIn represents an unmatched opportunity to reac
     keywords: ["lead generation Trichy", "lead generation Tiruchirappalli", "service business marketing Tamil Nadu", "qualified leads India", "conversion rate optimization Tamil Nadu"],
     date: "2026-05-12",
     featuredImage: "/images/blogs/blog-lead-generation.png",
-    author: "Rahul Krishnamurthy",
+    author: "Reethika Srinivasan",
     readTime: "9 min read",
     faqs: [
       { question: "What's the difference between lead generation and lead nurturing?", answer: "Lead generation focuses on attracting and capturing initial interest from potential customers through channels like ads, content, and referrals. Lead nurturing is the subsequent process of building trust and moving those captured leads toward a purchase decision through follow-up communication like email sequences or personalized outreach. Many businesses invest heavily in generation but neglect nurturing, resulting in leads that go cold before converting. A complete strategy treats both stages with equal importance for maximizing overall conversion rates." },
@@ -1061,7 +1061,7 @@ Sustainable lead generation for service businesses requires a coordinated system
     keywords: ["digital marketing trends 2026", "AI marketing Trichy", "future of SEO Tamil Nadu", "marketing technology India", "zero click search optimization"],
     date: "2026-05-19",
     featuredImage: "/images/blogs/blog-digital-trends.png",
-    author: "Aaron Joseph",
+    author: "Aaron John",
     readTime: "9 min read",
     faqs: [
       { question: "How is AI changing search behavior and what should businesses do about it?", answer: "AI-powered search experiences, including Google's AI Overviews, are increasingly answering user queries directly within search results, reducing traditional click-through to websites for informational queries. Businesses need to adapt by structuring content to be easily extractable for these AI summaries while also focusing on queries where direct website visits remain valuable, such as transactional or local searches. This means combining traditional [SEO](/services/seo) with a broader visibility strategy across multiple content formats and platforms. those that only optimize for old-style blue-link rankings risk losing visibility as search behavior evolves." },
@@ -1134,7 +1134,7 @@ The pace of change in digital marketing shows no signs of slowing in 2026. Trich
     keywords: ["startup branding Trichy", "brand identity Tamil Nadu startups", "premium branding on a budget India", "startup marketing Trichy", "logo and brand strategy India"],
     date: "2026-05-26",
     featuredImage: "/images/blogs/blog-branding-startups.png",
-    author: "Suriyanarayanan",
+    author: "Suriyanarayanan Gurusamy",
     readTime: "8 min read",
     faqs: [
       { question: "How much should a startup budget for initial brand identity development?", answer: "Early-stage startups in Trichy typically allocate between ₹50,000 and ₹2,00,000 for foundational brand identity work, including logo design, brand guidelines, and core visual assets. This range varies significantly based on how comprehensive the brand system needs to be and whether it includes additional deliverables like packaging or signage design. It's important to view this as a foundational investment rather than a recurring cost, since a well-built brand system serves the company for years with only periodic refreshes. Startups should avoid the temptation to cut corners here, since inconsistent or amateur branding can undermine credibility with investors and customers alike." },
@@ -1213,7 +1213,7 @@ For Trichy startups, premium brand identity isn't about matching the marketing b
     keywords: ["content marketing strategy Trichy", "content marketing Tamil Nadu businesses", "blog content SEO India", "content marketing ROI Trichy", "content strategy for revenue growth"],
     date: "2026-06-02",
     featuredImage: "/images/blogs/blog-content-marketing.png",
-    author: "Priya Rajan",
+    author: "Mohammad Shafik",
     readTime: "9 min read",
     faqs: [
       { question: "How long does it take for content marketing to show measurable revenue impact?", answer: "Most you should expect a runway of six to nine months before content marketing produces significant, measurable revenue impact, since search rankings and audience trust both take time to build. Early months typically show incremental traffic growth before meaningful conversion volume develops. those that maintain consistent publishing and quality standards throughout this period generally see much stronger long-term results than those who give up prematurely. Setting realistic timeline expectations from the outset prevents disappointment and premature strategy abandonment." },
@@ -1292,7 +1292,7 @@ Content marketing that drives real revenue requires strategic intentionality at 
     keywords: ["email marketing Chennai", "email automation Tamil Nadu businesses", "email marketing strategy India", "automated sales funnel Chennai", "email newsletter marketing India"],
     date: "2026-06-09",
     featuredImage: "/images/blogs/blog-email-marketing.png",
-    author: "Rahul Krishnamurthy",
+    author: "Reethika Srinivasan",
     readTime: "8 min read",
     faqs: [
       { question: "Is email marketing still effective in 2026 given how much social media has grown?", answer: "Yes, email marketing remains one of the highest ROI digital marketing channels available, precisely because it's an owned channel not subject to social media algorithm changes. Unlike social platforms where organic reach has declined significantly, email allows direct, reliable communication with an audience that has explicitly opted in to hear from you. Businesses combining email with social media typically see stronger overall results than those relying on either channel exclusively. The key to continued effectiveness is respecting subscriber inboxes with genuinely valuable, well-targeted content rather than excessive promotional messaging." },
@@ -1379,7 +1379,7 @@ Email marketing, though sometimes overlooked in favor of trendier channels, rema
     keywords: ["marketing automation Chennai", "automation tools Tamil Nadu businesses", "CRM automation India", "scaling marketing team Chennai", "marketing technology stack India"],
     date: "2026-06-16",
     featuredImage: "/images/blogs/blog-marketing-automation.png",
-    author: "Aaron Joseph",
+    author: "Aaron John",
     readTime: "9 min read",
     faqs: [
       { question: "What's the difference between marketing automation and simply scheduling social media posts?", answer: "Marketing automation encompasses a much broader system of trigger-based workflows across email, CRM, and customer lifecycle management, not just pre-scheduling content publication. True automation responds dynamically to individual customer behavior, sending different follow-up sequences based on specific actions a lead or customer takes. Social media scheduling is a small, relatively simple component of the broader marketing automation ecosystem. those that only schedule posts are missing the more powerful lead nurturing and conversion capabilities automation platforms offer." },
@@ -1467,7 +1467,7 @@ For growing Chennai businesses, marketing automation isn't about replacing human
     keywords: ["small business growth Tamil Nadu", "business growth strategy Trichy", "digital marketing small business India", "Tamil Nadu entrepreneurship guide", "scaling small business Trichy"],
     date: "2026-06-30",
     featuredImage: "/images/blogs/blog-small-business-growth.png",
-    author: "Suriyanarayanan",
+    author: "Suriyanarayanan Gurusamy",
     readTime: "10 min read",
     faqs: [
       { question: "What's the single most important first digital investment for a small business in Tamil Nadu?", answer: "For most small businesses, a professional, mobile-friendly website paired with a properly optimized Google Business Profile represents the highest-priority initial investment, since these establish basic credibility and local search visibility. Without this foundation, other marketing efforts like social media or paid advertising have nowhere effective to direct traffic and convert interest into actual business. you should resist the temptation to jump straight into paid advertising before these fundamentals are solidly in place. Getting this foundation right first makes every subsequent marketing investment significantly more effective." },

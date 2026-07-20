@@ -1,18 +1,21 @@
+"use server";
 import { db } from "@/db";
-import { clientAssets, organizations } from "@/db/schema";
+import { clientAssets, organizations, organizationMembers } from "@/db/schema";
 import { eq, desc } from "drizzle-orm";
 import { auth } from "@clerk/nextjs/server";
 import { FileIcon, DownloadIcon, UploadIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { revalidatePath } from "next/cache";
 
+import { requireAuthenticatedUser, requireOrganizationAccess } from "@/lib/auth";
+
 // Server action for MVP uploading
 async function uploadMockAsset(formData: FormData) {
-  "use server";
-  const name = formData.get("name") as string;
+    const name = formData.get("name") as string;
   const orgId = formData.get("organizationId") as string;
   
   if (!name || !orgId) return;
+  await requireOrganizationAccess(orgId);
   
   await db.insert(clientAssets).values({
     organizationId: orgId,
@@ -25,15 +28,28 @@ async function uploadMockAsset(formData: FormData) {
 }
 
 export default async function ClientAssetsPage() {
-  await auth.protect();
+  const user = await requireAuthenticatedUser();
   
-  const myOrg = await db.query.organizations.findFirst({
-    where: eq(organizations.type, "client")
+  const membership = await db.query.organizationMembers.findFirst({
+    where: eq(organizationMembers.userId, user.id)
   });
 
-  if (!myOrg) {
-    return <div className="text-white">No active organization found.</div>;
+  if (!membership) {
+    return (
+      <div className="h-full flex items-center justify-center text-gray-400">
+        <div className="text-center">
+          <h3 className="text-xl font-medium text-white mb-2">No Active Organization</h3>
+          <p>You have not been assigned to a client organization yet.</p>
+        </div>
+      </div>
+    );
   }
+
+  const myOrg = await db.query.organizations.findFirst({
+    where: eq(organizations.id, membership.organizationId)
+  });
+
+  if (!myOrg) return null;
 
   const assets = await db.query.clientAssets.findMany({
     where: eq(clientAssets.organizationId, myOrg.id),

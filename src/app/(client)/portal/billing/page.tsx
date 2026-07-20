@@ -1,20 +1,34 @@
 import { db } from "@/db";
-import { invoices, organizations } from "@/db/schema";
+import { organizations, invoices, organizationMembers } from "@/db/schema";
 import { eq, desc } from "drizzle-orm";
-import { auth } from "@clerk/nextjs/server";
+import { requireAuthenticatedUser } from "@/lib/auth";
 import { Button } from "@/components/ui/button";
 import { CreditCardIcon, FileTextIcon } from "lucide-react";
+import Link from "next/link";
 
 export default async function ClientBillingPage() {
-  await auth.protect();
+  const user = await requireAuthenticatedUser();
   
-  const myOrg = await db.query.organizations.findFirst({
-    where: eq(organizations.type, "client")
+  const membership = await db.query.organizationMembers.findFirst({
+    where: eq(organizationMembers.userId, user.id)
   });
 
-  if (!myOrg) {
-    return <div className="text-white">No active organization found.</div>;
+  if (!membership) {
+    return (
+      <div className="h-full flex items-center justify-center text-gray-400">
+        <div className="text-center">
+          <h3 className="text-xl font-medium text-white mb-2">No Active Organization</h3>
+          <p>You have not been assigned to a client organization yet.</p>
+        </div>
+      </div>
+    );
   }
+
+  const myOrg = await db.query.organizations.findFirst({
+    where: eq(organizations.id, membership.organizationId)
+  });
+
+  if (!myOrg) return null;
 
   const myInvoices = await db.query.invoices.findMany({
     where: eq(invoices.organizationId, myOrg.id),
@@ -74,11 +88,11 @@ export default async function ClientBillingPage() {
                     INV-{inv.id.substring(0, 8).toUpperCase()}
                   </td>
                   <td className="px-6 py-4 font-bold text-white">
-                    ${inv.amount.toLocaleString()}
+                    ${(inv.amount / 100).toLocaleString(undefined, { minimumFractionDigits: 2 })}
                   </td>
                   <td className="px-6 py-4">
                     <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium capitalize
-                      ${inv.status === "pending" ? "bg-yellow-900/50 text-yellow-400 border border-yellow-900/50" : 
+                      ${inv.status === "open" ? "bg-yellow-900/50 text-yellow-400 border border-yellow-900/50" : 
                         inv.status === "paid" ? "bg-green-900/50 text-green-400 border border-green-900/50" : 
                         "bg-red-900/50 text-red-400 border border-red-900/50"}`}
                     >
@@ -87,14 +101,12 @@ export default async function ClientBillingPage() {
                   </td>
                   <td className="px-6 py-4">{inv.dueDate.toLocaleDateString()}</td>
                   <td className="px-6 py-4 text-right">
-                    <a 
-                      href={inv.invoiceUrl || "#"} 
-                      target="_blank" 
-                      rel="noreferrer"
+                    <Link 
+                      href={`/portal/billing/${inv.id}`}
                       className="text-blue-400 hover:text-blue-300 font-medium text-sm"
                     >
-                      View PDF
-                    </a>
+                      {inv.status === "open" ? "Pay Now" : "View Details"}
+                    </Link>
                   </td>
                 </tr>
               ))

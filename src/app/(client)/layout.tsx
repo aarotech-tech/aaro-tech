@@ -1,11 +1,13 @@
 import { ReactNode } from "react";
 import Link from "next/link";
 import { UserButton } from "@clerk/nextjs";
-import { auth } from "@clerk/nextjs/server";
+import { requireAuthenticatedUser, ForbiddenError } from "@/lib/auth";
 
 export default async function ClientLayout({ children }: { children: ReactNode }) {
-  // Ensure the user is logged in
-  await auth.protect();
+  const user = await requireAuthenticatedUser();
+  if (user.userType !== "client" && user.userType !== "internal") {
+    throw new ForbiddenError("Only clients can access the portal.");
+  }
 
   return (
     <div className="flex h-screen overflow-hidden bg-gray-900 text-white">
@@ -29,6 +31,12 @@ export default async function ClientLayout({ children }: { children: ReactNode }
             className="flex items-center px-4 py-2.5 text-sm font-medium rounded-md text-gray-400 hover:text-white hover:bg-gray-800 transition-colors"
           >
             My Assets
+          </Link>
+          <Link
+            href="/portal/deliverables"
+            className="flex items-center px-4 py-2.5 text-sm font-medium rounded-md text-gray-400 hover:text-white hover:bg-gray-800 transition-colors"
+          >
+            Deliverables
           </Link>
           <Link
             href="/portal/billing"

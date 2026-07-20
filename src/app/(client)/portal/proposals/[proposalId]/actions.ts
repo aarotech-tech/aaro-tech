@@ -1,28 +1,118 @@
 "use server";
+import { withActionErrorHandling, AppError } from '@/lib/errors';
 
 import { db } from "@/db";
-import { proposals } from "@/db/schema";
+import { proposals, deals, organizations, projects, automationLogs, organizationStatusHistory, clientOnboardings, onboardingSteps } from "@/db/schema";
 import { eq } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 
-export async function approveProposalAction(proposalId: string, formData: FormData) {
-  const signature = formData.get("signature") as string;
-  
-  if (!signature) return;
+import { headers } from "next/headers";
+import { rateLimit } from '@/lib/rate-limit';
 
-  // In production, you would extract the IP from headers():
-  // import { headers } from "next/headers";
-  // const ip = headers().get("x-forwarded-for") || "unknown";
-  
-  await db.update(proposals)
-    .set({ 
-      status: "accepted",
-      approvedAt: new Date(),
-      signatureText: signature,
-      approvedByIp: "127.0.0.1", // Mocked IP for local dev
-    })
-    .where(eq(proposals.id, proposalId));
+export async function approveProposalAction(proposalId: string, formData: FormData) {
+  return withActionErrorHandling('approveProposalAction', async () => {
+    const forwardedFor = (await headers()).get("x-forwarded-for");
+    const ip = forwardedFor ? forwardedFor.split(',')[0] : "unknown";
+
+    await rateLimit(`proposal_approval_${ip}`, { points: 5, durationInSeconds: 3600 });
+
+    const signature = formData.get("signature") as string;
     
-  revalidatePath(`/portal/proposals/${proposalId}`);
-  revalidatePath(`/crm/proposals/${proposalId}`);
+    if (!signature) throw new AppError("Signature is required", 400);
+
+    const proposal = await db.query.proposals.findFirst({ where: eq(proposals.id, proposalId) });
+    if (!proposal) throw new AppError("Proposal not found", 404);
+    if (proposal.status !== "draft") throw new AppError("Proposal is no longer valid or already accepted", 400);
+    
+    const now = new Date();
+    if (proposal.expiresAt && proposal.expiresAt < now) {
+      throw new AppError("Proposal approval link has expired", 400);
+    }
+    
+    // If expiresAt is null, enforce a default 30-day expiration based on createdAt
+    if (!proposal.expiresAt && proposal.createdAt) {
+      const thirtyDaysAgo = new Date();
+      thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+      if (proposal.createdAt < thirtyDaysAgo) {
+        throw new AppError("Proposal approval link has expired (exceeded 30 days)", 400);
+      }
+    }
+    
+    const deal = await db.query.deals.findFirst({ where: eq(deals.id, proposal.dealId) });
+    if (!deal) throw new AppError("Deal not found", 404);
+
+    // ip is already extracted above
+
+    await db.transaction(async (tx) => {
+      // 1. Mark Proposal as accepted
+      await tx.update(proposals)
+        .set({ 
+          status: "accepted",
+          approvedAt: new Date(),
+          signatureText: signature,
+          approvedByIp: ip,
+        })
+        .where(eq(proposals.id, proposalId));
+
+      // 2. Mark Deal as Won
+      await tx.update(deals)
+        .set({ stage: "won" })
+        .where(eq(deals.id, deal.id));
+
+      // 3. Perform Lead to Client Conversion (if they are a lead)
+      const org = await tx.query.organizations.findFirst({
+        where: eq(organizations.id, deal.organizationId)
+      });
+
+      if (org && org.type === "lead") {
+        await tx.update(organizations)
+          .set({ type: "client" })
+          .where(eq(organizations.id, deal.organizationId));
+
+        await tx.insert(organizationStatusHistory).values({
+          organizationId: deal.organizationId,
+          fromStatus: "lead",
+          toStatus: "client",
+        });
+
+        const [onboarding] = await tx.insert(clientOnboardings).values({
+          organizationId: deal.organizationId,
+          status: "pending"
+        }).returning({ id: clientOnboardings.id });
+
+        if (onboarding) {
+          await tx.insert(onboardingSteps).values([
+            { onboardingId: onboarding.id, title: "Initial Deposit Paid", status: "pending" },
+            { onboardingId: onboarding.id, title: "Brand Assets Collected", status: "pending" },
+            { onboardingId: onboarding.id, title: "Kickoff Call Scheduled", status: "pending" },
+            { onboardingId: onboarding.id, title: "Project Brief Signed", status: "pending" },
+          ]);
+        }
+      }
+
+      // 4. Create a corresponding Project for the newly won deal
+      await tx.insert(projects).values({
+        organizationId: deal.organizationId,
+        dealId: deal.id,
+        name: `${deal.name} Fulfillment`,
+        status: "active",
+        health: "green",
+      });
+
+      // 5. Trigger background job real pending state
+      await tx.insert(automationLogs).values({
+        jobName: "deal-won-alert",
+        status: "queued",
+        payload: JSON.stringify({ dealId: deal.id, clientName: deal.name }),
+        completedAt: null,
+      });
+    });
+
+    revalidatePath(`/portal/proposals/${proposalId}`);
+    revalidatePath(`/crm/proposals/${proposalId}`);
+    revalidatePath("/crm");
+    revalidatePath("/crm/clients");
+    
+    return true;
+  });
 }

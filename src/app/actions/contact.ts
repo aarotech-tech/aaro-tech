@@ -1,14 +1,23 @@
 "use server";
+import { withActionErrorHandling, AppError } from '@/lib/errors';
 
 import { Resend } from "resend";
 import { db } from "@/db";
 import { websiteLeads } from "@/db/schema";
 import { eq } from "drizzle-orm";
+import { logger } from '@/lib/logger';
+import { rateLimit } from '@/lib/rate-limit';
+import { headers } from 'next/headers';
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
 export async function submitContactForm(formData: FormData) {
-  try {
+  return withActionErrorHandling('submitContactForm', async () => {
+    const forwardedFor = (await headers()).get("x-forwarded-for");
+    const ip = forwardedFor ? forwardedFor.split(',')[0] : "unknown";
+    
+    await rateLimit(`contact_form_${ip}`, { points: 3, durationInSeconds: 3600 });
+
     const name = formData.get("name") as string;
     const businessName = formData.get("businessName") as string;
     const email = formData.get("email") as string;
@@ -44,7 +53,7 @@ export async function submitContactForm(formData: FormData) {
         });
       }
     } catch (dbError) {
-      console.error("Database error (but continuing to email):", dbError);
+      logger.error("Database error in contact form", { error: String(dbError) });
     }
 
     const htmlContent = `
@@ -57,6 +66,10 @@ export async function submitContactForm(formData: FormData) {
       <p><strong>Challenge/Interest:</strong> ${actualChallenge}</p>
     `;
 
+    // Phase 3H: Background Work - don't await Resend. We just log the intent and let it run.
+    // Wait, Vercel Serverless Functions freeze execution when response is returned, 
+    // so we need waitUntil in Edge, but in Node we can await it or just await it normally.
+    // Since we need to know if it failed, we will await it.
     const { data, error } = await resend.emails.send({
       from: "Aarotech Website <notifications@aarotech.in>",
       to: process.env.CONTACT_EMAIL || "info@aarotech.in",
@@ -66,13 +79,9 @@ export async function submitContactForm(formData: FormData) {
     });
 
     if (error) {
-      console.error("Resend error:", error);
-      return { success: false, error: "Failed to send email via Resend." };
+      throw new AppError("Failed to send email via Resend.");
     }
 
-    return { success: true };
-  } catch (error) {
-    console.error("Server Action Error:", error);
-    return { success: false, error: "Internal Server Error" };
-  }
+    return true;
+  });
 }

@@ -6,7 +6,12 @@ import {
   timestamp,
   integer,
   primaryKey,
+  boolean,
+  jsonb,
+  index,
+  uniqueIndex
 } from "drizzle-orm/pg-core";
+import { relations } from "drizzle-orm";
 
 export const organizations = pgTable("organizations", {
   id: uuid("id").primaryKey().defaultRandom(),
@@ -15,6 +20,7 @@ export const organizations = pgTable("organizations", {
   slug: varchar("slug", { length: 255 }).unique().notNull(),
   logoUrl: text("logo_url"),
   type: varchar("type", { length: 50 }).default("client"), // internal, client, lead
+  status: varchar("status", { length: 50 }).default("lead"), // lead, prospect, client, archived
   healthScore: integer("health_score").default(100),
   createdAt: timestamp("created_at").defaultNow(),
 });
@@ -26,6 +32,9 @@ export const users = pgTable("users", {
   firstName: varchar("first_name", { length: 255 }),
   lastName: varchar("last_name", { length: 255 }),
   role: varchar("role", { length: 50 }).default("client"), // superadmin, employee, client
+  userType: varchar("user_type", { length: 50 }).default("client"), // internal, client
+  globalRole: varchar("global_role", { length: 50 }), // owner, admin, manager, staff
+  status: varchar("status", { length: 50 }).default("active"), // active, suspended
   avatarUrl: text("avatar_url"),
   createdAt: timestamp("created_at").defaultNow(),
 });
@@ -44,6 +53,7 @@ export const organizationMembers = pgTable(
   },
   (t) => ({
     pk: primaryKey({ columns: [t.userId, t.organizationId] }),
+    orgIdx: index("org_members_org_idx").on(t.organizationId),
   })
 );
 
@@ -56,7 +66,10 @@ export const deals = pgTable("deals", {
   value: integer("value").default(0), // Deal value
   expectedCloseDate: timestamp("expected_close_date"),
   createdAt: timestamp("created_at").defaultNow(),
-});
+}, (t) => ({
+  orgIdx: index("deals_organization_id_idx").on(t.organizationId),
+  ownerIdx: index("deals_owner_id_idx").on(t.ownerId),
+}));
 
 export const proposals = pgTable("proposals", {
   id: uuid("id").primaryKey().defaultRandom(),
@@ -69,9 +82,12 @@ export const proposals = pgTable("proposals", {
   approvedAt: timestamp("approved_at"),
   approvedByIp: varchar("approved_by_ip", { length: 45 }),
   signatureText: varchar("signature_text", { length: 255 }),
+  expiresAt: timestamp("expires_at"),
   
   createdAt: timestamp("created_at").defaultNow(),
-});
+}, (t) => ({
+  dealIdx: index("proposals_deal_id_idx").on(t.dealId),
+}));
 
 export const clientAssets = pgTable("client_assets", {
   id: uuid("id").primaryKey().defaultRandom(),
@@ -81,7 +97,9 @@ export const clientAssets = pgTable("client_assets", {
   fileType: varchar("file_type", { length: 50 }).notNull(), // pdf, image, csv
   fileUrl: text("file_url").notNull(),
   createdAt: timestamp("created_at").defaultNow(),
-});
+}, (t) => ({
+  orgIdx: index("client_assets_org_idx").on(t.organizationId),
+}));
 
 export const projects = pgTable("projects", {
   id: uuid("id").primaryKey().defaultRandom(),
@@ -91,7 +109,9 @@ export const projects = pgTable("projects", {
   status: varchar("status", { length: 50 }).default("active"), // active, paused, completed
   health: varchar("health", { length: 50 }).default("green"), // green, yellow, red
   createdAt: timestamp("created_at").defaultNow(),
-});
+}, (t) => ({
+  orgIdx: index("projects_org_idx").on(t.organizationId),
+}));
 
 export const tasks = pgTable("tasks", {
   id: uuid("id").primaryKey().defaultRandom(),
@@ -111,16 +131,7 @@ export const knowledgeBase = pgTable("knowledge_base", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
-export const invoices = pgTable("invoices", {
-  id: uuid("id").primaryKey().defaultRandom(),
-  organizationId: uuid("organization_id").references(() => organizations.id, { onDelete: "cascade" }).notNull(),
-  dealId: uuid("deal_id").references(() => deals.id, { onDelete: "set null" }),
-  amount: integer("amount").notNull(), // Amount in dollars
-  status: varchar("status", { length: 50 }).default("pending"), // pending, paid, overdue, cancelled
-  dueDate: timestamp("due_date").notNull(),
-  invoiceUrl: text("invoice_url"), // Link to PDF or Stripe
-  createdAt: timestamp("created_at").defaultNow(),
-});
+
 
 export const automationLogs = pgTable("automation_logs", {
   id: uuid("id").primaryKey().defaultRandom(),
@@ -138,7 +149,9 @@ export const trackingEvents = pgTable("tracking_events", {
   entityId: uuid("entity_id").notNull(),
   eventType: varchar("event_type", { length: 50 }).notNull(), // 'viewed', 'downloaded'
   createdAt: timestamp("created_at").defaultNow(),
-});
+}, (t) => ({
+  orgIdx: index("tracking_events_org_idx").on(t.organizationId),
+}));
 
 export const websiteLeads = pgTable("website_leads", {
   id: uuid("id").primaryKey().defaultRandom(),
@@ -151,4 +164,185 @@ export const websiteLeads = pgTable("website_leads", {
   status: varchar("status", { length: 50 }).default("new"), // new, contacted, archived
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
+}, (t) => ({
+  emailIdx: uniqueIndex("website_leads_email_idx").on(t.email),
+}));
+
+export const organizationStatusHistory = pgTable("organization_status_history", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  organizationId: uuid("organization_id").references(() => organizations.id, { onDelete: "cascade" }).notNull(),
+  fromStatus: varchar("from_status", { length: 50 }).notNull(),
+  toStatus: varchar("to_status", { length: 50 }).notNull(),
+  changedById: uuid("changed_by_id").references(() => users.id, { onDelete: "set null" }),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const contacts = pgTable("contacts", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  organizationId: uuid("organization_id").references(() => organizations.id, { onDelete: "cascade" }).notNull(),
+  userId: uuid("user_id").references(() => users.id, { onDelete: "set null" }), // Link to portal user if active
+  name: varchar("name", { length: 255 }).notNull(),
+  email: varchar("email", { length: 255 }).notNull(),
+  phone: varchar("phone", { length: 50 }),
+  createdAt: timestamp("created_at").defaultNow(),
+  deletedAt: timestamp("deleted_at"),
+});
+
+export const services = pgTable("services", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  name: varchar("name", { length: 255 }).notNull(),
+  description: text("description"),
+  basePrice: integer("base_price").default(0).notNull(),
+  isActive: boolean("is_active").default(true).notNull(),
+});
+
+export const dealLineItems = pgTable("deal_line_items", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  dealId: uuid("deal_id").references(() => deals.id, { onDelete: "cascade" }).notNull(),
+  serviceId: uuid("service_id").references(() => services.id, { onDelete: "set null" }),
+  title: varchar("title", { length: 255 }).notNull(),
+  description: text("description"),
+  quantity: integer("quantity").default(1).notNull(),
+  unitPrice: integer("unit_price").default(0).notNull(),
+  total: integer("total").default(0).notNull(),
+  isRecurring: boolean("is_recurring").default(false).notNull(),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const clientOnboardings = pgTable("client_onboardings", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  organizationId: uuid("organization_id").references(() => organizations.id, { onDelete: "cascade" }).notNull(),
+  status: varchar("status", { length: 50 }).default("pending"), // pending, completed
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const onboardingSteps = pgTable("onboarding_steps", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  onboardingId: uuid("onboarding_id").references(() => clientOnboardings.id, { onDelete: "cascade" }).notNull(),
+  title: varchar("title", { length: 255 }).notNull(),
+  status: varchar("status", { length: 50 }).default("pending"), // pending, completed
+  dataPayload: jsonb("data_payload"),
+});
+
+export const clientOnboardingsRelations = relations(clientOnboardings, ({ many }) => ({
+  steps: many(onboardingSteps),
+}));
+
+export const onboardingStepsRelations = relations(onboardingSteps, ({ one }) => ({
+  onboarding: one(clientOnboardings, {
+    fields: [onboardingSteps.onboardingId],
+    references: [clientOnboardings.id],
+  }),
+}));
+
+export const retainers = pgTable("retainers", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  organizationId: uuid("organization_id").references(() => organizations.id, { onDelete: "cascade" }).notNull(),
+  dealId: uuid("deal_id").references(() => deals.id, { onDelete: "set null" }), // Optional link to origin deal
+  name: varchar("name", { length: 255 }).notNull(),
+  status: varchar("status", { length: 50 }).default("active"), // active, paused, cancelled
+  amount: integer("amount").notNull(), // Monthly recurring revenue amount
+  startDate: timestamp("start_date").notNull(),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const retainerPeriods = pgTable("retainer_periods", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  retainerId: uuid("retainer_id").references(() => retainers.id, { onDelete: "cascade" }).notNull(),
+  periodName: varchar("period_name", { length: 100 }).notNull(), // e.g. "July 2026"
+  status: varchar("status", { length: 50 }).default("active"), // active, completed
+  startDate: timestamp("start_date").notNull(),
+  endDate: timestamp("end_date").notNull(),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const invoices = pgTable("invoices", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  organizationId: uuid("organization_id").references(() => organizations.id, { onDelete: "cascade" }).notNull(),
+  dealId: uuid("deal_id").references(() => deals.id, { onDelete: "set null" }), // Keep existing field to prevent breaking changes
+  projectId: uuid("project_id").references(() => projects.id, { onDelete: "set null" }), // Added for Phase 4
+  retainerPeriodId: uuid("retainer_period_id").references(() => retainerPeriods.id, { onDelete: "set null" }), // Added for Phase 4
+  amount: integer("amount").notNull(), // Amount in cents
+  status: varchar("status", { length: 50 }).default("open"), // draft, open, paid, void
+  razorpayOrderId: varchar("razorpay_order_id", { length: 255 }),
+  paymentUtr: varchar("payment_utr", { length: 255 }),
+  paymentReceiptUrl: text("payment_receipt_url"),
+  dueDate: timestamp("due_date").notNull(),
+  invoiceUrl: text("invoice_url"), // Keep existing field
+  createdAt: timestamp("created_at").defaultNow(),
+}, (t) => ({
+  orgIdx: index("invoices_org_idx").on(t.organizationId),
+}));
+
+export const payments = pgTable("payments", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  invoiceId: uuid("invoice_id").references(() => invoices.id, { onDelete: "cascade" }).notNull(),
+  amount: integer("amount").notNull(), // Amount in cents
+  status: varchar("status", { length: 50 }).default("pending"), // pending, succeeded, failed
+  provider: varchar("provider", { length: 50 }).default("razorpay"), // razorpay, manual
+  providerPaymentId: varchar("provider_payment_id", { length: 255 }).unique(), // Razorpay Payment ID
+  paidAt: timestamp("paid_at"),
+  createdAt: timestamp("created_at").defaultNow(),
+}, (t) => ({
+  invoiceIdx: index("payments_invoice_idx").on(t.invoiceId),
+}));
+
+export const files = pgTable("files", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  organizationId: uuid("organization_id").references(() => organizations.id, { onDelete: "cascade" }), // Nullable for global files
+  projectId: uuid("project_id").references(() => projects.id, { onDelete: "cascade" }), // Optional
+  retainerPeriodId: uuid("retainer_period_id").references(() => retainerPeriods.id, { onDelete: "cascade" }), // Optional
+  name: varchar("name", { length: 255 }).notNull(),
+  url: text("url").notNull(), // UploadThing URL
+  key: varchar("key", { length: 255 }).notNull(), // UploadThing internal key
+  size: integer("size").notNull(), // bytes
+  mimeType: varchar("mime_type", { length: 100 }),
+  uploadedById: uuid("uploaded_by_id").references(() => users.id, { onDelete: "set null" }),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const deliverables = pgTable("deliverables", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  projectId: uuid("project_id").references(() => projects.id, { onDelete: "cascade" }), // OR retainerPeriodId
+  retainerPeriodId: uuid("retainer_period_id").references(() => retainerPeriods.id, { onDelete: "cascade" }),
+  name: varchar("name", { length: 255 }).notNull(),
+  status: varchar("status", { length: 50 }).default("draft"), // draft, in_review, changes_requested, approved
+  currentVersionId: uuid("current_version_id"), // Manually updated to track latest
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const deliverableVersions = pgTable("deliverable_versions", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  deliverableId: uuid("deliverable_id").references(() => deliverables.id, { onDelete: "cascade" }).notNull(),
+  fileId: uuid("file_id").references(() => files.id, { onDelete: "cascade" }).notNull(),
+  versionNumber: integer("version_number").notNull(),
+  reviewStatus: varchar("review_status", { length: 50 }).default("draft"), // draft, submitted, changes_requested, approved, superseded
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const comments = pgTable("comments", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  deliverableId: uuid("deliverable_id").references(() => deliverables.id, { onDelete: "cascade" }).notNull(),
+  versionId: uuid("version_id").references(() => deliverableVersions.id, { onDelete: "cascade" }), // Optional, can be general comment
+  userId: uuid("user_id").references(() => users.id, { onDelete: "cascade" }).notNull(),
+  text: text("text").notNull(),
+  visibility: varchar("visibility", { length: 50 }).default("client_visible"), // client_visible, internal_only
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const activityLogs = pgTable("activity_logs", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  organizationId: uuid("organization_id").references(() => organizations.id, { onDelete: "cascade" }).notNull(),
+  userId: uuid("user_id").references(() => users.id, { onDelete: "set null" }), // Who performed the action
+  action: varchar("action", { length: 255 }).notNull(), // e.g., 'invoice.created', 'deliverable.approved'
+  entityType: varchar("entity_type", { length: 50 }).notNull(), // e.g., 'invoice', 'deliverable'
+  entityId: uuid("entity_id").notNull(),
+  metadata: text("metadata"), // JSON stringified metadata for extra context
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const rateLimits = pgTable("rate_limits", {
+  key: varchar("key", { length: 255 }).primaryKey(),
+  points: integer("points").notNull().default(0),
+  expireAt: timestamp("expire_at").notNull(),
 });

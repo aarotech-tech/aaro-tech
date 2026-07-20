@@ -1,3 +1,4 @@
+"use server";
 import { db } from "@/db";
 import { proposals, deals, organizations, trackingEvents } from "@/db/schema";
 import { eq } from "drizzle-orm";
@@ -93,7 +94,9 @@ export default async function ClientProposalViewPage({ params }: { params: Promi
                 By signing below, you agree to the scope of work and investment summarized in this proposal.
               </p>
               
-              <form action={approveAction} className="max-w-md">
+              <form action={async (fd) => {
+                                await approveAction(fd);
+              }} className="max-w-md">
                 <div className="mb-4">
                   <label className="block text-sm font-medium text-gray-700 mb-1">
                     Type your full name to sign

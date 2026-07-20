@@ -1,11 +1,13 @@
+"use server";
 import { db } from "@/db";
-import { trackingEvents, proposals, deals, organizations } from "@/db/schema";
+import { trackingEvents, proposals, deals, organizations, services, dealLineItems } from "@/db/schema";
 import { eq, desc } from "drizzle-orm";
 import { notFound } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { generateProposalWithAI } from "./actions";
 import { EyeIcon, CheckCircleIcon } from "lucide-react";
+import LineItemsEditor from "./_components/LineItemsEditor";
 
 export default async function ProposalEditorPage({ params }: { params: Promise<{ proposalId: string }> }) {
   const resolvedParams = await params;
@@ -13,6 +15,7 @@ export default async function ProposalEditorPage({ params }: { params: Promise<{
   const proposalData = await db
     .select({
       id: proposals.id,
+      dealId: deals.id,
       status: proposals.status,
       documentData: proposals.documentData,
       dealName: deals.name,
@@ -34,6 +37,16 @@ export default async function ProposalEditorPage({ params }: { params: Promise<{
 
   const proposal = proposalData[0];
 
+  // Fetch line items and services catalog
+  const currentLineItems = await db.query.dealLineItems.findMany({
+    where: eq(dealLineItems.dealId, proposal.dealId),
+    orderBy: (items, { asc }) => [asc(items.createdAt)]
+  });
+
+  const allServices = await db.query.services.findMany({
+    where: eq(services.isActive, true)
+  });
+
   // Fetch Spy Analytics (views)
   const views = await db
     .select()
@@ -45,7 +58,7 @@ export default async function ProposalEditorPage({ params }: { params: Promise<{
   const generateAction = generateProposalWithAI.bind(null, proposal.id, proposal.dealName, proposal.organizationName!);
 
   return (
-    <div className="max-w-4xl mx-auto h-full flex flex-col">
+    <div className="max-w-5xl mx-auto h-full flex flex-col pb-12">
       <div className="mb-4">
         <Link href="/crm/proposals" className="text-sm text-blue-600 hover:underline">
           &larr; Back to Proposals
@@ -65,7 +78,9 @@ export default async function ProposalEditorPage({ params }: { params: Promise<{
           <span className="text-sm font-medium text-gray-500 bg-gray-100 px-3 py-1 rounded-full capitalize">
             {proposal.status}
           </span>
-          <form action={generateAction}>
+          <form action={async () => {
+                        await generateAction();
+          }}>
             <Button type="submit" variant="outline" className="border-purple-200 text-purple-700 hover:bg-purple-50 shadow-sm transition-colors">
               ✨ Auto-Generate with AI
             </Button>
@@ -84,14 +99,21 @@ export default async function ProposalEditorPage({ params }: { params: Promise<{
         {/* For MVP, we'll just render the HTML data. In reality, this would be a TipTap or Slate.js editor */}
         <div 
           className="prose max-w-none text-gray-800"
-          dangerouslySetInnerHTML={{ __html: proposal.documentData || "" }}
+          dangerouslySetInnerHTML={{ __html: proposal.documentData || "<p class='text-gray-400 italic'>No content generated yet. Add line items and click Auto-Generate.</p>" }}
         />
         
-        <div className="mt-12 pt-8 border-t border-gray-200">
-          <h3 className="text-lg font-semibold text-gray-900">Investment Summary</h3>
-          <p className="text-gray-600 mt-2">
-            The total estimated investment for this project is 
-            <span className="font-bold text-green-600 ml-1">${proposal.value?.toLocaleString()}</span>.
+        {/* Deal Line Items Editor */}
+        <LineItemsEditor 
+          proposalId={proposal.id} 
+          dealId={proposal.dealId} 
+          services={allServices} 
+          currentLineItems={currentLineItems} 
+        />
+        
+        <div className="mt-8 pt-6 border-t border-gray-200 text-right">
+          <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wider">Total Deal Value</h3>
+          <p className="text-3xl font-bold text-green-600 mt-1">
+            ${proposal.value?.toLocaleString() || 0}
           </p>
         </div>
       </div>

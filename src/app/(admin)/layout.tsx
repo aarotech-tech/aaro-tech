@@ -1,11 +1,15 @@
 import { ReactNode } from "react";
 import Link from "next/link";
 import { UserButton } from "@clerk/nextjs";
-import { auth } from "@clerk/nextjs/server";
+import { redirect } from "next/navigation";
+import { requireAuthenticatedUser } from "@/lib/auth";
 import { SidebarNav } from "./_components/SidebarNav";
 
 export default async function AdminLayout({ children }: { children: ReactNode }) {
-  await auth.protect();
+  const user = await requireAuthenticatedUser();
+  if (user.userType !== "internal") {
+    redirect("/portal");
+  }
 
   return (
     <div className="flex h-screen overflow-hidden bg-gray-50 text-gray-900">

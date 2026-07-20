@@ -6,9 +6,12 @@ import { DollarSignIcon, FileTextIcon, CheckCircleIcon, ClockIcon } from "lucide
 import Link from "next/link";
 import { revalidatePath } from "next/cache";
 
+import { requireInternalUser } from "@/lib/auth";
+
 // Server action for mock invoice creation
 async function createMockInvoice(_formData: FormData) {
   "use server";
+  await requireInternalUser();
   
   // Just find the first client organization to attach the invoice to
   const firstClient = await db.query.organizations.findFirst({

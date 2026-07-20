@@ -1,21 +1,19 @@
 import { db } from "@/db";
-import { organizations, deals, clientAssets } from "@/db/schema";
+import { organizations, deals, clientAssets, organizationMembers } from "@/db/schema";
 import { eq, desc } from "drizzle-orm";
-import { currentUser } from "@clerk/nextjs/server";
+import { requireAuthenticatedUser } from "@/lib/auth";
+import { withCache } from "@/lib/redis";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { FileIcon } from "lucide-react";
 
 export default async function ClientDashboardPage() {
-  const user = await currentUser();
-  
-  // NOTE FOR MVP: Since we haven't built the Clerk webhook to sync users to organizations yet, 
-  // we will just display the first organization that has type === "client".
-  // In production, we would use the logged-in user's ID to find their organization.
-  const myOrg = await db.query.organizations.findFirst({
-    where: eq(organizations.type, "client")
+  const user = await requireAuthenticatedUser();
+
+  const membership = await db.query.organizationMembers.findFirst({
+    where: eq(organizationMembers.userId, user.id)
   });
 
-  if (!myOrg) {
+  if (!membership) {
     return (
       <div className="h-full flex items-center justify-center text-gray-400">
         <div className="text-center">
@@ -26,18 +24,30 @@ export default async function ClientDashboardPage() {
     );
   }
 
-  // Fetch active projects (deals) for this client
-  const activeProjects = await db.query.deals.findMany({
-    where: eq(deals.organizationId, myOrg.id),
-    orderBy: [desc(deals.createdAt)]
+  const myOrg = await db.query.organizations.findFirst({
+    where: eq(organizations.id, membership.organizationId)
   });
 
-  // Fetch recent assets
-  const recentAssets = await db.query.clientAssets.findMany({
-    where: eq(clientAssets.organizationId, myOrg.id),
-    orderBy: [desc(clientAssets.createdAt)],
-    limit: 5
-  });
+  if (!myOrg) {
+    return null;
+  }
+
+  // Fetch active projects and recent assets in parallel
+  // Use Redis cache for active projects, fallback to DB if cache misses
+  const cacheKey = `org:${myOrg.id}:activeProjects`;
+  const [activeProjects, recentAssets] = await Promise.all([
+    withCache(cacheKey, async () => {
+      return db.query.deals.findMany({
+        where: eq(deals.organizationId, myOrg.id),
+        orderBy: [desc(deals.createdAt)]
+      });
+    }, 3600),
+    db.query.clientAssets.findMany({
+      where: eq(clientAssets.organizationId, myOrg.id),
+      orderBy: [desc(clientAssets.createdAt)],
+      limit: 5
+    })
+  ]);
 
   return (
     <div className="max-w-6xl mx-auto">

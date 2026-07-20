@@ -40,9 +40,9 @@ export default function KanbanBoard({ initialDeals }: { initialDeals: Deal[] }) 
     }
 
     const newStage = destination.droppableId;
-    
+
     // Optimistic UI update
-    const updatedDeals = deals.map(deal => 
+    const updatedDeals = deals.map(deal =>
       deal.id === draggableId ? { ...deal, stage: newStage } : deal
     );
     setDeals(updatedDeals);
@@ -71,9 +71,8 @@ export default function KanbanBoard({ initialDeals }: { initialDeals: Deal[] }) 
                   <div
                     ref={provided.innerRef}
                     {...provided.droppableProps}
-                    className={`flex-1 p-3 space-y-3 min-h-[150px] transition-colors ${
-                      snapshot.isDraggingOver ? "bg-gray-100" : ""
-                    }`}
+                    className={`flex-1 p-3 space-y-3 min-h-[150px] transition-colors ${snapshot.isDraggingOver ? "bg-gray-100" : ""
+                      }`}
                   >
                     {columnDeals.map((deal, index) => (
                       <Draggable key={deal.id} draggableId={deal.id} index={index}>
@@ -82,9 +81,8 @@ export default function KanbanBoard({ initialDeals }: { initialDeals: Deal[] }) 
                             ref={provided.innerRef}
                             {...provided.draggableProps}
                             {...provided.dragHandleProps}
-                            className={`p-4 bg-white border rounded shadow-sm flex flex-col gap-2 transition-shadow ${
-                              snapshot.isDragging ? "shadow-md ring-2 ring-blue-500/20" : "border-gray-200 hover:shadow-md"
-                            }`}
+                            className={`p-4 bg-white border rounded shadow-sm flex flex-col gap-2 transition-shadow ${snapshot.isDragging ? "shadow-md ring-2 ring-blue-500/20" : "border-gray-200 hover:shadow-md"
+                              }`}
                           >
                             <div className="font-medium text-gray-900">{deal.name}</div>
                             <div className="text-sm text-gray-500">{deal.organizationName}</div>
@@ -96,8 +94,8 @@ export default function KanbanBoard({ initialDeals }: { initialDeals: Deal[] }) 
                                     e.stopPropagation();
                                     const { generateProposal } = await import("../actions");
                                     const res = await generateProposal(deal.id);
-                                    if (res.success && res.proposalId) {
-                                      window.location.href = `/crm/proposals/${res.proposalId}`;
+                                    if (res.success && res.data?.proposalId) {
+                                      window.location.href = `/crm/proposals/${res.data.proposalId}`;
                                     }
                                   }}
                                   className="text-xs bg-indigo-50 text-indigo-700 px-2 py-1 rounded hover:bg-indigo-100 transition-colors"

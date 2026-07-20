@@ -3,11 +3,18 @@ import { websiteLeads } from "@/db/schema";
 import { desc } from "drizzle-orm";
 import PromoteLeadButton from "./_components/PromoteLeadButton";
 
-export default async function LeadsDashboard() {
+export default async function LeadsDashboard(props: { searchParams?: Promise<{ page?: string }> }) {
+  const searchParams = props.searchParams ? await props.searchParams : {};
+  const page = searchParams.page ? parseInt(searchParams.page) : 1;
+  const limit = 10;
+  const offset = (page - 1) * limit;
+
   const allLeads = await db
     .select()
     .from(websiteLeads)
-    .orderBy(desc(websiteLeads.updatedAt));
+    .orderBy(desc(websiteLeads.updatedAt))
+    .limit(limit)
+    .offset(offset);
 
   return (
     <div className="h-full flex flex-col">
@@ -80,6 +87,23 @@ export default async function LeadsDashboard() {
               )}
             </tbody>
           </table>
+        </div>
+        <div className="px-6 py-4 border-t border-gray-200 flex justify-between items-center bg-gray-50">
+          <span className="text-sm text-gray-500">
+            Showing Page {page}
+          </span>
+          <div className="space-x-2">
+            {page > 1 && (
+              <a href={`/crm/leads?page=${page - 1}`} className="px-3 py-1 bg-white border border-gray-300 rounded text-sm text-gray-700 hover:bg-gray-50">
+                Previous
+              </a>
+            )}
+            {allLeads.length === 10 && (
+              <a href={`/crm/leads?page=${page + 1}`} className="px-3 py-1 bg-white border border-gray-300 rounded text-sm text-gray-700 hover:bg-gray-50">
+                Next
+              </a>
+            )}
+          </div>
         </div>
       </div>
     </div>

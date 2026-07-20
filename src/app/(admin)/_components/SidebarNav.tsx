@@ -41,8 +41,17 @@ export function SidebarNav() {
         </p>
       </div>
       
+      <Link href="/crm/clients" className={getLinkClasses("/crm/clients", true)}>
+        Clients
+      </Link>
       <Link href="/crm/projects" className={getLinkClasses("/crm/projects")}>
         Projects
+      </Link>
+      <Link href="/crm/retainers" className={getLinkClasses("/crm/retainers")}>
+        Retainers
+      </Link>
+      <Link href="/crm/contacts" className={getLinkClasses("/crm/contacts")}>
+        Contacts
       </Link>
       <Link href="/crm/kb" className={getLinkClasses("/crm/kb")}>
         Knowledge Base
@@ -56,6 +65,9 @@ export function SidebarNav() {
       
       <Link href="/crm/automations" className={getLinkClasses("/crm/automations")}>
         Automations
+      </Link>
+      <Link href="/crm/settings/services" className={getLinkClasses("/crm/settings/services")}>
+        Services Catalog
       </Link>
     </nav>
   );
