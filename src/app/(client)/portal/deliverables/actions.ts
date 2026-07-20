@@ -73,7 +73,6 @@ export async function submitClientReviewAction(
   });
 
   // Send Email Notification outside transaction
-  const newDeliverableStatus = action === "approve" ? "approved" : "changes_requested";
   await sendDeliverableClientResponseEmail("admin@aarotech.com", deliverable.name, newDeliverableStatus);
 
   revalidatePath(`/portal/deliverables/${deliverableId}`);
