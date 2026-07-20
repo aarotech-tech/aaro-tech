@@ -2,10 +2,11 @@
 import { withActionErrorHandling, AppError } from '@/lib/errors';
 
 import { db } from "@/db";
-import { proposals, dealLineItems, deals, services } from "@/db/schema";
+import { proposals, dealLineItems, deals, services, organizations, organizationMembers, users } from "@/db/schema";
 import { eq, sum } from "drizzle-orm";
 import { requireInternalUser } from "@/lib/auth";
 import { revalidatePath } from "next/cache";
+import { sendEmail } from "@/lib/email";
 
 export async function addDealLineItem(
   proposalId: string,
@@ -74,6 +75,92 @@ async function recalculateDealValue(dealId: string) {
   
   // Update deal
   await db.update(deals).set({ value: totalValue }).where(eq(deals.id, dealId));
+}
+
+export async function saveDraftAction(proposalId: string, documentData: string) {
+  return withActionErrorHandling('saveDraftAction', async () => {
+    await requireInternalUser();
+
+    await db.update(proposals)
+      .set({ documentData })
+      .where(eq(proposals.id, proposalId));
+
+    revalidatePath(`/crm/proposals/${proposalId}`);
+    return true;
+  });
+}
+
+export async function sendProposalToClientAction(proposalId: string) {
+  return withActionErrorHandling('sendProposalToClientAction', async () => {
+    await requireInternalUser();
+
+    // 1. Fetch proposal + deal + org
+    const proposalData = await db
+      .select({
+        id: proposals.id,
+        status: proposals.status,
+        documentData: proposals.documentData,
+        dealId: deals.id,
+        dealName: deals.name,
+        organizationId: deals.organizationId,
+        organizationName: organizations.name,
+      })
+      .from(proposals)
+      .innerJoin(deals, eq(proposals.dealId, deals.id))
+      .innerJoin(organizations, eq(deals.organizationId, organizations.id))
+      .where(eq(proposals.id, proposalId))
+      .limit(1);
+
+    if (proposalData.length === 0) throw new AppError("Proposal not found", 404);
+    const proposal = proposalData[0];
+
+    if (!proposal.documentData) {
+      throw new AppError("Cannot send an empty proposal. Please generate or write content first.", 400);
+    }
+
+    // 2. Set status to 'sent' with a 30-day expiry
+    const expiresAt = new Date();
+    expiresAt.setDate(expiresAt.getDate() + 30);
+
+    await db.update(proposals)
+      .set({ status: "sent", expiresAt })
+      .where(eq(proposals.id, proposalId));
+
+    // 3. Find client's email from organization members
+    const member = await db
+      .select({ email: users.email, firstName: users.firstName })
+      .from(organizationMembers)
+      .innerJoin(users, eq(organizationMembers.userId, users.id))
+      .where(eq(organizationMembers.organizationId, proposal.organizationId))
+      .limit(1);
+
+    const portalLink = `${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'}/portal/proposals/${proposal.id}`;
+
+    if (member.length > 0) {
+      // Send email to client
+      await sendEmail({
+        to: member[0].email,
+        subject: `Proposal Ready: ${proposal.dealName} — Aarotech`,
+        html: `
+          <h2>Your Proposal is Ready</h2>
+          <p>Hello ${member[0].firstName || proposal.organizationName},</p>
+          <p>We have prepared a proposal for <strong>${proposal.dealName}</strong>.</p>
+          <p>Please review it and sign off to get started:</p>
+          <p><a href="${portalLink}" style="display:inline-block;padding:12px 24px;background:#2563eb;color:#fff;border-radius:8px;text-decoration:none;font-weight:600;">View &amp; Approve Proposal</a></p>
+          <p>This link expires in 30 days.</p>
+          <br/>
+          <p>Thank you,<br/>The Aarotech Team</p>
+        `,
+      });
+    } else {
+      // No member yet — log a warning but still mark as sent
+      console.warn(`No organization member found for org ${proposal.organizationId}. Proposal marked as sent but no email delivered.`);
+    }
+
+    revalidatePath(`/crm/proposals/${proposalId}`);
+    revalidatePath(`/crm/proposals`);
+    return { portalLink };
+  });
 }
 
 export async function generateProposalWithAI(proposalId: string, dealName: string, orgName: string) {

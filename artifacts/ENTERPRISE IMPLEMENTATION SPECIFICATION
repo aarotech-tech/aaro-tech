@@ -1,0 +1,243 @@
+# AAROTECH — ENTERPRISE IMPLEMENTATION SPECIFICATION
+**Role:** Chief Software Architect
+**Date:** 2026-07-20
+
+---
+
+## SECTION 1: BUSINESS REQUIREMENTS SPECIFICATION (BRS)
+
+### Business Goals
+To operate a scalable, secure, and fully automated digital marketing and development agency CRM and Client Portal. The system must seamlessly handle the transition from lead capture to sales, client onboarding, project delivery, and financial reconciliation.
+
+### Users
+- **Internal Users:** Agency staff operating the CRM, delivering projects, and managing finances.
+- **Client Users:** External customers accessing the portal to sign proposals, view progress, approve deliverables, and pay invoices.
+
+### Departments
+1. **Sales & Marketing:** Responsible for Lead qualification and Deal closure.
+2. **Operations & Delivery:** Responsible for Projects, Tasks, and Deliverables (Design, Dev, SEO, Content).
+3. **Finance:** Responsible for Invoicing, Payments, and Retainer management.
+
+### Services Supported
+Digital Marketing, Branding, Web Development, SEO, Content Creation, Social Media Management, Paid Ads. Delivered via Retainers (recurring) or One-time Projects.
+
+### Business Rules
+- A Client (Organization) only exists after a legal agreement (Proposal) is accepted.
+- No project work begins until the deposit/initial invoice is paid.
+- Client Users only see data explicitly linked to their Organization.
+- Financial records (Invoices, Payments) are immutable once processed.
+
+### Success Criteria
+- Zero data leakage between tenants (organizations).
+- 100% automated transition from Sales Pipeline to Delivery.
+- 0% orphan entities (every task belongs to a project, every project to an org).
+
+### Constraints
+- Must use Next.js App Router, Neon Postgres, Drizzle ORM, Clerk Auth, UploadThing, and Resend.
+- Stateless architecture (no long-running server memory constraints, relying on DB/Redis).
+
+---
+
+## SECTION 2: DOMAIN MODEL
+
+### 1. Lead
+- **Purpose:** Represents an unqualified external inquiry.
+- **Owner:** Sales.
+- **Created By:** System (Web Form) or Sales.
+- **Lifecycle:** New -> Contacted -> Qualified -> Converted/Disqualified.
+- **Relationships:** Promotes to Deal.
+
+### 2. Deal
+- **Purpose:** Tracks potential revenue in the pipeline.
+- **Owner:** Sales.
+- **Created By:** Sales.
+- **Lifecycle:** Discovery -> Scoping -> Proposal -> Negotiation -> Won/Lost.
+- **Relationships:** Belongs to Lead (until won). 1:N Proposals.
+
+### 3. Proposal
+- **Purpose:** Legal SOW and pricing agreement.
+- **Owner:** Sales.
+- **Created By:** Sales.
+- **Lifecycle:** Draft -> Sent -> Viewed -> Accepted -> Expired/Rejected.
+- **Relationships:** Belongs to Deal.
+- **Forbidden States:** Client cannot sign a Draft or Expired proposal.
+
+### 4. Organization (Client)
+- **Purpose:** The root tenant entity for all delivery and finance.
+- **Owner:** Operations.
+- **Created By:** System (upon Proposal Accepted).
+- **Lifecycle:** Active -> Inactive.
+- **Relationships:** 1:N Users, Projects, Invoices, Retainers.
+
+### 5. Project
+- **Purpose:** Container for delivery of one-time services.
+- **Owner:** Project Manager.
+- **Created By:** System (upon Proposal Accepted).
+- **Lifecycle:** Pending Deposit -> Active -> On Hold -> Completed.
+- **Relationships:** Belongs to Organization, Deal (origin). 1:N Tasks, Deliverables.
+
+### 6. Deliverable
+- **Purpose:** Tangible asset requiring client review.
+- **Owner:** Delivery Team.
+- **Created By:** Delivery Team.
+- **Lifecycle:** Planned -> In Progress -> Internal Review -> Client Review -> Changes Requested -> Approved.
+- **Relationships:** Belongs to Project OR Retainer (mutually exclusive).
+
+### 7. Invoice
+- **Purpose:** Financial collection instrument.
+- **Owner:** Finance.
+- **Created By:** System or Finance.
+- **Lifecycle:** Draft -> Open -> Processing -> Paid -> Void.
+- **Relationships:** Belongs to Organization.
+
+---
+
+## SECTION 3: WORKFLOW SPECIFICATION
+
+### Workflow: Client Conversion (The Core Engine)
+- **Actors:** Client User, System.
+- **Trigger:** Client User clicks "Sign & Accept" on a Proposal (Status: Sent).
+- **Preconditions:** Proposal must be `Sent` and not `Expired`.
+- **Steps:**
+  1. System records IP, timestamp, and signature.
+  2. Proposal status transitions to `Accepted`.
+  3. Deal stage transitions to `Won`.
+  4. System creates DB `Organization` (Client).
+  5. System creates Clerk Organization.
+  6. System creates `Project` (Pending Deposit).
+  7. System creates initial `Invoice`.
+  8. System sends Portal Invitation email to Client.
+- **Failure Cases:** DB transaction fails -> Rollback. Clerk API fails -> Rollback DB.
+- **Post Conditions:** Client can log in, view the invoice, and pay. Delivery team is notified but blocked until payment.
+
+---
+
+## SECTION 4: STATE MACHINES
+
+### Entity: Deliverable
+- **Allowed Transitions:** 
+  - Planned -> In Progress (Manual, Delivery)
+  - In Progress -> Internal Review (Manual, Delivery)
+  - Internal Review -> Client Review (Manual, PM)
+  - Client Review -> Approved (Manual, Client)
+  - Client Review -> Changes Requested (Manual, Client)
+- **Forbidden Transitions:** Client Review -> Planned. Approved -> Changes Requested.
+- **Automatic Transitions:** None.
+- **Approval Rules:** Only Client Admin or designated Client Approver can approve.
+
+---
+
+## SECTION 5: DATABASE SPECIFICATION
+
+### Table: `organizations`
+- **Purpose:** Root tenant table.
+- **Columns:** `id` (UUID, PK), `name` (VARCHAR), `clerk_org_id` (VARCHAR, UNIQUE), `status` (ENUM: active, inactive), `created_at`, `updated_at`.
+- **Indexes:** `clerk_org_id`.
+- **Why:** Separating valid clients from unqualified leads ensures the delivery DB is never polluted by spam.
+
+### Table: `deliverables`
+- **Columns:** `id` (UUID), `organization_id` (UUID, FK), `project_id` (UUID, FK, Nullable), `retainer_period_id` (UUID, FK, Nullable), `status` (ENUM).
+- **Check Constraints:** `CHECK ( (project_id IS NOT NULL AND retainer_period_id IS NULL) OR (project_id IS NULL AND retainer_period_id IS NOT NULL) )`
+- **Why:** Enforces that a deliverable must belong to exactly one delivery vehicle.
+
+---
+
+## SECTION 6: PERMISSION MODEL (RBAC)
+
+| Entity | Internal Admin | Sales | PM | Client Admin | Client Viewer |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| **Deal** | CRUD | CRUD | Read | No Access | No Access |
+| **Proposal** | CRUD | CRUD | Read | Read/Sign | Read |
+| **Project** | CRUD | Read | CRUD | Read | Read |
+| **Deliverable**| CRUD | Read | CRUD | Read/Approve | Read/Comment |
+| **Invoice** | CRUD | Read | Read | Read/Pay | Read |
+
+---
+
+## SECTION 7: SYSTEM MODULES
+
+1. **CRM Module:** Owns Leads, Deals, Proposals. MUST NOT query Projects or Invoices directly.
+2. **Operations Module:** Owns Organizations, Users, Projects, Retainers, Tasks, Deliverables. MUST NOT query Deals.
+3. **Finance Module:** Owns Invoices, Payments, Expenses. MUST NOT query Tasks.
+4. **Portal Module:** The client-facing layer. Acts as a strict read/write proxy into Operations and Finance, heavily enforcing Tenant Isolation (`organization_id`).
+
+---
+
+## SECTION 8: API & SERVER ACTION SPECIFICATION
+
+### Action: `submitDeliverableForReview(deliverableId)`
+- **Authentication:** Required (Internal User).
+- **Authorization:** Must be assigned PM or Admin.
+- **Input:** `deliverableId`.
+- **Output:** `{ success: boolean, status: string }`.
+- **Validation:** Deliverable must be in `Internal Review` or `In Progress`.
+- **Side Effects:** Updates status to `Client Review`.
+- **Events Emitted:** `DeliverableSubmittedForReview`.
+- **DB Transactions:** Updates deliverable status and inserts audit log in one transaction.
+
+---
+
+## SECTION 9: EVENT ARCHITECTURE
+
+### Event: `ProposalAccepted`
+- **Publisher:** CRM Module (Conversion Engine).
+- **Subscribers:** Operations Module (Creates Org, Project), Finance Module (Creates Invoice), Notification Module (Sends Emails).
+- **Retry Strategy:** Synchronous transaction for DB creation, async queue (Upstash/Trigger.dev) for external emails.
+- **Idempotency:** Driven by `proposal_id`. If received twice, second is ignored.
+
+---
+
+## SECTION 10: FILE MANAGEMENT
+
+### Storage Structure
+- `s3://bucket/org_id/projects/project_id/deliverables/deliverable_id/`
+- `s3://bucket/org_id/invoices/`
+
+### Permissions
+- **Public Files:** Lead magnets, website assets.
+- **Private Files:** Proposals, Deliverables, Invoices. Accessed via presigned URLs strictly gated by `organization_id` matching the authenticated user's token.
+
+---
+
+## SECTION 11: NOTIFICATION SYSTEM
+
+- **Templates:** Stored centrally.
+- **Delivery Rules:** Clients receive emails for: New Invoice, Deliverable Ready for Review, Project Completed. Internal teams receive emails for: Proposal Signed, Invoice Paid, Deliverable Approved.
+- **Webhooks:** Stripe webhooks map to `PaymentReceived` events.
+
+---
+
+## SECTION 12: UI/UX SPECIFICATION
+
+- **Tenant Isolation in UI:** The Portal dashboard must fetch data exclusively through a shared data-access layer that forces `.where(eq(table.organizationId, currentOrgId))`.
+- **Empty States:** "No deliverables yet. We're working on it!"
+- **Error States:** Graceful fallbacks using React Error Boundaries. No stack traces exposed to clients.
+
+---
+
+## SECTION 13: SECURITY SPECIFICATION
+
+- **Tenant Isolation:** Every single DB table accessible by a client MUST have an `organization_id` column.
+- **IDOR Prevention:** Server actions must NEVER trust an ID parameter (e.g., `invoiceId`) without simultaneously verifying ownership. Example query: `db.query.invoices.findFirst({ where: and(eq(id, inputId), eq(organizationId, currentUserOrgId)) })`.
+- **Secret Management:** Strict separation of production and staging keys.
+
+---
+
+## SECTION 14: IMPLEMENTATION ROADMAP
+
+- **Phase 1: Foundation:** DB Schema, Clerk Auth setup, Base UI layouts.
+- **Phase 2: CRM:** Leads, Deals, Pipeline UI.
+- **Phase 3: Conversion Engine:** Proposal generation, the Acceptance Workflow, Organization creation.
+- **Phase 4: Operations:** Projects, Tasks, Deliverables.
+- **Phase 5: Finance:** Invoices, Stripe integration.
+- **Phase 6: Portal:** Client Dashboard, isolated views.
+
+---
+
+## SECTION 15: ARCHITECTURAL PRINCIPLES
+
+1. **No duplicate business logic:** A state transition (like converting a lead) exists in exactly one server action.
+2. **Every client query is tenant-scoped:** Omitting `organizationId` in a portal query is treated as a critical security failure.
+3. **No hidden side effects:** If a function updates a database, it must not quietly send an email unless it emits a clear Domain Event handled by a notification subscriber.
+4. **State machines dictate UI:** UI buttons (e.g., "Approve") only render if the entity's current state allows that transition. Validation is repeated on the server.
+5. **No direct database writes from UI:** All mutations occur via strict, validated Server Actions wrapper functions.

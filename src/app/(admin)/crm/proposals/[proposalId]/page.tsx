@@ -3,11 +3,12 @@ import { db } from "@/db";
 import { trackingEvents, proposals, deals, organizations, services, dealLineItems } from "@/db/schema";
 import { eq, desc } from "drizzle-orm";
 import { notFound } from "next/navigation";
-import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { generateProposalWithAI } from "./actions";
 import { EyeIcon, CheckCircleIcon } from "lucide-react";
 import LineItemsEditor from "./_components/LineItemsEditor";
+import ProposalActions from "./_components/ProposalActions";
+import { Button } from "@/components/ui/button";
 
 export default async function ProposalEditorPage({ params }: { params: Promise<{ proposalId: string }> }) {
   const resolvedParams = await params;
@@ -65,7 +66,7 @@ export default async function ProposalEditorPage({ params }: { params: Promise<{
         </Link>
       </div>
 
-      <div className="flex justify-between items-center mb-6">
+      <div className="flex items-start justify-between gap-4 mb-6">
         <div>
           <h2 className="text-2xl font-bold tracking-tight text-gray-900">
             Proposal: {proposal.dealName}
@@ -74,10 +75,8 @@ export default async function ProposalEditorPage({ params }: { params: Promise<{
             Prepared for {proposal.organizationName}
           </p>
         </div>
-        <div className="flex items-center space-x-3">
-          <span className="text-sm font-medium text-gray-500 bg-gray-100 px-3 py-1 rounded-full capitalize">
-            {proposal.status}
-          </span>
+        <div className="flex flex-col items-end gap-3">
+          {/* AI Generate Form */}
           <form action={async () => {
             "use server";
             await generateAction();
@@ -86,12 +85,12 @@ export default async function ProposalEditorPage({ params }: { params: Promise<{
               ✨ Auto-Generate with AI
             </Button>
           </form>
-          <Button variant="outline" className="shadow-sm">
-            Save Draft
-          </Button>
-          <Button className="bg-blue-600 hover:bg-blue-700 text-white shadow-sm">
-            Send to Client
-          </Button>
+          {/* Wired Send to Client + status */}
+          <ProposalActions
+            proposalId={proposal.id}
+            proposalStatus={proposal.status ?? 'draft'}
+            documentData={proposal.documentData ?? null}
+          />
         </div>
       </div>
 

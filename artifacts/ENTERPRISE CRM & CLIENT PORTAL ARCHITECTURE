@@ -1,0 +1,305 @@
+# AAROTECH — ENTERPRISE CRM & PORTAL ARCHITECTURE
+### Principal Enterprise CRM Architect
+### Status: Blueprint
+
+---
+
+## EXECUTIVE SUMMARY & ANSWERS TO ARCHITECTURAL QUESTIONS
+
+Based on first principles for an enterprise-grade digital marketing agency, here are the explicit answers to the core architectural decisions:
+
+1. **Should a Client exist before proposal acceptance?**
+   **No.** An entity expressing interest is a `Lead`. When engaged by sales, it is a `Deal` linked to a `Lead`. An `Organization` (Client) should only be instantiated in the system once a legally binding agreement (Proposal Acceptance) occurs.
+2. **Should a Clerk Organization exist before a client exists?**
+   **No.** Clerk Organizations are strictly for identity, access management, and portal isolation. Creating them for unconverted leads litters your IAM provider with garbage data and incurs unnecessary costs/complexity.
+3. **When should a client portal account be created?**
+   **After Proposal Acceptance.** Once the proposal is signed, the system creates the DB `Organization`, creates the `Clerk Organization`, and sends an invite to the Lead's email to become the first `Client User` (Admin) for that portal.
+4. **Should Projects exist before payment?**
+   **No.** If your business requires a deposit, the `Project` is created in a `Pending Deposit` state upon proposal acceptance, but work (Tasks/Deliverables) cannot commence until the initial `Invoice` reaches `Paid` status, which transitions the `Project` to `Active`.
+5. **When should onboarding start?**
+   **Inside the Portal.** Onboarding is the first phase of an Active Project. It starts the moment the Client User logs into the portal for the first time.
+6. **What should trigger project creation?**
+   The domain event `ProposalAccepted`. (A background worker or transaction creates the Project, initial Invoice, and Clerk Org simultaneously).
+7. **What should trigger invoice creation?**
+   (a) `ProposalAccepted` (for deposit/initial invoices), (b) `DeliverableApproved` or `MilestoneCompleted` (for phased billing), or (c) `RetainerPeriodStarted` (for recurring billing).
+8. **What should trigger deliverables?**
+   Project phases. A project should define expected Deliverables upon creation. Deliverables transition from `Planned` -> `In Progress` -> `In Review` -> `Approved`.
+9. **What should happen if a proposal expires?**
+   The Proposal state becomes `Expired`. The client can no longer view or sign it. The associated Deal moves to a `Stalled` or `Negotiation` stage. The sales rep must generate a new Proposal (or clone and extend).
+10. **What should happen if a proposal is rejected?**
+    The Proposal state becomes `Rejected`. The associated Deal moves to `Negotiation`. Sales must address objections and generate a new version.
+
+---
+
+## 1. COMPLETE BUSINESS WORKFLOW DIAGRAM
+
+```mermaid
+stateDiagram-v2
+    direction TB
+    
+    state "Marketing Funnel" as Marketing {
+        Visitor --> Lead : Submits Contact Form
+    }
+    
+    state "Sales Pipeline (CRM)" as Sales {
+        Lead --> QualifiedLead : Admin Qualifies
+        QualifiedLead --> Deal : Admin Creates Opp
+        Deal --> ProposalDraft : Scoping
+        ProposalDraft --> ProposalSent : Emailed to Lead
+        ProposalSent --> Deal : Rejected / Expired
+    }
+    
+    state "Conversion Engine (System)" as Conversion {
+        ProposalSent --> ProposalAccepted : Lead Signs
+        ProposalAccepted --> CreateOrg : System Action
+        CreateOrg --> CreateClerkOrg
+        CreateClerkOrg --> InviteClientUser
+        InviteClientUser --> CreateDepositInvoice
+        CreateDepositInvoice --> CreateProject
+    }
+    
+    state "Delivery & Portal (Client Facing)" as Delivery {
+        ClientLogsIn --> PayDeposit
+        PayDeposit --> ProjectActive
+        ProjectActive --> ClientOnboarding
+        ClientOnboarding --> TasksInProgress
+        TasksInProgress --> DeliverableReview
+        DeliverableReview --> DeliverableApproved
+        DeliverableApproved --> FinalInvoice
+        FinalInvoice --> Paid
+        Paid --> ProjectCompleted
+    }
+
+    Marketing --> Sales
+    Sales --> Conversion
+    Conversion --> Delivery
+```
+
+---
+
+## 2. STATE MACHINES & ENTITY LIFECYCLES
+
+### 2.1 Lead
+*   **Why**: To capture top-of-funnel interest without polluting the Client database.
+*   **Created**: System (Web Form) or Internal Sales (Manual entry).
+*   **Who creates**: Public Visitor, Internal Sales.
+*   **Who edits/deletes**: Internal Sales.
+*   **Depends on**: None.
+*   **States**: `New` -> `Contacted` -> `Qualified` -> `Disqualified` -> `Converted`.
+*   **Forbidden**: `Converted` back to `New`.
+*   **Triggers**: `Qualified` triggers `Deal` creation.
+
+### 2.2 Deal
+*   **Why**: Tracks potential revenue and sales effort.
+*   **Created**: Internal Sales (when Lead is qualified).
+*   **Who creates**: Internal Sales.
+*   **Depends on**: `Lead` (1:1 or 1:N).
+*   **States**: `Discovery` -> `Scoping` -> `Proposal` -> `Negotiation` -> `Closed Won` | `Closed Lost`.
+*   **Forbidden**: Direct jump from `Discovery` to `Closed Won` without a Proposal.
+*   **Triggers**: `Closed Won` triggers `Organization` creation.
+
+### 2.3 Proposal
+*   **Why**: The legal contract and SOW.
+*   **Created**: System (Generated by Sales from Deal).
+*   **Who creates**: Internal Sales.
+*   **Depends on**: `Deal`.
+*   **States**: `Draft` -> `Sent` -> `Viewed` -> `Accepted` | `Rejected` | `Expired`.
+*   **Forbidden**: Client cannot sign `Draft`. Client cannot sign `Expired`. Admin cannot edit `Sent`.
+*   **Triggers**: `Accepted` triggers Deal `Closed Won`.
+
+### 2.4 Organization (Client)
+*   **Why**: The root entity for all billed work and portal access.
+*   **Created**: System ONLY (upon Deal Won). Never manually created bypassing the pipeline.
+*   **Who creates**: System.
+*   **Depends on**: `Lead` data (for initial population).
+*   **States**: `Active` -> `Inactive` (Offboarded).
+
+### 2.5 Client User
+*   **Why**: Allows humans to log into the Client Portal.
+*   **Created**: System (via Clerk Invitation) when Org is created.
+*   **Who creates**: System, or Client Admin (inviting colleagues).
+*   **Depends on**: `Organization`, `Clerk Org`.
+*   **States**: `Invited` -> `Active` -> `Suspended`.
+
+### 2.6 Project
+*   **Why**: Container for delivery of services sold in the Proposal.
+*   **Created**: System (upon Proposal Acceptance).
+*   **Who creates**: System.
+*   **Depends on**: `Organization`, `Proposal` (for scope).
+*   **States**: `Pending Deposit` -> `Active` -> `On Hold` -> `Completed` -> `Archived`.
+*   **Forbidden**: Work tasks cannot be moved to `Done` if Project is `Pending Deposit`.
+*   **Triggers**: `Active` triggers Onboarding workflows.
+
+### 2.7 Deliverable
+*   **Why**: The tangible asset requiring client approval.
+*   **Created**: Internal Delivery.
+*   **Depends on**: `Project` OR `RetainerPeriod`. (Must enforce one or the other exclusively).
+*   **States**: `Planned` -> `Internal Review` -> `Client Review` -> `Changes Requested` -> `Approved`.
+*   **Forbidden**: Client cannot see `Internal Review`. Client cannot approve if already `Approved`.
+*   **Triggers**: `Approved` triggers Milestone Invoice (if applicable).
+
+### 2.8 Invoice
+*   **Why**: Revenue collection.
+*   **Created**: System (Auto-generated from Proposal/Milestone) or Internal Finance (Manual).
+*   **Depends on**: `Organization`. Optional links to `Project` / `Deliverable`.
+*   **States**: `Draft` -> `Open` -> `Processing` (UTR submitted) -> `Paid` | `Void` | `Overdue`.
+*   **Forbidden**: Cannot delete `Paid` invoices (must issue Refund/Credit Note).
+
+### 2.9 Payment
+*   **Why**: Ledger of transactions.
+*   **Created**: System (Webhook) or Internal Finance (Manual ledger entry).
+*   **Depends on**: `Invoice`.
+*   **States**: `Pending` -> `Succeeded` | `Failed`.
+*   **Triggers**: `Succeeded` triggers Invoice to `Paid`.
+
+---
+
+## 3. EVENT DIAGRAM (DOMAIN EVENTS)
+
+```text
+[LeadQualified] 
+  ↳ Creates Deal 
+  ↳ Assigns Sales Rep
+
+[ProposalSent]
+  ↳ Locks Proposal edits
+  ↳ Sends Email to Lead
+
+[ProposalAccepted] (The Conversion Nexus)
+  ↳ Updates Deal to Closed Won
+  ↳ Creates Organization (DB)
+  ↳ Creates Clerk Organization
+  ↳ Sends Portal Invite to Lead Email
+  ↳ Creates Project (Pending Deposit)
+  ↳ Creates Deposit Invoice (Open)
+  ↳ Generates PDF of signed proposal to Files
+
+[InvoicePaid]
+  ↳ If Deposit Invoice: Updates Project to Active
+  ↳ If Final Invoice: Notifies Delivery team
+
+[DeliverableSubmitted]
+  ↳ Sends Email to Client Users
+  ↳ Updates Deliverable to In Review
+
+[ClientApprovedDeliverable]
+  ↳ Updates Deliverable to Approved
+  ↳ Unlocks next Project Phase
+```
+
+---
+
+## 4. PERMISSION MATRIX
+
+| Entity | Public | Internal Sales | Internal Delivery | Internal Admin | Client Admin | Client User |
+| :--- | :--- | :--- | :--- | :--- | :--- | :--- |
+| **Lead** | Create | CRUD | Read-Only | CRUD | No Access | No Access |
+| **Deal** | No | CRUD | Read-Only | CRUD | No Access | No Access |
+| **Proposal**| View (if token)| CRUD | Read-Only | CRUD | View/Sign (own) | View (own) |
+| **Organization**| No | Read | Read | CRUD | Edit (own profile)| Read (own) |
+| **Project** | No | Read | Read/Update | CRUD | Read (own) | Read (own) |
+| **Task** | No | Read | CRUD | CRUD | No Access | No Access |
+| **Deliverable**| No | Read | CRUD | CRUD | Approve (own) | Comment (own) |
+| **Invoice** | No | Read | Read | CRUD | Pay (own) | View (own) |
+| **File (Int)**| No | Read/Write | Read/Write | CRUD | No Access | No Access |
+| **File (Ext)**| No | Read/Write | Read/Write | CRUD | Read/Write (own)| Read (own) |
+
+---
+
+## 5. RECOMMENDED DATABASE RELATIONSHIPS (STRICT)
+
+1.  **Core Separation**: 
+    *   `leads` and `deals` are strictly CRM entities. 
+    *   `organizations` is the root of all Client Portal entities.
+    *   A `deal` has a `leadId`. Upon conversion, the `deal` populates `organizationId`.
+2.  **Polymorphic Fix**:
+    *   Instead of nullable `projectId` and `retainerId` on Deliverables/Invoices with no constraints, use a **Check Constraint**: `CHECK ( (project_id IS NOT NULL AND retainer_id IS NULL) OR (project_id IS NULL AND retainer_id IS NOT NULL) )`.
+3.  **Strict Foreign Keys**:
+    *   `deliverables.current_version_id` MUST be a foreign key to `deliverable_versions.id`.
+    *   `deals.owner_id` MUST be a foreign key to internal `users`.
+4.  **No Dead States**:
+    *   Use Postgres `ENUM` types for statuses instead of open `varchar` to prevent invalid states being inserted by faulty UI logic.
+
+---
+
+## 6. RECOMMENDED API BOUNDARIES
+
+Separate the application into strict vertical slices to prevent crossover (like internal users seeing client views, or clients seeing deal stages).
+
+1.  **`/api/webhooks/*`**: System-level integration (Clerk, Stripe). Zero trust, verifies webhook signatures.
+2.  **`/app/(internal)/*`**: Protected by `requireInternalUser()`. Handles all Leads, Deals, Proposal Generation, Project Management, Invoice Generation.
+3.  **`/app/(portal)/*`**: Protected by `requireClientUser()`. Every single data fetch MUST strictly append `.where(eq(entity.organizationId, currentUser.organizationId))`. 
+4.  **`/app/(public)/*`**: No auth. Lead generation forms, public proposal viewing (accessed via cryptographically secure short-token, not UUID).
+
+---
+
+## 7. RECOMMENDED SERVER ACTION OWNERSHIP
+
+Server actions must be collocated with the domain they serve and enforce boundaries.
+
+*   **`actions/crm.ts`**: `createLead`, `qualifyLead`, `createDeal`, `updateDealStage`. (Requires Internal Role).
+*   **`actions/proposals.ts`**: `generateProposal`, `sendProposal`. (Requires Internal Role).
+*   **`actions/conversion.ts`**: `acceptProposal`. (Public, but requires valid proposal token. This is the **only** action that bridges CRM and Portal).
+*   **`actions/delivery.ts`**: `submitDeliverable` (Internal), `approveDeliverable` (Client - validates Org ownership).
+*   **`actions/billing.ts`**: `createInvoice` (Internal), `submitPayment` (Client - validates Org ownership).
+
+---
+
+## 8. RECOMMENDED FOLDER ARCHITECTURE
+
+```text
+src/
+  app/
+    (public)/           # Website, Login, Public Proposal Viewer
+      proposals/[token]/
+    (internal)/         # CRM & Agency Operations
+      crm/
+        leads/
+        deals/
+      delivery/         # Project Management
+        projects/
+        tasks/
+      finance/          # Billing Management
+    (portal)/           # Client Portal
+      dashboard/
+      projects/
+      deliverables/
+      billing/
+  core/                 # Shared Business Logic & Entities
+    auth/
+    db/
+    email/
+```
+
+---
+
+## 9. ANTI-PATTERNS TO ELIMINATE
+
+1.  **The "Drag-to-Convert" Anti-Pattern**: Never allow a drag-and-drop UI action to trigger major lifecycle events (creating orgs, sending emails, creating projects). Transition to "Closed Won" should require a modal confirmation validating the signed contract.
+2.  **IDOR by UUID**: Never assume a UUID is unguessable security. Every client-facing DB query must include `AND organization_id = ?`.
+3.  **Orphaned Entities**: No entity (Task, Project, Invoice) should exist without a required parent entity (Organization). 
+4.  **Dual-Purpose Endpoints**: Do not use the same page/action for Internal Finance tracking and Client Invoice paying. They have different security contexts.
+5.  **Fake Foreign Keys**: Do not generate strings like `lead_12345` to bypass `clerkOrgId` constraints. If an entity doesn't have a Clerk Org yet, the schema must allow NULL until it is created, or the entity shouldn't exist in that table yet.
+
+---
+
+## 10. MIGRATION STRATEGY
+
+To migrate the current broken implementation to this architecture without data loss:
+
+1.  **Schema Phase**: 
+    *   Create the new Postgres ENUMs.
+    *   Add the `Lead` table (if currently conflated with Org).
+    *   Add CHECK constraints to enforce polymorphic relationships.
+    *   Deploy schema changes (non-breaking, nullable initially).
+2.  **Data Remediation Phase**:
+    *   Write a script to migrate existing `Organizations` with `type="lead"` back into the `Leads` table.
+    *   Remove fake `clerkOrgId`s and set them to NULL.
+    *   Delete duplicate `Projects` and `Onboardings` caused by the double-creation bug.
+3.  **Application Phase**:
+    *   Implement the isolated `(portal)` routes with strict Org ID checks.
+    *   Rewrite `approveProposalAction` to perform the ONE TRUE conversion logic.
+    *   Remove the `updateDealStage("won")` side-effects.
+4.  **Cutover**:
+    *   Swap the UI components to use the new server actions.
+    *   Drop the legacy legacy columns and enforce NOT NULL constraints on the new schema.
