@@ -22,6 +22,15 @@ export const organizations = pgTable("organizations", {
   type: varchar("type", { length: 50 }).default("client"), // internal, client, lead
   status: varchar("status", { length: 50 }).default("lead"), // lead, prospect, client, archived
   healthScore: integer("health_score").default(100),
+    taxId: varchar("tax_id", { length: 100 }),
+  address: varchar("address", { length: 255 }),
+  city: varchar("city", { length: 100 }),
+  country: varchar("country", { length: 100 }),
+  deletedAt: timestamp("deleted_at"),
+    createdBy: uuid("created_by").references(() => users.id, { onDelete: "set null" }),
+  updatedBy: uuid("updated_by").references(() => users.id, { onDelete: "set null" }),
+  deletedBy: uuid("deleted_by").references(() => users.id, { onDelete: "set null" }),
+  updatedAt: timestamp("updated_at").defaultNow(),
   createdAt: timestamp("created_at").defaultNow(),
 });
 
@@ -65,6 +74,11 @@ export const deals = pgTable("deals", {
   stage: varchar("stage", { length: 50 }).default("discovery"), 
   value: integer("value").default(0), // Deal value
   expectedCloseDate: timestamp("expected_close_date"),
+    deletedAt: timestamp("deleted_at"),
+    createdBy: uuid("created_by").references(() => users.id, { onDelete: "set null" }),
+  updatedBy: uuid("updated_by").references(() => users.id, { onDelete: "set null" }),
+  deletedBy: uuid("deleted_by").references(() => users.id, { onDelete: "set null" }),
+  updatedAt: timestamp("updated_at").defaultNow(),
   createdAt: timestamp("created_at").defaultNow(),
 }, (t) => ({
   orgIdx: index("deals_organization_id_idx").on(t.organizationId),
@@ -108,6 +122,14 @@ export const projects = pgTable("projects", {
   name: varchar("name", { length: 255 }).notNull(),
   status: varchar("status", { length: 50 }).default("active"), // active, paused, completed
   health: varchar("health", { length: 50 }).default("green"), // green, yellow, red
+    value: integer("value"),
+  expectedDeliveryDate: timestamp("expected_delivery_date"),
+  deletedAt: timestamp("deleted_at"),
+  ownerId: uuid("owner_id").references(() => users.id, { onDelete: "set null" }),
+    createdBy: uuid("created_by").references(() => users.id, { onDelete: "set null" }),
+  updatedBy: uuid("updated_by").references(() => users.id, { onDelete: "set null" }),
+  deletedBy: uuid("deleted_by").references(() => users.id, { onDelete: "set null" }),
+  updatedAt: timestamp("updated_at").defaultNow(),
   createdAt: timestamp("created_at").defaultNow(),
 }, (t) => ({
   orgIdx: index("projects_org_idx").on(t.organizationId),
@@ -120,6 +142,12 @@ export const tasks = pgTable("tasks", {
   title: varchar("title", { length: 255 }).notNull(),
   status: varchar("status", { length: 50 }).default("todo"), // todo, in_progress, done
   dueDate: timestamp("due_date"),
+    priority: varchar("priority", { length: 50 }).default("medium"),
+  completedAt: timestamp("completed_at"),
+  deletedAt: timestamp("deleted_at"),
+  createdBy: uuid("created_by").references(() => users.id, { onDelete: "set null" }),
+  updatedBy: uuid("updated_by").references(() => users.id, { onDelete: "set null" }),
+    updatedAt: timestamp("updated_at").defaultNow(),
   createdAt: timestamp("created_at").defaultNow(),
 });
 
@@ -269,6 +297,10 @@ export const invoices = pgTable("invoices", {
   paymentReceiptUrl: text("payment_receipt_url"),
   dueDate: timestamp("due_date").notNull(),
   invoiceUrl: text("invoice_url"), // Keep existing field
+    notes: text("notes"),
+  updatedAt: timestamp("updated_at").defaultNow(),
+    createdBy: uuid("created_by").references(() => users.id, { onDelete: "set null" }),
+  updatedBy: uuid("updated_by").references(() => users.id, { onDelete: "set null" }),
   createdAt: timestamp("created_at").defaultNow(),
 }, (t) => ({
   orgIdx: index("invoices_org_idx").on(t.organizationId),
@@ -282,6 +314,16 @@ export const payments = pgTable("payments", {
   provider: varchar("provider", { length: 50 }).default("razorpay"), // razorpay, manual
   providerPaymentId: varchar("provider_payment_id", { length: 255 }).unique(), // Razorpay Payment ID
   paidAt: timestamp("paid_at"),
+    method: varchar("method", { length: 50 }),
+  verifiedAt: timestamp("verified_at"),
+    referenceNumber: varchar("reference_number", { length: 255 }),
+  verifiedBy: uuid("verified_by").references(() => users.id, { onDelete: "set null" }),
+    notes: text("notes"),
+    createdBy: uuid("created_by").references(() => users.id, { onDelete: "set null" }),
+  updatedBy: uuid("updated_by").references(() => users.id, { onDelete: "set null" }),
+  deletedBy: uuid("deleted_by").references(() => users.id, { onDelete: "set null" }),
+  updatedAt: timestamp("updated_at").defaultNow(),
+  deletedAt: timestamp("deleted_at"),
   createdAt: timestamp("created_at").defaultNow(),
 }, (t) => ({
   invoiceIdx: index("payments_invoice_idx").on(t.invoiceId),
@@ -345,4 +387,19 @@ export const rateLimits = pgTable("rate_limits", {
   key: varchar("key", { length: 255 }).primaryKey(),
   points: integer("points").notNull().default(0),
   expireAt: timestamp("expire_at").notNull(),
+});
+
+export const auditLogs = pgTable("audit_logs", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  organizationId: uuid("organization_id").notNull(),
+  entityType: varchar("entity_type", { length: 50 }).notNull(),
+  entityId: uuid("entity_id").notNull(),
+  action: varchar("action", { length: 255 }).notNull(),
+  previousValue: text("previous_value"),
+  newValue: text("new_value"),
+  userId: uuid("user_id"),
+  ipAddress: varchar("ip_address", { length: 45 }),
+  userAgent: text("user_agent"),
+  metadata: text("metadata"),
+  createdAt: timestamp("created_at").defaultNow(),
 });

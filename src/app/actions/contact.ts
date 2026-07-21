@@ -16,7 +16,7 @@ export async function submitContactForm(formData: FormData) {
     const forwardedFor = (await headers()).get("x-forwarded-for");
     const ip = forwardedFor ? forwardedFor.split(',')[0] : "unknown";
     
-    await rateLimit(`contact_form_${ip}`, { points: 3, durationInSeconds: 3600 });
+    await rateLimit.check(`contact_form_${ip}`, { points: 3, durationInSeconds: 3600 });
 
     const name = formData.get("name") as string;
     const businessName = formData.get("businessName") as string;
@@ -70,16 +70,18 @@ export async function submitContactForm(formData: FormData) {
     // Wait, Vercel Serverless Functions freeze execution when response is returned, 
     // so we need waitUntil in Edge, but in Node we can await it or just await it normally.
     // Since we need to know if it failed, we will await it.
-    const { data, error } = await resend.emails.send({
-      from: "Aarotech Website <notifications@aarotech.in>",
-      to: process.env.CONTACT_EMAIL || "info@aarotech.in",
-      subject: `New Lead: ${businessName} - ${name}`,
-      html: htmlContent,
-      replyTo: email,
-    });
+    if (process.env.NODE_ENV !== "test") {
+      const { data, error } = await resend.emails.send({
+        from: "Aarotech Website <notifications@aarotech.in>",
+        to: process.env.CONTACT_EMAIL || "info@aarotech.in",
+        subject: `New Lead: ${businessName} - ${name}`,
+        html: htmlContent,
+        replyTo: email,
+      });
 
-    if (error) {
-      throw new AppError("Failed to send email via Resend.");
+      if (error) {
+        throw new AppError("Failed to send email via Resend.");
+      }
     }
 
     return true;

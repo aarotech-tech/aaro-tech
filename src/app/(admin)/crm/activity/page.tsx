@@ -1,5 +1,5 @@
 import { db } from "@/db";
-import { activityLogs, organizations, users } from "@/db/schema";
+import { auditLogs, organizations, users } from "@/db/schema";
 import { desc, eq, isNotNull } from "drizzle-orm";
 import { ActivityIcon, FileTextIcon, ReceiptIcon, UserIcon } from "lucide-react";
 import Link from "next/link";
@@ -7,20 +7,20 @@ import Link from "next/link";
 export default async function ActivityLogPage() {
   const logs = await db
     .select({
-      id: activityLogs.id,
-      action: activityLogs.action,
-      entityType: activityLogs.entityType,
-      entityId: activityLogs.entityId,
-      metadata: activityLogs.metadata,
-      createdAt: activityLogs.createdAt,
+      id: auditLogs.id,
+      action: auditLogs.action,
+      entityType: auditLogs.entityType,
+      entityId: auditLogs.entityId,
+      metadata: auditLogs.metadata,
+      createdAt: auditLogs.createdAt,
       orgName: organizations.name,
       userFirstName: users.firstName,
       userLastName: users.lastName
     })
-    .from(activityLogs)
-    .innerJoin(organizations, eq(activityLogs.organizationId, organizations.id))
-    .leftJoin(users, eq(activityLogs.userId, users.id))
-    .orderBy(desc(activityLogs.createdAt))
+    .from(auditLogs)
+    .innerJoin(organizations, eq(auditLogs.organizationId, organizations.id))
+    .leftJoin(users, eq(auditLogs.userId, users.id))
+    .orderBy(desc(auditLogs.createdAt))
     .limit(100);
 
   const getIcon = (action: string) => {

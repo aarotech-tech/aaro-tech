@@ -1,7 +1,7 @@
 "use server";
 
 import { db } from "@/db";
-import { deliverables, deliverableVersions, comments, projects, retainerPeriods, retainers, organizations, activityLogs } from "@/db/schema";
+import { deliverables, deliverableVersions, comments, projects, retainerPeriods, retainers, organizations, auditLogs } from "@/db/schema";
 import { sendDeliverableReviewEmail } from "@/lib/email";
 import { requireInternalUser } from "@/lib/auth";
 import { eq } from "drizzle-orm";
@@ -78,7 +78,7 @@ export async function createDeliverableVersionAction(deliverableId: string, file
       const org = await db.query.organizations.findFirst({ where: eq(organizations.id, orgId) });
       if (org) orgName = org.name;
 
-      await db.insert(activityLogs).values({
+      await db.insert(auditLogs).values({
         organizationId: orgId,
         userId: user.id,
         action: "deliverable.submitted",

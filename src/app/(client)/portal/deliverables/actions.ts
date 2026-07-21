@@ -1,7 +1,7 @@
 "use server";
 
 import { db } from "@/db";
-import { deliverables, deliverableVersions, comments, projects, retainerPeriods, retainers, activityLogs } from "@/db/schema";
+import { deliverables, deliverableVersions, comments, projects, retainerPeriods, retainers, auditLogs } from "@/db/schema";
 import { sendDeliverableClientResponseEmail } from "@/lib/email";
 import { requireOrganizationMember } from "@/lib/auth";
 import { eq } from "drizzle-orm";
@@ -63,7 +63,7 @@ export async function submitClientReviewAction(
     .where(eq(deliverables.id, deliverableId));
 
   // Activity Log
-  await db.insert(activityLogs).values({
+  await db.insert(auditLogs).values({
     organizationId: orgId,
     userId: user.id,
     action: `deliverable.${newDeliverableStatus}`,

@@ -14,7 +14,7 @@ export async function approveProposalAction(proposalId: string, formData: FormDa
     const forwardedFor = (await headers()).get("x-forwarded-for");
     const ip = forwardedFor ? forwardedFor.split(',')[0] : "unknown";
 
-    await rateLimit(`proposal_approval_${ip}`, { points: 5, durationInSeconds: 3600 });
+    await rateLimit.check(`proposal_approval_${ip}`, { points: 5, durationInSeconds: 3600 });
 
     const signature = formData.get("signature") as string;
     

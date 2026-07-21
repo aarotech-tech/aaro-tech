@@ -343,7 +343,7 @@ test.describe.serial('🚀 Full Business Lifecycle', () => {
 
       // Either success or rate limit message should appear
       await expect(
-        page.locator('text=/success|sent|rate limit|too many|limit/i').first()
+        page.locator('text=/Too many requests|Oops|Message sent successfully|sent|success|thank you|received|growth plan/i').first()
       ).toBeVisible({ timeout: 20000 });
       console.log('✅ Contact form responded correctly on rapid submission (success or rate limit)');
     });

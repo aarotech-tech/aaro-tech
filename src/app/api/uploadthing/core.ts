@@ -29,7 +29,7 @@ export const ourFileRouter = {
       // Since UploadThing wraps NextRequest, we extract IP manually if possible, or fallback
       const ip = req.headers.get("x-forwarded-for")?.split(',')[0] || "unknown";
       try {
-        await rateLimit(`upload_${ip}`, { points: 20, durationInSeconds: 3600 });
+        await rateLimit.check(`upload_${ip}`, { points: 20, durationInSeconds: 3600 });
       } catch (e) {
         throw new UploadThingError("Too many requests");
       }

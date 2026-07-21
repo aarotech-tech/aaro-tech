@@ -1,7 +1,7 @@
 "use server";
 
 import { db } from "@/db";
-import { invoices, payments, organizations, activityLogs } from "@/db/schema";
+import { invoices, payments, organizations, auditLogs } from "@/db/schema";
 import { requireInternalUser, requireOrganizationMember } from "@/lib/auth";
 import { eq } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
@@ -24,7 +24,7 @@ export async function createInvoiceAction(data: {
     status: "open"
   }).returning();
 
-  await db.insert(activityLogs).values({
+  await db.insert(auditLogs).values({
     organizationId: data.organizationId,
     userId: user.id,
     action: "invoice.created",
