@@ -479,5 +479,24 @@ export const tasksRelations = relations(tasks, ({ one }) => ({
   project: one(projects, {
     fields: [tasks.projectId],
     references: [projects.id]
+  }),
+  assignee: one(users, {
+    fields: [tasks.assigneeId],
+    references: [users.id]
+  })
+}));
+
+export const activityLogsRelations = relations(activityLogs, ({ one }) => ({
+  user: one(users, {
+    fields: [activityLogs.userId],
+    references: [users.id],
+    relationName: "projectActivities"
+  })
+}));
+
+export const filesRelations = relations(files, ({ one }) => ({
+  uploadedBy: one(users, {
+    fields: [files.uploadedById],
+    references: [users.id]
   })
 }));
