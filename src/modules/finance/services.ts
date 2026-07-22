@@ -238,22 +238,7 @@ export class FinanceService {
 export const financeService = new FinanceService();
 
 
-export async function getProjectInvoicesService(projectId: string) {
-  return db.query.invoices.findMany({
-    where: eq(invoices.projectId, projectId),
-    orderBy: [desc(invoices.createdAt)],
-    with: {
-      payments: true,
-    }
-  });
-}
 
-export async function getInvoicePaymentsService(invoiceId: string) {
-  return db.query.payments.findMany({
-    where: eq(payments.invoiceId, invoiceId),
-    orderBy: [desc(payments.paidAt)],
-  });
-}
 
 export async function recordManualPaymentService(data: {
   invoiceId: string;
@@ -265,6 +250,20 @@ export async function recordManualPaymentService(data: {
   userId: string;
   organizationId: string;
 }) {
+  // 1. Verify invoice exists and belongs to the organization
+  const invoice = await db.query.invoices.findFirst({
+    where: and(
+      eq(invoices.id, data.invoiceId),
+      eq(invoices.organizationId, data.organizationId)
+    ),
+    with: { payments: true }
+  });
+
+  if (!invoice) {
+    throw new Error("Invoice not found or unauthorized.");
+  }
+
+  // 2. Create the payment
   const [payment] = await db.insert(payments).values({
     invoiceId: data.invoiceId,
     amount: data.amount,
@@ -279,12 +278,7 @@ export async function recordManualPaymentService(data: {
     createdBy: data.userId,
   }).returning();
 
-  // Update invoice status logic
-  const invoice = await db.query.invoices.findFirst({
-    where: eq(invoices.id, data.invoiceId),
-    with: { payments: true }
-  });
-
+  // 3. Update invoice status logic
   if (invoice) {
     // Total paid including this new payment
     const totalPaid = (invoice as any).payments

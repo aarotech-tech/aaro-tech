@@ -194,7 +194,7 @@ export const automationLogs = pgTable("automation_logs", {
 });
 export const trackingEvents = pgTable("tracking_events", {
   id: uuid("id").primaryKey().defaultRandom(),
-  organizationId: uuid("organization_id").references(() => organizations.id).notNull(),
+  organizationId: uuid("organization_id").references(() => organizations.id, { onDelete: "cascade" }).notNull(),
   entityType: varchar("entity_type", { length: 50 }).notNull(), // 'proposal', 'invoice'
   entityId: uuid("entity_id").notNull(),
   eventType: varchar("event_type", { length: 50 }).notNull(), // 'viewed', 'downloaded'
@@ -413,7 +413,7 @@ export const rateLimits = pgTable("rate_limits", {
 
 export const auditLogs = pgTable("audit_logs", {
   id: uuid("id").primaryKey().defaultRandom(),
-  organizationId: uuid("organization_id").notNull(),
+  organizationId: uuid("organization_id").references(() => organizations.id, { onDelete: "cascade" }).notNull(),
   entityType: varchar("entity_type", { length: 50 }).notNull(),
   entityId: uuid("entity_id").notNull(),
   action: varchar("action", { length: 255 }).notNull(),
@@ -443,4 +443,37 @@ export const notifications = pgTable("notifications", {
   userIdx: index("notifications_user_idx").on(t.userId),
   readIdx: index("notifications_read_idx").on(t.read),
   createdAtIdx: index("notifications_created_at_idx").on(t.createdAt),
+}));
+
+export const invoicesRelations = relations(invoices, ({ many, one }) => ({
+  payments: many(payments),
+  project: one(projects, {
+    fields: [invoices.projectId],
+    references: [projects.id],
+  }),
+  organization: one(organizations, {
+    fields: [invoices.organizationId],
+    references: [organizations.id],
+  }),
+}));
+
+export const paymentsRelations = relations(payments, ({ one }) => ({
+  invoice: one(invoices, {
+    fields: [payments.invoiceId],
+    references: [invoices.id],
+  }),
+}));
+
+export const projectsRelations = relations(projects, ({ many }) => ({
+  tasks: many(tasks),
+  milestones: many(milestones),
+  invoices: many(invoices),
+  activities: many(activityLogs, { relationName: "projectActivities" })
+}));
+
+export const tasksRelations = relations(tasks, ({ one }) => ({
+  project: one(projects, {
+    fields: [tasks.projectId],
+    references: [projects.id]
+  })
 }));
