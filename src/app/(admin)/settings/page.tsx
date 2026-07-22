@@ -1,15 +1,11 @@
-import { db } from "@/db";
-import { organizations } from "@/db/schema";
 import { requireInternalUser } from "@/lib/auth";
-import { eq } from "drizzle-orm";
 import { SettingsForm } from "./_components/SettingsForm";
 import { PageHeader } from "@/components/ui/page-header";
+import { CoreService } from "@/modules/core/services";
 
 export default async function GeneralSettingsPage() {
   await requireInternalUser();
-  const org = await db.query.organizations.findFirst({
-    where: eq(organizations.type, "internal"),
-  });
+  const org = await CoreService.getInternalOrganization();
 
   return (
     <div className="h-full overflow-y-auto flex flex-col">

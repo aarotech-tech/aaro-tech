@@ -36,6 +36,7 @@ export const metadata: Metadata = {
 
 import { ClerkProvider } from "@clerk/nextjs";
 import { generateOrganizationSchema, generateWebSiteSchema } from "@/lib/seo";
+import { Toaster } from "sonner";
 
 export default function RootLayout({
   children,
@@ -58,6 +59,7 @@ export default function RootLayout({
             dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteLd) }}
           />
           {children}
+          <Toaster position="top-right" richColors />
           <WhatsAppButton />
           <MobileCTA />
           <ClickTracker />

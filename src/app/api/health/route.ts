@@ -1,6 +1,4 @@
 import { NextResponse } from 'next/server';
-import { db } from '@/db';
-import { sql } from 'drizzle-orm';
 
 export async function GET() {
   const health = {
@@ -17,10 +15,11 @@ export async function GET() {
   let isHealthy = true;
 
   // Check Database
-  try {
-    await db.execute(sql`SELECT 1`);
+  const { CoreService } = await import("@/modules/core/services");
+  const isDbHealthy = await CoreService.checkDatabaseHealth();
+  if (isDbHealthy) {
     health.database = 'healthy';
-  } catch (error) {
+  } else {
     isHealthy = false;
   }
 

@@ -287,11 +287,89 @@ export async function getClientProjectDetails(projectId: string, organizationId:
 }
 
 export async function getClientDeliverables(organizationId: string) {
-  return [
-    { id: "del_2", name: "Design System", projectName: "Acme Corp Web Redesign", status: "client_review", submittedAt: new Date().toISOString() }
-  ];
+  const { db } = await import("@/db");
+  const { deliverables, projects } = await import("@/db/schema");
+  const { eq, desc } = await import("drizzle-orm");
+
+  return await db.select({
+    id: deliverables.id,
+    name: deliverables.name,
+    status: deliverables.status,
+    createdAt: deliverables.createdAt,
+    projectName: projects.name
+  })
+  .from(deliverables)
+  .leftJoin(projects, eq(deliverables.projectId, projects.id))
+  .where(eq(projects.organizationId, organizationId))
+  .orderBy(desc(deliverables.createdAt));
 }
 
 export async function updateTaskStatusService(taskId: string, status: string, userId: string) {
   return DeliveryRepo.updateTaskStatus(taskId, status);
+}export async function submitClientReviewService(
+  deliverableId: string,
+  versionId: string,
+  action: "approve" | "request_changes",
+  commentText?: string,
+  userId?: string
+) {
+  const { db } = require('@/db');
+  const { deliverables, deliverableVersions, comments, projects, retainerPeriods, retainers, auditLogs } = require('@/db/schema');
+  const { eq } = require('drizzle-orm');
+  const { sendDeliverableClientResponseEmail } = require('@/lib/email');
+
+  const deliverable = await db.query.deliverables.findFirst({
+    where: eq(deliverables.id, deliverableId)
+  });
+
+  if (!deliverable) throw new Error("Deliverable not found");
+
+  let orgId = null;
+
+  if (deliverable.projectId) {
+    const p = await db.query.projects.findFirst({ where: eq(projects.id, deliverable.projectId) });
+    orgId = p?.organizationId;
+  } else if (deliverable.retainerPeriodId) {
+    const rp = await db.query.retainerPeriods.findFirst({ where: eq(retainerPeriods.id, deliverable.retainerPeriodId) });
+    if (rp) {
+      const r = await db.query.retainers.findFirst({ where: eq(retainers.id, rp.retainerId) });
+      orgId = r?.organizationId;
+    }
+  }
+
+  if (!orgId) throw new Error("Deliverable ownership could not be verified");
+
+  if (commentText && commentText.trim() !== "" && userId) {
+    await db.insert(comments).values({
+      deliverableId,
+      versionId,
+      userId,
+      text: commentText,
+      visibility: "client_visible"
+    });
+  }
+
+  const newReviewStatus = action === "approve" ? "approved" : "changes_requested";
+  await db.update(deliverableVersions)
+    .set({ reviewStatus: newReviewStatus })
+    .where(eq(deliverableVersions.id, versionId));
+
+  const newDeliverableStatus = action === "approve" ? "approved" : "changes_requested";
+  await db.update(deliverables)
+    .set({ status: newDeliverableStatus })
+    .where(eq(deliverables.id, deliverableId));
+
+  if (userId) {
+    await db.insert(auditLogs).values({
+      organizationId: orgId,
+      userId,
+      action: `deliverable.${action}`,
+      entityType: "deliverable",
+      entityId: deliverableId,
+      metadata: JSON.stringify({ versionId })
+    });
+  }
+
+  await sendDeliverableClientResponseEmail("info@aarotech.in", deliverable.name, newDeliverableStatus);
+  return { orgId };
 }

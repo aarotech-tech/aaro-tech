@@ -1,35 +1,16 @@
-import { db } from "@/db";
-import { organizations, contacts, deals, projects, invoices } from "@/db/schema";
-import { eq } from "drizzle-orm";
 import { notFound } from "next/navigation";
 import { Building2, Mail, Phone, MapPin, Target, Briefcase, FileText, CreditCard } from "lucide-react";
 import { PageHeader } from "@/components/ui/page-header";
+import { CoreService } from "@/modules/core/services";
 
 export default async function OrganizationDetailPage({ params }: { params: { id: string } }) {
-  const org = await db.query.organizations.findFirst({
-    where: eq(organizations.id, params.id)
-  });
+  const details = await CoreService.getOrganizationDetails(params.id);
 
-  if (!org) {
+  if (!details) {
     notFound();
   }
 
-  // Fetch related data
-  const orgContacts = await db.query.contacts.findMany({
-    where: eq(contacts.organizationId, org.id)
-  });
-
-  const orgDeals = await db.query.deals.findMany({
-    where: eq(deals.organizationId, org.id)
-  });
-
-  const orgProjects = await db.query.projects.findMany({
-    where: eq(projects.organizationId, org.id)
-  });
-
-  const orgInvoices = await db.query.invoices.findMany({
-    where: eq(invoices.organizationId, org.id)
-  });
+  const { org, orgContacts, orgDeals, orgProjects, orgInvoices } = details;
 
   return (
     <div className="h-full overflow-y-auto flex flex-col">

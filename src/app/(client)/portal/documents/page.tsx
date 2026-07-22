@@ -1,8 +1,6 @@
 import { requireAuthenticatedUser } from "@/lib/auth";
-import { db } from "@/db";
-import { organizationMembers } from "@/db/schema";
-import { eq } from "drizzle-orm";
 import { redirect } from "next/navigation";
+import { portalService } from "@/modules/portal/services";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { FileText, Download, Search, Folder } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -11,11 +9,11 @@ import { FilterBar } from "@/components/ui/filter-bar";
 
 export default async function ClientDocumentsPage() {
   const user = await requireAuthenticatedUser();
-  const membership = await db.query.organizationMembers.findFirst({
-    where: eq(organizationMembers.userId, user.id)
-  });
+  const membershipData = await portalService.getClientMembership(user.id);
 
-  if (!membership) redirect("/onboarding");
+  if (!membershipData || !membershipData.myOrg) {
+    redirect("/onboarding");
+  }
   
   // Mocked for Epic 6 UI Scaffold. This would eventually query Delivery/Documents Service.
   const documents = [

@@ -26,11 +26,11 @@ export async function sendInvoiceCreatedEmail(to: string, orgName: string, invoi
   const amountStr = (amountCents / 100).toLocaleString(undefined, { minimumFractionDigits: 2 });
   return sendEmail({
     to,
-    subject: `New Invoice from Aarotech - $${amountStr}`,
+    subject: `New Invoice from Aarotech - ₹${amountStr}`,
     html: `
       <h2>New Invoice from Aarotech</h2>
       <p>Hello ${orgName},</p>
-      <p>A new invoice (ID: ${invoiceId.substring(0, 8).toUpperCase()}) for <strong>$${amountStr}</strong> has been generated for your account.</p>
+      <p>A new invoice (ID: ${invoiceId.substring(0, 8).toUpperCase()}) for <strong>₹${amountStr}</strong> has been generated for your account.</p>
       <p>Please log in to your Client Portal to review and pay this invoice.</p>
       <br/>
       <p>Thank you,<br/>Aarotech Team</p>

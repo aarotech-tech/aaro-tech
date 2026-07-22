@@ -1,7 +1,5 @@
 import { requireAuthenticatedUser } from "@/lib/auth";
-import { db } from "@/db";
-import { automationLogs } from "@/db/schema";
-import { desc } from "drizzle-orm";
+import { CoreService } from "@/modules/core/services";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Activity, AlertCircle, CheckCircle, Clock } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
@@ -10,10 +8,7 @@ import { PageHeader } from "@/components/ui/page-header";
 export default async function AutomationsPage() {
   await requireAuthenticatedUser();
 
-  const logs = await db.query.automationLogs.findMany({
-    orderBy: [desc(automationLogs.createdAt)],
-    limit: 50,
-  });
+  const logs = await CoreService.getAutomationLogs();
 
   const activeWorkflows = [
     { id: "handle-deal-won", name: "Create Project on Deal Won", status: "active", trigger: "Domain/DealWon" },

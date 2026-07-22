@@ -3,7 +3,7 @@ import { AdminShell } from "../_components/AdminShell";
 
 export default function InboxLayout({ children }: { children: React.ReactNode }) {
   return (
-    <AdminShell config={workspacesConfig.inbox}>
+    <AdminShell configId="inbox">
       {children}
     </AdminShell>
   );

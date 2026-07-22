@@ -1,12 +1,8 @@
-import { db } from "@/db";
-import { organizations, projects, clientAssets, organizationMembers, invoices, deliverables } from "@/db/schema";
-import { eq, desc, inArray, and } from "drizzle-orm";
 import { requireAuthenticatedUser } from "@/lib/auth";
 import { withCache } from "@/lib/redis";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { FileIcon, CheckCircle, Briefcase, DollarSign, Bell, Activity, ArrowRight, Clock, FileWarning } from "lucide-react";
 import { portalService } from "@/modules/portal/services";
-import { notificationService } from "@/modules/core/notifications";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { PageHeader } from "@/components/ui/page-header";
@@ -16,11 +12,9 @@ import { Badge } from "@/components/ui/badge";
 export default async function ClientDashboardPage() {
   const user = await requireAuthenticatedUser();
 
-  const membership = await db.query.organizationMembers.findFirst({
-    where: eq(organizationMembers.userId, user.id)
-  });
+  const membershipData = await portalService.getClientMembership(user.id);
 
-  if (!membership) {
+  if (!membershipData || !membershipData.myOrg) {
     return (
       <div className="h-full flex items-center justify-center p-6">
         <EmptyState 
@@ -32,35 +26,13 @@ export default async function ClientDashboardPage() {
     );
   }
 
-  const myOrg = await db.query.organizations.findFirst({
-    where: eq(organizations.id, membership.organizationId)
-  });
-
-  if (!myOrg) {
-    return null;
-  }
+  const { myOrg } = membershipData;
 
   // Fetch client data
   const cacheKey = `org:${myOrg.id}:clientDashboard`;
-  const [activeProjects, recentAssets, onboardingStatus, clientInvoices, inboxFeed] = await Promise.all([
-    withCache(cacheKey, async () => {
-      return db.query.projects.findMany({
-        where: eq(projects.organizationId, myOrg.id),
-        orderBy: [desc(projects.createdAt)]
-      });
-    }, 3600),
-    db.query.clientAssets.findMany({
-      where: eq(clientAssets.organizationId, myOrg.id),
-      orderBy: [desc(clientAssets.createdAt)],
-      limit: 5
-    }),
-    portalService.getOnboardingStatus(myOrg.id),
-    db.query.invoices.findMany({
-      where: eq(invoices.organizationId, myOrg.id),
-      orderBy: [desc(invoices.dueDate)],
-    }),
-    notificationService.getDashboardFeed(user.id)
-  ]);
+  const { activeProjects, recentAssets, onboardingStatus, clientInvoices, inboxFeed } = await withCache(cacheKey, async () => {
+    return portalService.getDashboardData(myOrg.id, user.id);
+  }, 3600);
 
   const outstandingInvoices = clientInvoices.filter(i => i.status !== "paid" && i.status !== "void");
   const overdueInvoices = outstandingInvoices.filter(i => new Date(i.dueDate) < new Date());

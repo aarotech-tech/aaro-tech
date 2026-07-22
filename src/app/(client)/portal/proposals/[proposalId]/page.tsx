@@ -1,34 +1,15 @@
-
-import { db } from "@/db";
-import { proposals, deals, organizations, trackingEvents } from "@/db/schema";
-import { eq } from "drizzle-orm";
 import { notFound } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { PenToolIcon, CheckCircleIcon } from "lucide-react";
 import { ApproveProposalForm } from "./_components/ApproveProposalForm";
 import { PageHeader } from "@/components/ui/page-header";
+import { getClientProposalView, logTrackingEventSilently } from "@/modules/sales/services";
 
 export default async function ClientProposalViewPage({ params }: { params: Promise<{ proposalId: string }> }) {
   const resolvedParams = await params;
   const proposalId = resolvedParams.proposalId;
 
-  const proposalData = await db
-    .select({
-      id: proposals.id,
-      status: proposals.status,
-      documentData: proposals.documentData,
-      dealName: deals.name,
-      value: deals.value,
-      organizationId: deals.organizationId,
-      organizationName: organizations.name,
-      approvedAt: proposals.approvedAt,
-      signatureText: proposals.signatureText,
-    })
-    .from(proposals)
-    .innerJoin(deals, eq(proposals.dealId, deals.id))
-    .innerJoin(organizations, eq(deals.organizationId, organizations.id))
-    .where(eq(proposals.id, proposalId))
-    .limit(1);
+  const proposalData = await getClientProposalView(proposalId);
 
   if (proposalData.length === 0) {
     notFound();
@@ -37,16 +18,7 @@ export default async function ClientProposalViewPage({ params }: { params: Promi
   const proposal = proposalData[0];
 
   // PHASE 10: Spy Analytics - Log the view event silently
-  try {
-    await db.insert(trackingEvents).values({
-      organizationId: proposal.organizationId,
-      entityType: "proposal",
-      entityId: proposal.id,
-      eventType: "viewed",
-    });
-  } catch (error) {
-    console.error("Failed to log tracking event", error);
-  }
+  await logTrackingEventSilently(proposal.organizationId, "proposal", proposal.id, "viewed");
 
   return (
     <div className="h-full overflow-y-auto flex flex-col">

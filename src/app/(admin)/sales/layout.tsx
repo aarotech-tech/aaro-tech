@@ -4,7 +4,7 @@ import { workspacesConfig } from "@/lib/constants/navigation";
 
 export default function SalesLayout({ children }: { children: ReactNode }) {
   return (
-    <AdminShell config={workspacesConfig.sales}>
+    <AdminShell configId="sales">
       {children}
     </AdminShell>
   );

@@ -8,6 +8,7 @@ import { requireInternalUser } from "@/lib/auth";
  */
 export const actionClient = createSafeActionClient({
   handleServerError(e) {
+    console.error("Action Error:", e);
     if (e instanceof Error) {
       return e.message;
     }

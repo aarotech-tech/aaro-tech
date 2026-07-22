@@ -4,7 +4,7 @@ import { workspacesConfig } from "@/lib/constants/navigation";
 
 export default function DirectoryLayout({ children }: { children: ReactNode }) {
   return (
-    <AdminShell config={workspacesConfig.directory}>
+    <AdminShell configId="directory">
       {children}
     </AdminShell>
   );

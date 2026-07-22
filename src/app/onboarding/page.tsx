@@ -1,19 +1,16 @@
 import { redirect } from "next/navigation";
 import { requireAuthenticatedUser } from "@/lib/auth";
-import { db } from "@/db";
-import { organizationMembers, organizations } from "@/db/schema";
-import { eq } from "drizzle-orm";
+import { portalService } from "@/modules/portal/services";
+import { CoreService } from "@/modules/core/services";
 import { Button } from "@/components/ui/button";
 
-export default async function OnboardingPage(props: { searchParams: { invite?: string } }) {
+export default async function OnboardingPage(props: { searchParams: Promise<{ invite?: string }> }) {
   const user = await requireAuthenticatedUser();
   const searchParams = await props.searchParams;
 
-  const membership = await db.query.organizationMembers.findFirst({
-    where: eq(organizationMembers.userId, user.id)
-  });
+  const membershipData = await portalService.getClientMembership(user.id);
 
-  if (membership) {
+  if (membershipData && membershipData.membership) {
     redirect("/portal/home");
   }
 
@@ -34,12 +31,7 @@ export default async function OnboardingPage(props: { searchParams: { invite?: s
           <form action={async () => {
             "use server";
             // Mock: Auto-create an org and add them just to bypass for Epic 6
-            const [org] = await db.insert(organizations).values({ 
-              name: "New Client Org",
-              clerkOrgId: `mock_${Date.now()}`,
-              slug: `new-client-org-${Date.now()}`
-            }).returning();
-            await db.insert(organizationMembers).values({ organizationId: org.id, userId: user.id, role: "admin" });
+            await CoreService.acceptMockInvite(user.id);
             redirect("/portal/home");
           }}>
             <Button type="submit" className="w-full">Accept Invitation & Continue</Button>

@@ -1,6 +1,10 @@
 "use client";
 
-import { KanbanBoard, KanbanColumn, KanbanItem } from "@/components/ui/kanban";
+import type { KanbanColumn, KanbanItem } from "@/components/ui/kanban";
+import dynamic from "next/dynamic";
+import Link from "next/link";
+
+const KanbanBoard = dynamic(() => import("@/components/ui/kanban").then(mod => mod.KanbanBoard), { ssr: false });
 import { updateDealStageAction } from "@/modules/sales/actions";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
@@ -8,18 +12,19 @@ import { Badge } from "@/components/ui/badge";
 interface DealItem extends KanbanItem {
   organizationId: string;
   organizationName: string;
+  contactName: string | null;
   value: number;
   expectedCloseDate: Date | null;
   ownerName: string | null;
 }
 
 export function PipelineBoard({ initialColumns }: { initialColumns: KanbanColumn[] }) {
-  
+
   const handleDragEnd = async (dealId: string, sourceColId: string, destColId: string, newIndex: number) => {
     // Find the deal to get its organizationId
     const sourceCol = initialColumns.find(c => c.id === sourceColId);
     const deal = sourceCol?.items.find(d => d.id === dealId) as DealItem | undefined;
-    
+
     if (!deal) return;
 
     try {
@@ -36,27 +41,28 @@ export function PipelineBoard({ initialColumns }: { initialColumns: KanbanColumn
 
   const renderItem = (item: KanbanItem) => {
     const deal = item as DealItem;
-    const formattedValue = new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(deal.value / 100);
+    const formattedValue = new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR" }).format(deal.value / 100);
 
     return (
-      <div className="p-3">
+      <Link href={`/sales/deals/${deal.id}`} className="block p-3 hover:bg-slate-50 transition-colors">
         <div className="flex justify-between items-start mb-2">
-          <h4 className="font-semibold text-gray-900 text-sm truncate">{deal.name}</h4>
+          <h4 className="font-semibold text-gray-900 text-sm truncate group-hover:text-primary">{deal.name}</h4>
         </div>
-        <p className="text-xs text-gray-500 mb-3 truncate">{deal.organizationName}</p>
+        {deal.contactName && <p className="text-xs text-gray-400 mb-3 truncate">{deal.contactName}</p>}
+        {!deal.contactName && <div className="mb-3"></div>}
         <div className="flex justify-between items-center mt-2 pt-2 border-t border-gray-100">
           <span className="font-medium text-green-700 text-sm">{formattedValue}</span>
           {deal.ownerName && (
             <span className="text-xs text-gray-400">Owner: {deal.ownerName}</span>
           )}
         </div>
-      </div>
+      </Link>
     );
   };
 
   const renderColumnHeader = (col: KanbanColumn) => {
     const totalValue = col.items.reduce((sum, item) => sum + (item as DealItem).value, 0);
-    const formattedTotal = new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 }).format(totalValue / 100);
+    const formattedTotal = new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR", maximumFractionDigits: 0 }).format(totalValue / 100);
 
     return (
       <div className="flex flex-col items-end">
@@ -68,9 +74,9 @@ export function PipelineBoard({ initialColumns }: { initialColumns: KanbanColumn
 
   return (
     <div className="h-full bg-white">
-      <KanbanBoard 
-        initialColumns={initialColumns} 
-        onDragEnd={handleDragEnd} 
+      <KanbanBoard
+        initialColumns={initialColumns}
+        onDragEnd={handleDragEnd}
         renderItem={renderItem}
         renderColumnHeader={renderColumnHeader}
       />

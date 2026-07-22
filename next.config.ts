@@ -108,6 +108,9 @@ const nextConfig: NextConfig = {
       }
     ];
   },
+  experimental: {
+    optimizePackageImports: ['lucide-react', 'date-fns'],
+  },
 };
 
 export default withSentryConfig(bundleAnalyzer(nextConfig), {

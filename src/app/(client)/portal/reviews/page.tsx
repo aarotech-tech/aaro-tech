@@ -1,9 +1,7 @@
 import { requireAuthenticatedUser } from "@/lib/auth";
-import { db } from "@/db";
-import { organizationMembers } from "@/db/schema";
-import { eq } from "drizzle-orm";
 import { redirect } from "next/navigation";
 import { getClientDeliverables } from "@/modules/delivery/services";
+import { portalService } from "@/modules/portal/services";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { FileCheck, Download, History, MessageSquare, Check, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -11,12 +9,13 @@ import { PageHeader } from "@/components/ui/page-header";
 
 export default async function ClientReviewsPage() {
   const user = await requireAuthenticatedUser();
-  const membership = await db.query.organizationMembers.findFirst({
-    where: eq(organizationMembers.userId, user.id)
-  });
+  const membershipData = await portalService.getClientMembership(user.id);
 
-  if (!membership) redirect("/onboarding");
-  const deliverables = await getClientDeliverables(membership.organizationId);
+  if (!membershipData || !membershipData.myOrg) {
+    redirect("/onboarding");
+  }
+  
+  const deliverables = await getClientDeliverables(membershipData.myOrg.id);
 
   return (
     <div className="h-full overflow-y-auto flex flex-col">

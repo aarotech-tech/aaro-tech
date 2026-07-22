@@ -1,7 +1,3 @@
-
-import { db } from "@/db";
-import { trackingEvents, proposals, deals, organizations, services, dealLineItems } from "@/db/schema";
-import { eq, desc } from "drizzle-orm";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { generateProposalWithAI } from "./actions";
@@ -10,51 +6,17 @@ import LineItemsEditor from "./_components/LineItemsEditor";
 import ProposalActions from "./_components/ProposalActions";
 import { Button } from "@/components/ui/button";
 import { PageHeader } from "@/components/ui/page-header";
+import { getAdminProposalDetails } from "@/modules/sales/services";
 
 export default async function ProposalEditorPage({ params }: { params: Promise<{ proposalId: string }> }) {
   const resolvedParams = await params;
-  
-  const proposalData = await db
-    .select({
-      id: proposals.id,
-      dealId: deals.id,
-      status: proposals.status,
-      documentData: proposals.documentData,
-      dealName: deals.name,
-      organizationName: organizations.name,
-      value: deals.value,
-      approvedAt: proposals.approvedAt,
-      signatureText: proposals.signatureText,
-      approvedByIp: proposals.approvedByIp,
-    })
-    .from(proposals)
-    .innerJoin(deals, eq(proposals.dealId, deals.id))
-    .innerJoin(organizations, eq(deals.organizationId, organizations.id))
-    .where(eq(proposals.id, resolvedParams.proposalId))
-    .limit(1);
+  const proposalDetails = await getAdminProposalDetails(resolvedParams.proposalId);
 
-  if (proposalData.length === 0) {
+  if (!proposalDetails) {
     notFound();
   }
 
-  const proposal = proposalData[0];
-
-  // Fetch line items and services catalog
-  const currentLineItems = await db.query.dealLineItems.findMany({
-    where: eq(dealLineItems.dealId, proposal.dealId),
-    orderBy: (items, { asc }) => [asc(items.createdAt)]
-  });
-
-  const allServices = await db.query.services.findMany({
-    where: eq(services.isActive, true)
-  });
-
-  // Fetch Spy Analytics (views)
-  const views = await db
-    .select()
-    .from(trackingEvents)
-    .where(eq(trackingEvents.entityId, proposal.id))
-    .orderBy(desc(trackingEvents.createdAt));
+  const { proposal, currentLineItems, allServices, views } = proposalDetails;
 
   // We bind the action so we can use it directly in the form
   const generateAction = generateProposalWithAI.bind(null, proposal.id, proposal.dealName, proposal.organizationName!);
@@ -130,7 +92,7 @@ export default async function ProposalEditorPage({ params }: { params: Promise<{
                 Viewed {views.length} time{views.length === 1 ? "" : "s"}
               </p>
               <div className="space-y-3 max-h-32 overflow-y-auto pr-2">
-                {views.map((view, i) => (
+                {views.map((view: any, i: number) => (
                   <div key={view.id} className="flex justify-between items-center text-xs">
                     <span className="text-gray-500">{i === 0 ? "Latest view" : "Previous view"}</span>
                     <span className="font-medium text-gray-700">{view.createdAt?.toLocaleString()}</span>

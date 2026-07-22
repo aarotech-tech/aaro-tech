@@ -39,12 +39,17 @@ export async function emitDomainEvent(event: DomainEvent) {
       name: `Domain/${event.type}` as any, // prefixing with Domain/ to group them
       data: event.payload,
     });
-    
-    // We can also run the activity log synchronously if we want, or leave it to a background subscriber.
-    // For Epic 7, we'll let Inngest handle all downstream side-effects.
     console.log(`[Event Bus] Dispatched ${event.type} to Inngest`);
   } catch (e) {
     console.error(`Failed to dispatch event ${event.type} to Inngest:`, e);
+  }
+  
+  // Local Development Fallback: If Inngest is not running, process it locally
+  if (process.env.NODE_ENV === 'development' || !process.env.INNGEST_EVENT_KEY) {
+    if (event.type === 'ProposalAccepted') {
+      console.log(`[Event Bus Fallback] Processing ${event.type} locally...`);
+      await conversionEngine.handleProposalAccepted(event.payload.dealId, event.payload.organizationId);
+    }
   }
 }
 

@@ -59,7 +59,7 @@ export function ContactForm({
       if (data?.success) {
         setIsSuccess(true);
         form.reset();
-        sendGAEvent("event", "generate_lead", { value: 1, currency: "USD" });
+        sendGAEvent("event", "generate_lead", { value: 1, currency: "INR" });
         if (onSuccess) onSuccess();
       }
     },
@@ -68,6 +68,8 @@ export function ContactForm({
     }
   });
 
+  // React Hook Form's watch() returns a function that isn't memoized correctly by React Compiler yet.
+  // eslint-disable-next-line react-hooks/incompatible-library
   const selectedChallenge = form.watch("challenge");
 
   const onSubmit = (values: z.infer<typeof contactFormSchema>) => {
@@ -174,13 +176,13 @@ export function ContactForm({
           render={({ field }) => (
             <FormItem>
               <FormLabel className="text-white">{challengeLabel}</FormLabel>
-              <Select onValueChange={field.onChange} defaultValue={field.value}>
+              <Select onValueChange={field.onChange} value={field.value}>
                 <FormControl>
-                  <SelectTrigger className="bg-slate-950 border-slate-800 text-white">
+                  <SelectTrigger className="w-full bg-slate-950 border-slate-800 text-white">
                     <SelectValue placeholder="Select an option..." />
                   </SelectTrigger>
                 </FormControl>
-                <SelectContent>
+                <SelectContent className="bg-slate-900 border-slate-800 text-white shadow-xl">
                   {challengeOptions.map((option) => (
                     <SelectItem key={option} value={option}>
                       {option}

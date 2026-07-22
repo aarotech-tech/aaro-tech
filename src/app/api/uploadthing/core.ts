@@ -2,8 +2,6 @@ import { logger } from '@/lib/logger';
 import { createUploadthing, type FileRouter } from "uploadthing/next";
 import { UploadThingError } from "uploadthing/server";
 import { requireAuthenticatedUser } from "@/lib/auth";
-import { db } from "@/db";
-import { files } from "@/db/schema";
 
 import { z } from "zod";
 
@@ -43,20 +41,9 @@ export const ourFileRouter = {
       }
 
       let derivedOrganizationId: string | null = null;
-      const { projects, retainerPeriods, retainers } = await import("@/db/schema");
-      const { eq } = await import("drizzle-orm");
-
-      if (input.projectId) {
-        const p = await db.query.projects.findFirst({ where: eq(projects.id, input.projectId) });
-        if (!p) throw new UploadThingError("Project not found");
-        derivedOrganizationId = p.organizationId;
-      } else if (input.retainerPeriodId) {
-        const rp = await db.query.retainerPeriods.findFirst({ where: eq(retainerPeriods.id, input.retainerPeriodId) });
-        if (!rp) throw new UploadThingError("Retainer period not found");
-        const r = await db.query.retainers.findFirst({ where: eq(retainers.id, rp.retainerId) });
-        if (!r) throw new UploadThingError("Retainer not found");
-        derivedOrganizationId = r.organizationId;
-      }
+      const { CoreService } = await import("@/modules/core/services");
+      
+      derivedOrganizationId = await CoreService.getDerivedOrganizationId(input.projectId, input.retainerPeriodId);
 
       if (!derivedOrganizationId) throw new UploadThingError("Could not derive organization ID");
 
@@ -81,17 +68,8 @@ export const ourFileRouter = {
       // This code RUNS ON YOUR SERVER after upload
       logger.info({ userId: metadata.userId, org: metadata.organizationId }, "Upload complete");
       
-      await db.insert(files).values({
-        organizationId: metadata.organizationId,
-        projectId: metadata.projectId || null,
-        retainerPeriodId: metadata.retainerPeriodId || null,
-        name: file.name,
-        url: file.url,
-        key: file.key,
-        size: file.size,
-        mimeType: file.type,
-        uploadedById: metadata.userId
-      });
+      const { CoreService } = await import("@/modules/core/services");
+      await CoreService.saveUploadedFile(metadata, file);
 
       return { uploadedBy: metadata.userId, fileUrl: file.url, fileKey: file.key };
     }),

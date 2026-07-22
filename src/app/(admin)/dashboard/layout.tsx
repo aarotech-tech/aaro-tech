@@ -3,7 +3,7 @@ import { AdminShell } from "../_components/AdminShell";
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   return (
-    <AdminShell config={workspacesConfig.dashboard}>
+    <AdminShell configId="dashboard">
       {children}
     </AdminShell>
   );

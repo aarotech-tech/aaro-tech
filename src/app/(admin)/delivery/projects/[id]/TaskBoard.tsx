@@ -1,6 +1,9 @@
 "use client";
 
-import { KanbanBoard, KanbanColumn, KanbanItem } from "@/components/ui/kanban";
+import type { KanbanColumn, KanbanItem } from "@/components/ui/kanban";
+import dynamic from "next/dynamic";
+
+const KanbanBoard = dynamic(() => import("@/components/ui/kanban").then(mod => mod.KanbanBoard), { ssr: false });
 import { updateTaskStatus } from "@/actions/tasks";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";

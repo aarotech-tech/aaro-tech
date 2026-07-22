@@ -1,9 +1,7 @@
 import { requireAuthenticatedUser } from "@/lib/auth";
-import { db } from "@/db";
-import { organizationMembers } from "@/db/schema";
-import { eq } from "drizzle-orm";
 import { redirect } from "next/navigation";
 import { getClientProjects } from "@/modules/delivery/services";
+import { portalService } from "@/modules/portal/services";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { FolderKanban } from "lucide-react";
 import Link from "next/link";
@@ -12,12 +10,13 @@ import { PageHeader } from "@/components/ui/page-header";
 
 export default async function ClientProjectsPage() {
   const user = await requireAuthenticatedUser();
-  const membership = await db.query.organizationMembers.findFirst({
-    where: eq(organizationMembers.userId, user.id)
-  });
+  const membershipData = await portalService.getClientMembership(user.id);
 
-  if (!membership) redirect("/onboarding");
-  const projects = await getClientProjects(membership.organizationId);
+  if (!membershipData || !membershipData.myOrg) {
+    redirect("/onboarding");
+  }
+  
+  const projects = await getClientProjects(membershipData.myOrg.id);
 
   return (
     <div className="h-full overflow-y-auto flex flex-col">

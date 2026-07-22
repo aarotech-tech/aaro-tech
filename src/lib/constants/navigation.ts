@@ -46,6 +46,7 @@ export const workspacesConfig: Record<Workspace, WorkspaceConfig> = {
       {
         items: [
           { name: "Website Leads", href: "/sales/leads", icon: Zap },
+          { name: "Pipeline", href: "/sales/pipeline", icon: Target },
           { name: "Proposals", href: "/sales/proposals", icon: Mail },
         ]
       }

@@ -1,41 +1,19 @@
-import { db } from "@/db";
-import { deliverables, projects, retainerPeriods, organizationMembers, organizations } from "@/db/schema";
-import { eq, desc } from "drizzle-orm";
 import { requireAuthenticatedUser } from "@/lib/auth";
 import Link from "next/link";
 import { FileCheck2Icon } from "lucide-react";
 import { PageHeader } from "@/components/ui/page-header";
+import { portalService } from "@/modules/portal/services";
+import { getClientDeliverables } from "@/modules/delivery/services";
 
 export default async function ClientDeliverablesPage() {
   const user = await requireAuthenticatedUser();
   
-  const membership = await db.query.organizationMembers.findFirst({
-    where: eq(organizationMembers.userId, user.id)
-  });
+  const membershipData = await portalService.getClientMembership(user.id);
+  if (!membershipData || !membershipData.myOrg) return null;
 
-  if (!membership) return null;
+  const { myOrg } = membershipData;
 
-  // We need to fetch deliverables that belong to projects OR retainer periods associated with this org.
-  // We'll fetch the projects and retainer periods for this org first, then get the deliverables.
-  const orgProjects = await db.query.projects.findMany({
-    where: eq(projects.organizationId, membership.organizationId)
-  });
-
-  // Retainers -> Retainer Periods (skipped for brevity in this simple fetch, we can just fetch all deliverables 
-  // and join projects to filter by org, but drizzle doesn't natively support easy polymorphic joins).
-  // A cleaner way for the demo:
-  const allDeliverables = await db.select({
-    id: deliverables.id,
-    name: deliverables.name,
-    status: deliverables.status,
-    createdAt: deliverables.createdAt,
-    projectName: projects.name
-  })
-  .from(deliverables)
-  .leftJoin(projects, eq(deliverables.projectId, projects.id))
-  // .leftJoin(retainerPeriods, ...) would go here
-  .where(eq(projects.organizationId, membership.organizationId))
-  .orderBy(desc(deliverables.createdAt));
+  const allDeliverables = await getClientDeliverables(myOrg.id);
 
   return (
     <div className="h-full overflow-y-auto flex flex-col">

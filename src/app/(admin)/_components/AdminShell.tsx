@@ -10,11 +10,12 @@ import { WorkspaceConfig, WORKSPACE_LIST } from "@/lib/constants/navigation";
 interface AdminShellProps {
   children: ReactNode;
   sidebar?: ReactNode;
-  config?: WorkspaceConfig;
+  configId?: string;
 }
 
-export function AdminShell({ children, sidebar, config }: AdminShellProps) {
+export function AdminShell({ children, sidebar, configId }: AdminShellProps) {
   const pathname = usePathname();
+  const config = configId ? WORKSPACE_LIST.find(w => w.id === configId) : undefined;
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">

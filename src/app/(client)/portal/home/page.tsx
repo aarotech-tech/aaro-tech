@@ -1,11 +1,9 @@
 import { requireAuthenticatedUser } from "@/lib/auth";
-import { db } from "@/db";
-import { organizationMembers } from "@/db/schema";
-import { eq } from "drizzle-orm";
 import { redirect } from "next/navigation";
 import { getClientProjects } from "@/modules/delivery/services";
 import { financeService } from "@/modules/finance/services";
 import { notificationService } from "@/modules/core/notifications";
+import { portalService } from "@/modules/portal/services";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { FolderKanban, ShieldCheck, CreditCard, Activity, ArrowRight, Download, MessageSquare } from "lucide-react";
 import Link from "next/link";
@@ -14,13 +12,13 @@ import { PageHeader } from "@/components/ui/page-header";
 
 export default async function ClientDashboardPage() {
   const user = await requireAuthenticatedUser();
-  
-  const membership = await db.query.organizationMembers.findFirst({
-    where: eq(organizationMembers.userId, user.id)
-  });
+  const membershipData = await portalService.getClientMembership(user.id);
 
-  if (!membership) redirect("/onboarding");
-  const orgId = membership.organizationId;
+  if (!membershipData || !membershipData.myOrg) {
+    redirect("/onboarding");
+  }
+  
+  const orgId = membershipData.myOrg.id;
 
   // Concurrent data fetching bounded to orgId
   const [projects, invoices, feed] = await Promise.all([

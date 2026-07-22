@@ -4,7 +4,7 @@ import { workspacesConfig } from "@/lib/constants/navigation";
 
 export default function SettingsLayout({ children }: { children: ReactNode }) {
   return (
-    <AdminShell config={workspacesConfig.settings}>
+    <AdminShell configId="settings">
       {children}
     </AdminShell>
   );

@@ -31,8 +31,6 @@ export default async function OrganizationsDirectoryPage() {
           <FilterBar 
             searchPlaceholder="Search organizations..."
             hasFilters
-            onSearch={() => {}}
-            onFilterClick={() => {}}
           />
         
         <div className="flex-1 overflow-auto">

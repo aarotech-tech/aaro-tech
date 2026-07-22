@@ -85,3 +85,101 @@ export const createDealAction = internalActionClient
     revalidatePath("/sales/pipeline");
     return result;
   });
+
+const updateDealDetailsSchema = z.object({
+  dealId: z.string().uuid(),
+  name: z.string(),
+  value: z.number().default(0),
+  expectedCloseDate: z.string().optional().nullable(),
+});
+
+export const updateDealDetailsAction = internalActionClient
+  .schema(updateDealDetailsSchema)
+  .action(async ({ parsedInput, ctx }) => {
+    const result = await SalesService.updateDealDetailsService({
+      dealId: parsedInput.dealId,
+      name: parsedInput.name,
+      value: parsedInput.value,
+      expectedCloseDate: parsedInput.expectedCloseDate,
+      userId: ctx.user.id,
+    });
+    
+    revalidatePath("/sales/pipeline");
+    revalidatePath(`/sales/deals/${parsedInput.dealId}`);
+    return result;
+  });
+
+const createDraftProposalSchema = z.object({
+  dealId: z.string().uuid(),
+});
+
+export const createDraftProposalAction = internalActionClient
+  .schema(createDraftProposalSchema)
+  .action(async ({ parsedInput }) => {
+    const proposal = await SalesService.createDraftProposalService(parsedInput.dealId);
+    revalidatePath(`/sales/deals/${parsedInput.dealId}`);
+    return proposal;
+  });
+
+const addDealLineItemSchema = z.object({
+  dealId: z.string().uuid(),
+  title: z.string(),
+  description: z.string().optional(),
+  quantity: z.number().min(1),
+  unitPrice: z.number().min(0),
+  isRecurring: z.boolean().default(false),
+});
+
+export const addDealLineItemAction = internalActionClient
+  .schema(addDealLineItemSchema)
+  .action(async ({ parsedInput }) => {
+    await SalesService.addDealLineItemService(parsedInput);
+    revalidatePath(`/sales/deals/${parsedInput.dealId}`, 'layout');
+    return true;
+  });
+
+const removeDealLineItemSchema = z.object({
+  lineItemId: z.string().uuid(),
+  dealId: z.string().uuid(),
+});
+
+export const removeDealLineItemAction = internalActionClient
+  .schema(removeDealLineItemSchema)
+  .action(async ({ parsedInput }) => {
+    await SalesService.removeDealLineItemService(parsedInput.lineItemId, parsedInput.dealId);
+    revalidatePath(`/sales/deals/${parsedInput.dealId}`, 'layout');
+    return true;
+  });
+
+const generateProposalDocumentSchema = z.object({
+  proposalId: z.string().uuid(),
+  dealId: z.string().uuid(),
+  dealName: z.string(),
+  orgName: z.string(),
+});
+
+export const generateProposalDocumentAction = internalActionClient
+  .schema(generateProposalDocumentSchema)
+  .action(async ({ parsedInput }) => {
+    await SalesService.generateProposalWithAIService(
+      parsedInput.proposalId, 
+      parsedInput.dealName, 
+      parsedInput.orgName
+    );
+    revalidatePath(`/sales/deals/${parsedInput.dealId}/proposals/${parsedInput.proposalId}`);
+    return true;
+  });
+
+const sendProposalSchema = z.object({
+  proposalId: z.string().uuid(),
+  dealId: z.string().uuid(),
+});
+
+export const sendProposalAction = internalActionClient
+  .schema(sendProposalSchema)
+  .action(async ({ parsedInput }) => {
+    const res = await SalesService.sendProposalToClientService(parsedInput.proposalId);
+    revalidatePath(`/sales/deals/${parsedInput.dealId}`);
+    revalidatePath(`/sales/deals/${parsedInput.dealId}/proposals/${parsedInput.proposalId}`);
+    return res;
+  });

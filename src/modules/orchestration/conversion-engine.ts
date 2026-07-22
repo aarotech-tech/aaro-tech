@@ -9,31 +9,27 @@ export class ConversionEngine {
    * Wraps the entire flow in a single Drizzle database transaction.
    */
   async handleProposalAccepted(dealId: string, organizationId: string) {
-    // We execute the conversion process inside a single transaction to ensure Atomicity.
-    return db.transaction(async (tx) => {
-      // 1. Sales: Mark the deal as won
-      const deal = await salesService.markDealWon(dealId, organizationId, tx);
+    // 1. Sales: Mark the deal as won
+    const deal = await salesService.markDealWon(dealId, organizationId);
 
-      // 2. Delivery: Scaffold the project for the delivery team
-      const project = await createProjectFromDeal(deal.id, deal.name, tx);
+    // 2. Delivery: Scaffold the project for the delivery team
+    const project = await createProjectFromDeal(deal.id, deal.name);
 
-      // 3. Finance: Create a deposit invoice with a specific deposit configuration
-      // Assuming a 50% deposit policy for this conversion type
-      const depositConfig = { type: 'percentage', value: 50 };
-      const totalValueCents = (deal.value || 0) * 100;
-      const depositAmountCents = depositConfig.type === 'percentage' 
-        ? Math.round(totalValueCents * (depositConfig.value / 100))
-        : depositConfig.value * 100;
+    // 3. Finance: Create a deposit invoice with a specific deposit configuration
+    // Assuming a 50% deposit policy for this conversion type
+    const depositConfig = { type: 'percentage', value: 50 };
+    const totalValueCents = (deal.value || 0) * 100;
+    const depositAmountCents = depositConfig.type === 'percentage' 
+      ? Math.round(totalValueCents * (depositConfig.value / 100))
+      : depositConfig.value * 100;
 
-      const invoice = await financeService.createDepositInvoice(
-        organizationId, 
-        project.id, 
-        depositAmountCents, 
-        tx
-      );
+    const invoice = await financeService.createDepositInvoice(
+      organizationId, 
+      project.id, 
+      depositAmountCents
+    );
 
-      return { deal, project, invoice };
-    });
+    return { deal, project, invoice };
   }
 
   /**

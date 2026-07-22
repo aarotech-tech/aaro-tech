@@ -55,7 +55,7 @@ export function generateLocalBusinessSchema(city = PRIMARY_CITY, description = "
       "addressCountry": "IN"
     },
     "description": description,
-    "priceRange": "$$"
+    "priceRange": "₹₹"
   };
 }
 

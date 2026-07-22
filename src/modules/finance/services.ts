@@ -173,6 +173,64 @@ export class FinanceService {
       { id: "pay_1", invoiceNumber: "INV-2026-002", amountCents: 500000, method: "credit_card", status: "applied", appliedAt: new Date().toISOString() }
     ];
   }
+  async getClientInvoiceDetails(invoiceId: string, organizationId: string) {
+    const { db } = require('@/db');
+    const { invoices, projects, retainerPeriods, payments } = require('@/db/schema');
+    const { eq, desc } = require('drizzle-orm');
+
+    const invoice = await db.query.invoices.findFirst({
+      where: eq(invoices.id, invoiceId)
+    });
+
+    if (!invoice || invoice.organizationId !== organizationId) {
+      return null;
+    }
+
+    let project = null;
+    if (invoice.projectId) {
+      project = await db.query.projects.findFirst({ where: eq(projects.id, invoice.projectId) });
+    }
+
+    let period = null;
+    if (invoice.retainerPeriodId) {
+      period = await db.query.retainerPeriods.findFirst({ where: eq(retainerPeriods.id, invoice.retainerPeriodId) });
+    }
+
+    const invoicePayments = await db.query.payments.findMany({
+      where: eq(payments.invoiceId, invoiceId),
+      orderBy: [desc(payments.createdAt)]
+    });
+
+    return { invoice, project, period, payments: invoicePayments };
+  }
+
+  async processMockPayment(invoiceId: string, organizationId: string) {
+    const { db } = require('@/db');
+    const { invoices, payments } = require('@/db/schema');
+    const { eq } = require('drizzle-orm');
+
+    const invoice = await db.query.invoices.findFirst({
+      where: eq(invoices.id, invoiceId)
+    });
+
+    if (!invoice || invoice.organizationId !== organizationId) {
+      return false;
+    }
+
+    if (invoice.status !== 'paid') {
+      await db.update(invoices).set({ status: 'paid' }).where(eq(invoices.id, invoiceId));
+      await db.insert(payments).values({
+        invoiceId,
+        amount: invoice.amount,
+        status: 'succeeded',
+        provider: 'stripe (mock)',
+        paidAt: new Date()
+      });
+      return true;
+    }
+    return false;
+  }
 }
 
 export const financeService = new FinanceService();
+

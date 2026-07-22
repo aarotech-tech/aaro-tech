@@ -1,9 +1,6 @@
 import { Webhook } from 'svix'
 import { headers } from 'next/headers'
 import { WebhookEvent } from '@clerk/nextjs/server'
-import { db } from '@/db'
-import { users } from '@/db/schema'
-import { eq } from 'drizzle-orm'
 
 export async function POST(req: Request) {
   const WEBHOOK_SECRET = process.env.CLERK_WEBHOOK_SECRET
@@ -50,20 +47,13 @@ export async function POST(req: Request) {
     const email = email_addresses[0]?.email_address
 
     if (email) {
-      await db.insert(users).values({
+      const { CoreService } = await import("@/modules/core/services");
+      await CoreService.syncUser({
         clerkId,
         email,
         firstName: first_name || '',
         lastName: last_name || '',
         avatarUrl: image_url,
-      }).onConflictDoUpdate({
-        target: users.clerkId,
-        set: {
-          email,
-          firstName: first_name || '',
-          lastName: last_name || '',
-          avatarUrl: image_url,
-        }
       });
     }
   }
@@ -71,7 +61,8 @@ export async function POST(req: Request) {
   if (eventType === 'user.deleted') {
     const { id: clerkId } = evt.data
     if (clerkId) {
-       await db.delete(users).where(eq(users.clerkId, clerkId));
+       const { CoreService } = await import("@/modules/core/services");
+       await CoreService.deleteUser(clerkId);
     }
   }
 

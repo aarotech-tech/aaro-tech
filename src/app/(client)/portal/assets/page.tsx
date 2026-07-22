@@ -1,41 +1,30 @@
 
-import { db } from "@/db";
-import { clientAssets, organizations, organizationMembers } from "@/db/schema";
-import { eq, desc } from "drizzle-orm";
 import { auth } from "@clerk/nextjs/server";
 import { FileIcon, DownloadIcon, UploadIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { revalidatePath } from "next/cache";
 import { PageHeader } from "@/components/ui/page-header";
-
 import { requireAuthenticatedUser, requireOrganizationAccess } from "@/lib/auth";
+import { portalService } from "@/modules/portal/services";
 
 // Server action for MVP uploading
 async function uploadMockAsset(formData: FormData) {
-    const name = formData.get("name") as string;
+  "use server";
+  const name = formData.get("name") as string;
   const orgId = formData.get("organizationId") as string;
   
   if (!name || !orgId) return;
   await requireOrganizationAccess(orgId);
   
-  await db.insert(clientAssets).values({
-    organizationId: orgId,
-    name: name,
-    fileType: "pdf",
-    fileUrl: "#", // Mock URL
-  });
-  
+  await portalService.uploadMockAsset(orgId, name);
   revalidatePath("/portal/assets");
 }
 
 export default async function ClientAssetsPage() {
   const user = await requireAuthenticatedUser();
+  const membershipData = await portalService.getClientMembership(user.id);
   
-  const membership = await db.query.organizationMembers.findFirst({
-    where: eq(organizationMembers.userId, user.id)
-  });
-
-  if (!membership) {
+  if (!membershipData || !membershipData.myOrg) {
     return (
       <div className="h-full flex items-center justify-center text-gray-500">
         <div className="text-center">
@@ -46,16 +35,8 @@ export default async function ClientAssetsPage() {
     );
   }
 
-  const myOrg = await db.query.organizations.findFirst({
-    where: eq(organizations.id, membership.organizationId)
-  });
-
-  if (!myOrg) return null;
-
-  const assets = await db.query.clientAssets.findMany({
-    where: eq(clientAssets.organizationId, myOrg.id),
-    orderBy: [desc(clientAssets.createdAt)]
-  });
+  const { myOrg } = membershipData;
+  const assets = await portalService.getClientAssets(myOrg.id);
 
   return (
     <div className="h-full overflow-y-auto flex flex-col">

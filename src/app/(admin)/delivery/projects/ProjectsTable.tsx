@@ -46,7 +46,7 @@ export function ProjectsTable({ projects }: { projects: any[] }) {
       header: ({ column }) => <DataTableColumnHeader column={column} title="Value" />,
       cell: ({ row }) => (
         <div className="text-right">
-          {new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format((row.original.value || 0) / 100)}
+          {new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR" }).format((row.original.value || 0) / 100)}
         </div>
       ),
     },

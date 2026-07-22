@@ -36,6 +36,7 @@ export function ArticleContent({ content }: { content: string }) {
             if (!src) return null;
             return (
               <span className="block w-full my-10 rounded-2xl overflow-hidden shadow-lg border border-slate-100">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img src={src} alt={alt || ""} className="w-full h-auto object-cover block" {...props} />
               </span>
             );

@@ -1,11 +1,11 @@
-import { db } from "@/db";
-import { invoices, payments, projects, retainerPeriods } from "@/db/schema";
-import { eq, desc } from "drizzle-orm";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeftIcon, CheckCircleIcon, FileTextIcon, HistoryIcon } from "lucide-react";
 import PayInvoiceButton from "./_components/PayInvoiceButton";
 import { PageHeader } from "@/components/ui/page-header";
+import { requireAuthenticatedUser } from "@/lib/auth";
+import { financeService } from "@/modules/finance/services";
+import { portalService } from "@/modules/portal/services";
 
 export default async function ClientInvoiceDetailsPage(
   props: { params: Promise<{ invoiceId: string }>, searchParams: Promise<{ success?: string, canceled?: string, mock_payment?: string }> }
@@ -14,39 +14,24 @@ export default async function ClientInvoiceDetailsPage(
   const resolvedParams = await props.params;
   const invoiceId = resolvedParams.invoiceId;
 
-  const invoice = await db.query.invoices.findFirst({
-    where: eq(invoices.id, invoiceId)
-  });
-
-  if (!invoice) notFound();
+  const user = await requireAuthenticatedUser();
+  const membershipData = await portalService.getClientMembership(user.id);
+  if (!membershipData || !membershipData.myOrg) {
+    redirect("/onboarding");
+  }
+  
+  const orgId = membershipData.myOrg.id;
 
   // Handle mock payment success
-  if (searchParams.mock_payment === 'success' && invoice.status !== 'paid') {
-    await db.update(invoices).set({ status: 'paid' }).where(eq(invoices.id, invoiceId));
-    await db.insert(payments).values({
-      invoiceId,
-      amount: invoice.amount,
-      status: 'succeeded',
-      provider: 'stripe (mock)',
-      paidAt: new Date()
-    });
-    invoice.status = 'paid';
+  if (searchParams.mock_payment === 'success') {
+    await financeService.processMockPayment(invoiceId, orgId);
   }
 
-  let project = null;
-  if (invoice.projectId) {
-    project = await db.query.projects.findFirst({ where: eq(projects.id, invoice.projectId) });
-  }
+  const details = await financeService.getClientInvoiceDetails(invoiceId, orgId);
+  
+  if (!details) notFound();
 
-  let period = null;
-  if (invoice.retainerPeriodId) {
-    period = await db.query.retainerPeriods.findFirst({ where: eq(retainerPeriods.id, invoice.retainerPeriodId) });
-  }
-
-  const invoicePayments = await db.query.payments.findMany({
-    where: eq(payments.invoiceId, invoiceId),
-    orderBy: [desc(payments.createdAt)]
-  });
+  const { invoice, project, period, payments: invoicePayments } = details;
 
   return (
     <div className="h-full overflow-y-auto flex flex-col">
@@ -129,7 +114,7 @@ export default async function ClientInvoiceDetailsPage(
           {invoicePayments.length === 0 ? (
             <p className="text-sm text-gray-500">No payments recorded yet.</p>
           ) : (
-            invoicePayments.map(p => (
+            invoicePayments.map((p: any) => (
               <div key={p.id} className="text-sm border border-gray-200 rounded-lg p-4 bg-gray-50 flex justify-between items-center">
                 <div>
                   <div className="flex items-center space-x-3 mb-1">

@@ -1,24 +1,20 @@
 import { requireAuthenticatedUser } from "@/lib/auth";
-import { db } from "@/db";
-import { organizationMembers, organizations } from "@/db/schema";
-import { eq } from "drizzle-orm";
 import { redirect } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { User, Building2, Bell, Shield } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { PageHeader } from "@/components/ui/page-header";
+import { portalService } from "@/modules/portal/services";
 
 export default async function ClientSettingsPage() {
   const user = await requireAuthenticatedUser();
-  const membership = await db.query.organizationMembers.findFirst({
-    where: eq(organizationMembers.userId, user.id)
-  });
+  const membershipData = await portalService.getClientMembership(user.id);
 
-  if (!membership) redirect("/onboarding");
+  if (!membershipData || !membershipData.myOrg) {
+    redirect("/onboarding");
+  }
   
-  const org = await db.query.organizations.findFirst({
-    where: eq(organizations.id, membership.organizationId)
-  });
+  const { myOrg: org } = membershipData;
 
   return (
     <div className="h-full overflow-y-auto flex flex-col">

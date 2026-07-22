@@ -65,10 +65,8 @@ export function ContactPopup({
   }, [open]);
 
   const handleSuccess = () => {
-    successTimerRef.current = setTimeout(() => {
-      handleOpenChange(false);
-      successTimerRef.current = null;
-    }, 3000);
+    // Deliberately not auto-closing so the user can read the success message.
+    // They can manually close it via the X button or clicking outside.
   };
 
   return (

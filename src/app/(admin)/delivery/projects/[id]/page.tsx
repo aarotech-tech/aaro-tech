@@ -8,7 +8,8 @@ import { Badge } from "@/components/ui/badge";
 import { PageHeader } from "@/components/ui/page-header";
 import { notFound } from "next/navigation";
 
-export default async function ProjectDetailPage({ params }: { params: { id: string } }) {
+export default async function ProjectDetailPage({ params }: { params: Promise<{ id: string }> }) {
+  const resolvedParams = await params;
   const [project] = await db
     .select({
       id: projects.id,
@@ -19,7 +20,7 @@ export default async function ProjectDetailPage({ params }: { params: { id: stri
     })
     .from(projects)
     .leftJoin(organizations, eq(projects.organizationId, organizations.id))
-    .where(eq(projects.id, params.id));
+    .where(eq(projects.id, resolvedParams.id));
 
   if (!project) notFound();
 
@@ -34,7 +35,7 @@ export default async function ProjectDetailPage({ params }: { params: { id: stri
     })
     .from(tasks)
     .leftJoin(users, eq(tasks.assigneeId, users.id))
-    .where(eq(tasks.projectId, params.id));
+    .where(eq(tasks.projectId, resolvedParams.id));
 
   const initialColumns: KanbanColumn[] = TASK_STATUSES.map((stage) => {
     const stageTasks = allTasks.filter((t) => t.status === stage.id).map(t => ({
@@ -53,7 +54,7 @@ export default async function ProjectDetailPage({ params }: { params: { id: stri
   const projectDeliverables = await db
     .select()
     .from(deliverables)
-    .where(eq(deliverables.projectId, params.id));
+    .where(eq(deliverables.projectId, resolvedParams.id));
 
   return (
     <div className="h-full overflow-y-auto flex flex-col">

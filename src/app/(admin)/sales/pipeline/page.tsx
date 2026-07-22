@@ -1,10 +1,11 @@
 import { db } from "@/db";
-import { deals, organizations, users } from "@/db/schema";
-import { eq, isNull } from "drizzle-orm";
+import { deals, organizations, users, contacts } from "@/db/schema";
+import { eq, isNull, sql } from "drizzle-orm";
 import { DEAL_STAGES } from "@/lib/constants/pipeline";
 import { PipelineBoard } from "./PipelineBoard";
 import { KanbanColumn } from "@/components/ui/kanban";
 import { PageHeader } from "@/components/ui/page-header";
+import { NewDealModal } from "./_components/NewDealModal";
 
 export default async function PipelinePage() {
   // Fetch deals with their organization and owner names
@@ -17,12 +18,19 @@ export default async function PipelinePage() {
       expectedCloseDate: deals.expectedCloseDate,
       organizationId: deals.organizationId,
       organizationName: organizations.name,
-      ownerName: users.firstName,
+      contactName: contacts.name,
+      ownerName: sql<string>`concat(${users.firstName}, ' ', ${users.lastName})`,
     })
     .from(deals)
     .leftJoin(organizations, eq(deals.organizationId, organizations.id))
+    .leftJoin(contacts, eq(organizations.id, contacts.organizationId))
     .leftJoin(users, eq(deals.ownerId, users.id))
     .where(isNull(deals.deletedAt));
+
+  const orgsList = await db
+    .select({ id: organizations.id, name: organizations.name })
+    .from(organizations)
+    .where(isNull(organizations.deletedAt));
 
   // Format into columns
   const initialColumns: KanbanColumn[] = DEAL_STAGES.map((stage) => {
@@ -30,6 +38,7 @@ export default async function PipelinePage() {
       ...d,
       organizationId: d.organizationId || "",
       organizationName: d.organizationName || "Unknown Org",
+      contactName: d.contactName || null,
       value: d.value || 0,
     }));
 
@@ -47,10 +56,11 @@ export default async function PipelinePage() {
           title="Deal Pipeline"
           description="Track and manage active deals through the sales process."
           breadcrumbs={[
-            { label: "Dashboard", href: "/dashboard" },
-            { label: "Sales", href: "/sales/pipeline" },
+            { label: "Aarotech", href: "/dashboard" },
+            { label: "Sales", href: "/sales/leads" },
             { label: "Pipeline" }
           ]}
+          primaryAction={<NewDealModal organizations={orgsList} />}
         />
       </div>
       <div className="flex-1 overflow-hidden p-6 pt-0">
