@@ -112,26 +112,4 @@ const nextConfig: NextConfig = {
   },
 };
 
-export default withSentryConfig(bundleAnalyzer(nextConfig), {
-  // For all available options, see:
-  // https://github.com/getsentry/sentry-webpack-plugin#options
-
-  // Suppresses source map uploading logs during build
-  silent: true,
-  org: "aarotech",
-  project: "aarotech",
-
-  // Upload a larger set of source maps for prettier stack traces (increases build time)
-  widenClientFileUpload: true,
-
-  // Routes browser requests to Sentry through a Next.js rewrite to circumvent ad-blockers. (increases server load)
-  tunnelRoute: "/monitoring",
-
-  // Hides source maps from generated client bundles
-  sourcemaps: {
-    disable: true
-  },
-
-  // Disables automatic instrumentation of middleware to prevent build errors with Turbopack/Edge runtime
-  autoInstrumentMiddleware: false,
-});
+export default bundleAnalyzer(nextConfig);
