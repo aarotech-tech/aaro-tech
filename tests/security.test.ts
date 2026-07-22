@@ -104,11 +104,11 @@ describe('Security Regression Tests', () => {
         expiresAt: futureDate
       }).returning();
 
-      const formData = new FormData();
-      formData.append('signature', 'John Doe');
-
-      const result = await approveProposalAction(proposal.id, formData);
-      expect(result.success).toBe(true);
+      const result = await approveProposalAction({
+        proposalId: proposal.id,
+        signature: 'John Doe'
+      });
+      expect(result?.data?.success).toBe(true);
 
       const updatedProp = await db.query.proposals.findFirst({ where: eq(proposals.id, proposal.id) });
       expect(updatedProp?.status).toBe('accepted');
@@ -133,12 +133,12 @@ describe('Security Regression Tests', () => {
         expiresAt: futureDate
       }).returning();
 
-      const formData = new FormData();
-      formData.append('signature', 'John Doe Again');
-
-      const result = await approveProposalAction(proposal.id, formData);
-      expect(result.success).toBe(false);
-      expect(result.error).toContain('already accepted');
+      const result = await approveProposalAction({
+        proposalId: proposal.id,
+        signature: 'John Doe Again'
+      });
+      expect(result?.data?.success).toBe(false);
+      expect(result?.data?.error).toContain('already accepted');
 
       await db.delete(proposals).where(eq(proposals.id, proposal.id));
       await db.delete(deals).where(eq(deals.id, deal.id));
@@ -159,12 +159,12 @@ describe('Security Regression Tests', () => {
         expiresAt: pastDate
       }).returning();
 
-      const formData = new FormData();
-      formData.append('signature', 'John Doe Expired');
-
-      const result = await approveProposalAction(proposal.id, formData);
-      expect(result.success).toBe(false);
-      expect(result.error).toContain('expired');
+      const result = await approveProposalAction({
+        proposalId: proposal.id,
+        signature: 'John Doe Expired'
+      });
+      expect(result?.data?.success).toBe(false);
+      expect(result?.data?.error).toContain('expired');
 
       await db.delete(proposals).where(eq(proposals.id, proposal.id));
       await db.delete(deals).where(eq(deals.id, deal.id));

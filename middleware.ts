@@ -19,6 +19,13 @@ export default clerkMiddleware(async (auth, req) => {
   const metadata = (sessionClaims?.metadata as Record<string, any>) || {};
   const userType = metadata.userType || USER_TYPES.CLIENT;
 
+  // If internal user lands on root or /admin, redirect to /dashboard
+  if (req.nextUrl.pathname === "/" || req.nextUrl.pathname === "/admin") {
+    if (userType === USER_TYPES.INTERNAL) {
+      return NextResponse.redirect(new URL("/dashboard", req.url));
+    }
+  }
+
   // Enforce route access based on user type
   if (isInternalRoute(req) && userType !== USER_TYPES.INTERNAL) {
     return NextResponse.redirect(new URL("/unauthorized", req.url));
@@ -26,8 +33,8 @@ export default clerkMiddleware(async (auth, req) => {
 
   if (isClientRoute(req) && userType !== USER_TYPES.CLIENT) {
     // If an internal user tries to access client area, maybe we allow them or redirect them to admin?
-    // Let's redirect them to admin for strict separation.
-    return NextResponse.redirect(new URL("/admin", req.url));
+    // Let's redirect them to dashboard for strict separation.
+    return NextResponse.redirect(new URL("/dashboard", req.url));
   }
 
   return NextResponse.next();

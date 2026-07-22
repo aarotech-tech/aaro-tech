@@ -1,36 +1,23 @@
 "use server";
 
 import { db } from "@/db";
-import { deliverables } from "@/db/schema";
-import { eq, and } from "drizzle-orm";
+import { deliverables, projects } from "@/db/schema";
+import { eq } from "drizzle-orm";
 import { authorize } from "@/lib/authorize";
 import { PERMISSIONS } from "@/lib/permissions";
 import { createDeliverableSchema, updateDeliverableStatusSchema, CreateDeliverableInput, UpdateDeliverableStatusInput } from "@/lib/validations/delivery";
 import { revalidatePath } from "next/cache";
-import { eventBus } from "@/modules/core/events";
+import { createDeliverableService, approveDeliverable, requestDeliverableRevision, submitDeliverableForInternalReview, markDeliverableReadyForClient, submitDeliverableForClientReview } from "@/modules/delivery/services";
 
 export async function createDeliverable(input: CreateDeliverableInput) {
   const authContext = await authorize(PERMISSIONS.DEAL_EDIT); 
   
   const parsed = createDeliverableSchema.parse(input);
 
-  const [newDeliverable] = await db.insert(deliverables).values({
+  const newDeliverable = await createDeliverableService({
     projectId: parsed.projectId,
     name: parsed.name,
-    status: "draft",
-    // Note: To properly support versioning according to their schema, 
-    // we would also insert into `files` and `deliverableVersions` here.
-    // Simplifying for MVP since we just need the placeholder record for now.
-  }).returning();
-
-  eventBus.emit({
-    type: "DeliverableUploaded",
-    payload: {
-      organizationId: "", // ideally fetched from project
-      projectId: parsed.projectId,
-      deliverableId: newDeliverable.id,
-      userId: authContext.userId,
-    }
+    userId: authContext.userId
   });
 
   revalidatePath("/(admin)/delivery/projects/[id]", "page");
@@ -42,25 +29,30 @@ export async function updateDeliverableStatus(input: UpdateDeliverableStatusInpu
   
   const parsed = updateDeliverableStatusSchema.parse(input);
 
-  const [updatedDeliverable] = await db.update(deliverables)
-    .set({ 
-      status: parsed.status
-    })
-    .where(
-      eq(deliverables.id, parsed.deliverableId)
-    )
-    .returning();
-
-  if (parsed.status === "approved" && updatedDeliverable) {
-    eventBus.emit({
-      type: "DeliverableApproved",
-      payload: {
-        organizationId: "", // ideally fetched
-        projectId: updatedDeliverable.projectId!,
-        deliverableId: updatedDeliverable.id,
-        userId: authContext.userId,
-      }
-    });
+  // We are delegating to the appropriate domain service method based on status
+  switch(parsed.status) {
+    case "internal_review":
+      await submitDeliverableForInternalReview(parsed.deliverableId);
+      break;
+    case "ready_for_client":
+      await markDeliverableReadyForClient(parsed.deliverableId);
+      break;
+    case "client_review":
+      await submitDeliverableForClientReview(parsed.deliverableId);
+      break;
+    case "approved": {
+      const orgId = authContext.orgId || (await db.select({ organizationId: deliverables.projectId }).from(deliverables).where(eq(deliverables.id, parsed.deliverableId)))[0]?.organizationId || "";
+      await approveDeliverable(parsed.deliverableId, "Approved via action", authContext.userId, orgId);
+      break;
+    }
+    case "draft": {
+      const orgId = authContext.orgId || (await db.select({ organizationId: deliverables.projectId }).from(deliverables).where(eq(deliverables.id, parsed.deliverableId)))[0]?.organizationId || "";
+      await requestDeliverableRevision(parsed.deliverableId, "Reverted to draft via action", authContext.userId, orgId);
+      break;
+    }
+    default:
+      // If we need a raw update we'd have to add it to DeliveryService, but these cover the normal flows
+      throw new Error("Unsupported status transition");
   }
 
   revalidatePath("/(admin)/delivery/projects/[id]", "page");

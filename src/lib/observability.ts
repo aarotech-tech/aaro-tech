@@ -14,9 +14,9 @@ export async function observeException(error: unknown, options?: ObservabilityOp
   
   // For now, we simply ensure it reaches our structured logger with a specific tag
   // if it hasn't been logged already by the caller.
-  await logger.error("OBSERVED_EXCEPTION", {
+  await logger.error({
     error: error instanceof Error ? error.message : String(error),
     stack: error instanceof Error ? error.stack : undefined,
     ...options
-  });
+  }, "OBSERVED_EXCEPTION");
 }

@@ -403,3 +403,22 @@ export const auditLogs = pgTable("audit_logs", {
   metadata: text("metadata"),
   createdAt: timestamp("created_at").defaultNow(),
 });
+
+export const notifications = pgTable("notifications", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  userId: uuid("user_id").references(() => users.id, { onDelete: "cascade" }).notNull(),
+  organizationId: uuid("organization_id").references(() => organizations.id, { onDelete: "cascade" }).notNull(),
+  message: text("message").notNull(),
+  entityType: varchar("entity_type", { length: 50 }),
+  entityId: uuid("entity_id"),
+  type: varchar("type", { length: 50 }), // forward-compatible notification type
+  metadata: text("metadata"), // optional metadata
+  read: boolean("read").default(false).notNull(),
+  archived: boolean("archived").default(false).notNull(),
+  createdAt: timestamp("created_at").defaultNow(),
+}, (t) => ({
+  orgIdx: index("notifications_org_idx").on(t.organizationId),
+  userIdx: index("notifications_user_idx").on(t.userId),
+  readIdx: index("notifications_read_idx").on(t.read),
+  createdAtIdx: index("notifications_created_at_idx").on(t.createdAt),
+}));

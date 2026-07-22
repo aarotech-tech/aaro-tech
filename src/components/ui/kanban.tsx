@@ -30,6 +30,7 @@ export function KanbanBoard({ initialColumns, onDragEnd, renderItem, renderColum
   useEffect(() => {
     setIsClient(true);
     setColumns(initialColumns);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [initialColumns]);
 
   const handleDragEnd = (result: DropResult) => {

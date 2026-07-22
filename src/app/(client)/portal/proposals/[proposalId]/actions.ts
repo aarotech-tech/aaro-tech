@@ -7,18 +7,23 @@ import { eq } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 
 import { headers } from "next/headers";
+import { z } from "zod";
+import { actionClient } from "@/lib/safe-action";
 import { rateLimit } from '@/lib/rate-limit';
 
-export async function approveProposalAction(proposalId: string, formData: FormData) {
-  return withActionErrorHandling('approveProposalAction', async () => {
-    const forwardedFor = (await headers()).get("x-forwarded-for");
-    const ip = forwardedFor ? forwardedFor.split(',')[0] : "unknown";
+const approveProposalSchema = z.object({
+  proposalId: z.string().uuid(),
+  signature: z.string().min(1, "Signature is required"),
+});
 
-    await rateLimit.check(`proposal_approval_${ip}`, { points: 5, durationInSeconds: 3600 });
+export const approveProposalAction = actionClient
+  .schema(approveProposalSchema)
+  .action(async ({ parsedInput: { proposalId, signature } }) => {
+    return withActionErrorHandling('approveProposalAction', async () => {
+      const forwardedFor = (await headers()).get("x-forwarded-for");
+      const ip = forwardedFor ? forwardedFor.split(',')[0] : "unknown";
 
-    const signature = formData.get("signature") as string;
-    
-    if (!signature) throw new AppError("Signature is required", 400);
+      await rateLimit.check(`proposal_approval_${ip}`, { points: 5, durationInSeconds: 3600 });
 
     const proposal = await db.query.proposals.findFirst({ where: eq(proposals.id, proposalId) });
     if (!proposal) throw new AppError("Proposal not found", 404);
@@ -107,10 +112,9 @@ export async function approveProposalAction(proposalId: string, formData: FormDa
     });
 
     revalidatePath(`/portal/proposals/${proposalId}`);
-    revalidatePath(`/crm/proposals/${proposalId}`);
-    revalidatePath("/crm");
-    revalidatePath("/crm/clients");
+    revalidatePath(`/sales/proposals/${proposalId}`);
+    revalidatePath("/sales");
     
-    return true;
+    return { success: true };
   });
-}
+});

@@ -79,7 +79,7 @@ export const ourFileRouter = {
     })
     .onUploadComplete(async ({ metadata, file }) => {
       // This code RUNS ON YOUR SERVER after upload
-      logger.info("Upload complete", { userId: metadata.userId, org: metadata.organizationId });
+      logger.info({ userId: metadata.userId, org: metadata.organizationId }, "Upload complete");
       
       await db.insert(files).values({
         organizationId: metadata.organizationId,

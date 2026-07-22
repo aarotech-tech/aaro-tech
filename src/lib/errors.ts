@@ -67,17 +67,17 @@ export async function withActionErrorHandling<T>(
 
     if (err instanceof AppError || err.name === 'UnauthorizedError' || err.name === 'ForbiddenError') {
       // It's an expected operational error (e.g. Validation, Auth)
-      logger.warn(`Action [${actionName}] failed: ${err.message}`, {
+      logger.warn({
         error: err.message,
-      });
+      }, `Action [${actionName}] failed: ${err.message}`);
       return { success: false, error: err.message };
     }
 
     // It's an unexpected error, log it as an error and report to observability
-    logger.error(`Action [${actionName}] encountered an unexpected error: ${err.message}`, {
+    logger.error({
       error: err.message,
       stack: err.stack,
-    });
+    }, `Action [${actionName}] encountered an unexpected error: ${err.message}`);
     
     // Fire and forget observation
     void observeException(error, { actionName });

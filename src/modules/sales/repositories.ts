@@ -1,7 +1,23 @@
-import { eq } from "drizzle-orm";
+import { eq, and, or } from "drizzle-orm";
 import { db } from "@/db";
 import { websiteLeads, organizations, contacts, deals, proposals } from "@/db/schema";
 import type { InferInsertModel } from "drizzle-orm";
+
+/**
+ * Gets all website leads (Global access, no tenant filter).
+ */
+export async function findOrganizationsByEmailOrName(email: string, name: string) {
+  return db
+    .select({ id: organizations.id })
+    .from(organizations)
+    .leftJoin(contacts, eq(contacts.organizationId, organizations.id))
+    .where(
+      or(
+        eq(organizations.name, name),
+        eq(contacts.email, email)
+      )
+    );
+}
 
 /**
  * Gets all website leads (Global access, no tenant filter).
@@ -41,6 +57,14 @@ export async function createProspectOrganization(data: InferInsertModel<typeof o
 /**
  * Creates a primary contact for a prospect organization.
  */
+export async function updateOrganizationStatus(organizationId: string, status: string, userId: string) {
+  const result = await db.update(organizations)
+    .set({ status, updatedAt: new Date(), updatedBy: userId })
+    .where(eq(organizations.id, organizationId))
+    .returning();
+  return result[0];
+}
+
 export async function createProspectContact(data: InferInsertModel<typeof contacts>) {
   const result = await db.insert(contacts).values(data).returning();
   return result[0];
@@ -88,7 +112,18 @@ export async function getProposalById(id: string) {
 /**
  * Updates a proposal.
  */
-export async function updateProposal(id: string, data: Partial<InferInsertModel<typeof proposals>>) {
-  const result = await db.update(proposals).set(data).where(eq(proposals.id, id)).returning();
+export async function updateProposal(id: string, data: Partial<InferInsertModel<typeof proposals>>, tx: any = db) {
+  const result = await tx.update(proposals).set(data).where(eq(proposals.id, id)).returning();
+  return result[0];
+}
+
+/**
+ * Updates a deal stage.
+ */
+export async function updateDealStage(id: string, organizationId: string, stage: string, tx: any = db) {
+  const result = await tx.update(deals)
+    .set({ stage, updatedAt: new Date() })
+    .where(and(eq(deals.id, id), eq(deals.organizationId, organizationId)))
+    .returning();
   return result[0];
 }

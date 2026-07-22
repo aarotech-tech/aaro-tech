@@ -3,8 +3,8 @@ import { db } from "@/db";
 import { projects, tasks, deliverables, comments, deals } from "@/db/schema";
 import type { InferInsertModel } from "drizzle-orm";
 
-export async function createProject(data: InferInsertModel<typeof projects>) {
-  const result = await db.insert(projects).values(data).returning();
+export async function createProject(data: InferInsertModel<typeof projects>, tx: any = db) {
+  const result = await tx.insert(projects).values(data).returning();
   return result[0];
 }
 
@@ -13,11 +13,23 @@ export async function getProjectById(id: string) {
   return result[0] || null;
 }
 
-export async function createTask(data: InferInsertModel<typeof tasks>) {
-  const result = await db.insert(tasks).values(data).returning();
+export async function updateProjectStatus(id: string, organizationId: string, status: string, tx: any = db) {
+  const result = await tx.update(projects).set({ status }).where(and(eq(projects.id, id), eq(projects.organizationId, organizationId))).returning();
   return result[0];
 }
 
+export async function createTask(data: InferInsertModel<typeof tasks>, tx: any = db) {
+  const result = await tx.insert(tasks).values(data).returning();
+  return result[0];
+}
+export async function updateTaskStatus(id: string, status: string, tx: any = db) {
+  const result = await tx.update(tasks).set({ 
+    status,
+    completedAt: status === "done" ? new Date() : null,
+    updatedAt: new Date(),
+  }).where(eq(tasks.id, id)).returning();
+  return result[0];
+}
 export async function createDeliverable(data: InferInsertModel<typeof deliverables>) {
   const result = await db.insert(deliverables).values(data).returning();
   return result[0];

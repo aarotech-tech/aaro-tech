@@ -1,11 +1,12 @@
 "use client";
 
 import { KanbanBoard, KanbanColumn, KanbanItem } from "@/components/ui/kanban";
-import { updateDealStage } from "@/actions/deals";
+import { updateDealStageAction } from "@/modules/sales/actions";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
 
 interface DealItem extends KanbanItem {
+  organizationId: string;
   organizationName: string;
   value: number;
   expectedCloseDate: Date | null;
@@ -15,11 +16,15 @@ interface DealItem extends KanbanItem {
 export function PipelineBoard({ initialColumns }: { initialColumns: KanbanColumn[] }) {
   
   const handleDragEnd = async (dealId: string, sourceColId: string, destColId: string, newIndex: number) => {
-    // The KanbanBoard component already updates the UI optimistically.
-    // We just need to fire the server action.
+    // Find the deal to get its organizationId
+    const sourceCol = initialColumns.find(c => c.id === sourceColId);
+    const deal = sourceCol?.items.find(d => d.id === dealId) as DealItem | undefined;
+    
+    if (!deal) return;
+
     try {
-      const res = await updateDealStage({ dealId, stage: destColId });
-      if (!res.success) {
+      const res = await updateDealStageAction({ dealId, stage: destColId, organizationId: deal.organizationId });
+      if (!res?.data) {
         throw new Error("Failed to update");
       }
     } catch (err) {

@@ -1,28 +1,47 @@
 "use client";
 
 import { useState } from "react";
-import { submitManualPaymentDetailsAction } from "@/app/actions/billing";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
+import { useAction } from "next-safe-action/hooks";
+import { recordManualPaymentAction } from "@/actions/finance";
+import { recordManualPaymentSchema } from "@/lib/validations/finance";
 import { CheckCircleIcon, Loader2Icon, UploadIcon } from "lucide-react";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { toast } from "sonner";
 
 export default function PayInvoiceButton({ invoiceId }: { invoiceId: string }) {
   const [isOpen, setIsOpen] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [utr, setUtr] = useState("");
   const [success, setSuccess] = useState(false);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!utr.trim()) return;
-    
-    setIsSubmitting(true);
-    try {
-      await submitManualPaymentDetailsAction(invoiceId, utr);
-      setSuccess(true);
-    } catch (error) {
-      console.error(error);
-    } finally {
-      setIsSubmitting(false);
+  const form = useForm<z.infer<typeof recordManualPaymentSchema>>({
+    resolver: zodResolver(recordManualPaymentSchema),
+    defaultValues: {
+      invoiceId: invoiceId,
+      referenceNumber: "",
+      amount: 0, // This is mock since amount is set in backend
+      method: "bank_transfer",
+      paidAt: new Date()
+    },
+  });
+
+  const { execute, isExecuting } = useAction(recordManualPaymentAction, {
+    onSuccess: ({ data }) => {
+      if (data?.success) {
+        setSuccess(true);
+        toast.success("Payment Details Submitted Successfully");
+      }
+    },
+    onError: ({ error }) => {
+      toast.error(error.serverError || "Failed to submit payment details");
     }
+  });
+
+  const onSubmit = (values: z.infer<typeof recordManualPaymentSchema>) => {
+    execute(values);
   };
 
   if (success) {
@@ -52,37 +71,37 @@ export default function PayInvoiceButton({ invoiceId }: { invoiceId: string }) {
               Please provide the UTR (Transaction ID) from your bank transfer so we can verify your payment.
             </p>
             
-            <form onSubmit={handleSubmit}>
-              <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-700 mb-1">UTR / Transaction ID *</label>
-                <input 
-                  type="text"
-                  required
-                  value={utr}
-                  onChange={(e) => setUtr(e.target.value)}
-                  placeholder="e.g. SBIN000000000"
-                  className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+            <Form {...form}>
+              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+                <FormField
+                  control={form.control}
+                  name="referenceNumber"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>UTR / Transaction ID *</FormLabel>
+                      <FormControl>
+                        <Input placeholder="e.g. SBIN000000000" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
                 />
-              </div>
 
-              <div className="flex justify-end gap-3 mt-8">
-                <button
-                  type="button"
-                  onClick={() => setIsOpen(false)}
-                  className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg font-medium transition-colors"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  disabled={isSubmitting || !utr.trim()}
-                  className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-medium flex items-center transition-colors disabled:opacity-50"
-                >
-                  {isSubmitting ? <Loader2Icon className="w-4 h-4 mr-2 animate-spin" /> : null}
-                  Submit Details
-                </button>
-              </div>
-            </form>
+                <div className="flex justify-end gap-3 pt-2">
+                  <button
+                    type="button"
+                    onClick={() => setIsOpen(false)}
+                    className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg font-medium transition-colors"
+                  >
+                    Cancel
+                  </button>
+                  <Button type="submit" disabled={isExecuting} className="bg-blue-600 hover:bg-blue-700 text-white rounded-lg px-6 py-2">
+                    {isExecuting ? <Loader2Icon className="w-4 h-4 mr-2 animate-spin" /> : null}
+                    Submit Details
+                  </Button>
+                </div>
+              </form>
+            </Form>
           </div>
         </div>
       )}

@@ -1,32 +1,31 @@
 import { db } from "@/db";
-import { organizations } from "@/db/schema";
-import { eq, or, isNull } from "drizzle-orm";
+import { websiteLeads } from "@/db/schema";
+import { eq, isNull } from "drizzle-orm";
 import { LeadsTable } from "./LeadsTable";
+import { PageHeader } from "@/components/ui/page-header";
 
 export default async function LeadsPage() {
-  const leads = await db
+  const activeLeads = await db
     .select()
-    .from(organizations)
-    .where(
-      or(
-        eq(organizations.type, "lead"),
-        eq(organizations.status, "lead")
-      )
-    );
-
-  // We should also filter out deleted items based on soft deletes
-  const activeLeads = leads.filter(l => !l.deletedAt);
+    .from(websiteLeads)
+    .where(eq(websiteLeads.status, "new"));
 
   return (
-    <div className="p-6 h-full overflow-y-auto">
-      <div className="flex justify-between items-center mb-6">
-        <div>
-          <h2 className="text-2xl font-bold tracking-tight text-gray-900">Leads</h2>
-          <p className="text-sm text-gray-500 mt-1">Manage and convert your prospective clients.</p>
-        </div>
+    <div className="h-full overflow-y-auto flex flex-col">
+      <div className="p-6 pb-0">
+        <PageHeader 
+          title="Leads"
+          description="Manage and convert your prospective clients."
+          breadcrumbs={[
+            { label: "Dashboard", href: "/dashboard" },
+            { label: "Sales", href: "/sales/pipeline" },
+            { label: "Leads" }
+          ]}
+        />
       </div>
-      
-      <LeadsTable leads={activeLeads} />
+      <div className="p-6 pt-0 flex-1">
+        <LeadsTable leads={activeLeads} />
+      </div>
     </div>
   );
 }

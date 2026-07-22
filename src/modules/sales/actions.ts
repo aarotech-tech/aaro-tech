@@ -44,6 +44,44 @@ export const publicApproveProposalAction = actionClient
     );
 
     revalidatePath(`/portal/proposals/${parsedInput.proposalId}`);
-    
     return updated;
+  });
+
+const updateDealStageSchema = z.object({
+  dealId: z.string().uuid(),
+  stage: z.string(),
+  organizationId: z.string().uuid(),
+});
+
+export const updateDealStageAction = internalActionClient
+  .schema(updateDealStageSchema)
+  .action(async ({ parsedInput, ctx }) => {
+    const result = await SalesService.updateDealStageService(
+      parsedInput.dealId,
+      parsedInput.organizationId,
+      parsedInput.stage,
+      ctx.user.id
+    );
+
+    revalidatePath("/sales/pipeline");
+    return result;
+  });
+
+const createDealSchema = z.object({
+  organizationId: z.string().uuid(),
+  name: z.string(),
+  value: z.number().default(0),
+  expectedCloseDate: z.string().optional(),
+});
+
+export const createDealAction = internalActionClient
+  .schema(createDealSchema)
+  .action(async ({ parsedInput, ctx }) => {
+    const result = await SalesService.createDealService({
+      ...parsedInput,
+      ownerId: ctx.user.id,
+    });
+    
+    revalidatePath("/sales/pipeline");
+    return result;
   });

@@ -1,118 +1,105 @@
-import { db } from "@/db";
-import { organizations, invoices, organizationMembers } from "@/db/schema";
-import { eq, desc } from "drizzle-orm";
 import { requireAuthenticatedUser } from "@/lib/auth";
+import { db } from "@/db";
+import { organizationMembers } from "@/db/schema";
+import { eq } from "drizzle-orm";
+import { redirect } from "next/navigation";
+import { financeService } from "@/modules/finance/services";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { CreditCard, Download, Receipt } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { CreditCardIcon, FileTextIcon } from "lucide-react";
-import Link from "next/link";
+import { PageHeader } from "@/components/ui/page-header";
 
 export default async function ClientBillingPage() {
   const user = await requireAuthenticatedUser();
-  
   const membership = await db.query.organizationMembers.findFirst({
     where: eq(organizationMembers.userId, user.id)
   });
 
-  if (!membership) {
-    return (
-      <div className="h-full flex items-center justify-center text-gray-400">
-        <div className="text-center">
-          <h3 className="text-xl font-medium text-white mb-2">No Active Organization</h3>
-          <p>You have not been assigned to a client organization yet.</p>
-        </div>
-      </div>
-    );
-  }
+  if (!membership) redirect("/onboarding");
+  
+  const orgId = membership.organizationId;
+  const [invoices, payments] = await Promise.all([
+    financeService.getClientInvoices(orgId),
+    financeService.getClientPayments(orgId)
+  ]);
 
-  const myOrg = await db.query.organizations.findFirst({
-    where: eq(organizations.id, membership.organizationId)
-  });
-
-  if (!myOrg) return null;
-
-  const myInvoices = await db.query.invoices.findMany({
-    where: eq(invoices.organizationId, myOrg.id),
-    orderBy: [desc(invoices.createdAt)]
-  });
-
-  const totalDue = myInvoices
-    .filter(inv => inv.status === "pending" || inv.status === "overdue")
-    .reduce((acc, curr) => acc + curr.amount, 0);
+  const outstandingInvoices = invoices.filter(i => i.status === "issued");
+  const paidInvoices = invoices.filter(i => i.status === "paid");
 
   return (
-    <div className="max-w-6xl mx-auto">
-      <div className="flex justify-between items-center mb-8">
-        <div>
-          <h1 className="text-3xl font-bold text-white tracking-tight">Billing & Invoices</h1>
-          <p className="text-gray-400 mt-2">Manage your account balance and payment history.</p>
-        </div>
+    <div className="h-full overflow-y-auto flex flex-col">
+      <div className="p-6 pb-0 max-w-6xl mx-auto w-full">
+        <PageHeader 
+          title="Billing & Invoices"
+          description="Manage your outstanding balances and view payment history."
+          breadcrumbs={[
+            { label: "Dashboard", href: "/portal/home" },
+            { label: "Billing" }
+          ]}
+        />
       </div>
 
-      <div className="bg-gray-900 border border-gray-800 rounded-xl p-6 mb-8 flex items-center justify-between">
-        <div>
-          <h3 className="text-gray-400 font-medium mb-1">Outstanding Balance</h3>
-          <div className="text-4xl font-bold text-white">${totalDue.toLocaleString()}</div>
-        </div>
-        {totalDue > 0 && (
-          <Button className="bg-blue-600 hover:bg-blue-700 text-white border-0 shadow-lg px-8">
-            <CreditCardIcon className="w-4 h-4 mr-2" /> Pay Balance
-          </Button>
-        )}
-      </div>
+      <div className="p-6 pt-0 flex-1 max-w-6xl mx-auto w-full">
 
-      <div className="bg-gray-900 border border-gray-800 rounded-xl overflow-hidden flex-1">
-        <table className="w-full text-left text-sm text-gray-300">
-          <thead className="bg-gray-950 border-b border-gray-800 text-gray-400">
-            <tr>
-              <th className="px-6 py-4 font-medium">Invoice ID</th>
-              <th className="px-6 py-4 font-medium">Amount</th>
-              <th className="px-6 py-4 font-medium">Status</th>
-              <th className="px-6 py-4 font-medium">Due Date</th>
-              <th className="px-6 py-4 font-medium text-right">Download</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-gray-800">
-            {myInvoices.length === 0 ? (
-              <tr>
-                <td colSpan={5} className="px-6 py-12 text-center text-gray-500">
-                  <div className="flex flex-col items-center">
-                    <FileTextIcon className="w-12 h-12 mb-3 opacity-20" />
-                    <p>No invoices have been issued to your account.</p>
-                  </div>
-                </td>
-              </tr>
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <Card className="shadow-sm border-emerald-100">
+          <CardHeader className="bg-emerald-50/50 pb-4 border-b border-emerald-50">
+            <CardTitle className="text-lg flex items-center text-emerald-900">
+              <CreditCard className="w-5 h-5 mr-2" />
+              Outstanding Invoices
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="pt-4">
+            {outstandingInvoices.length === 0 ? (
+              <p className="text-sm text-gray-500 text-center py-6">You have no outstanding invoices.</p>
             ) : (
-              myInvoices.map((inv) => (
-                <tr key={inv.id} className="hover:bg-gray-800 transition-colors">
-                  <td className="px-6 py-4 font-medium text-gray-400">
-                    INV-{inv.id.substring(0, 8).toUpperCase()}
-                  </td>
-                  <td className="px-6 py-4 font-bold text-white">
-                    ${(inv.amount / 100).toLocaleString(undefined, { minimumFractionDigits: 2 })}
-                  </td>
-                  <td className="px-6 py-4">
-                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium capitalize
-                      ${inv.status === "open" ? "bg-yellow-900/50 text-yellow-400 border border-yellow-900/50" : 
-                        inv.status === "paid" ? "bg-green-900/50 text-green-400 border border-green-900/50" : 
-                        "bg-red-900/50 text-red-400 border border-red-900/50"}`}
-                    >
-                      {inv.status}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4">{inv.dueDate.toLocaleDateString()}</td>
-                  <td className="px-6 py-4 text-right">
-                    <Link 
-                      href={`/portal/billing/${inv.id}`}
-                      className="text-blue-400 hover:text-blue-300 font-medium text-sm"
-                    >
-                      {inv.status === "open" ? "Pay Now" : "View Details"}
-                    </Link>
-                  </td>
-                </tr>
-              ))
+              <div className="space-y-4">
+                {outstandingInvoices.map(invoice => (
+                  <div key={invoice.id} className="flex justify-between items-center p-4 border rounded-md">
+                    <div>
+                      <p className="font-semibold text-gray-900">{invoice.number}</p>
+                      <p className="text-sm text-gray-500 mt-1">Due: {new Date(invoice.dueAt as string).toLocaleDateString()}</p>
+                    </div>
+                    <div className="flex flex-col items-end space-y-2">
+                      <span className="font-bold text-lg text-emerald-700">${(invoice.amountCents / 100).toFixed(2)}</span>
+                      <Button size="sm" className="bg-emerald-600 hover:bg-emerald-700 w-full">Pay Now</Button>
+                    </div>
+                  </div>
+                ))}
+              </div>
             )}
-          </tbody>
-        </table>
+          </CardContent>
+        </Card>
+
+        <Card className="shadow-sm">
+          <CardHeader className="bg-gray-50/50 pb-4 border-b">
+            <CardTitle className="text-lg flex items-center text-gray-900">
+              <Receipt className="w-5 h-5 mr-2" />
+              Payment History
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="pt-4">
+            {paidInvoices.length === 0 ? (
+              <p className="text-sm text-gray-500 text-center py-6">No payment history available.</p>
+            ) : (
+              <div className="space-y-4">
+                {paidInvoices.map(invoice => (
+                  <div key={invoice.id} className="flex justify-between items-center p-4 border border-gray-100 bg-gray-50/30 rounded-md">
+                    <div>
+                      <p className="font-medium text-gray-900">{invoice.number}</p>
+                      <p className="text-xs text-gray-500 mt-1">Paid on: {new Date(invoice.paidAt as string).toLocaleDateString()}</p>
+                    </div>
+                    <div className="flex items-center space-x-4">
+                      <span className="font-bold text-gray-600">${(invoice.amountCents / 100).toFixed(2)}</span>
+                      <Button variant="outline" size="icon" className="h-8 w-8"><Download className="w-4 h-4" /></Button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+        </div>
       </div>
     </div>
   );

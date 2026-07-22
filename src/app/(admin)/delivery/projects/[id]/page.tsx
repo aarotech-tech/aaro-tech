@@ -5,6 +5,7 @@ import { TASK_STATUSES } from "@/lib/constants/delivery";
 import { TaskBoard } from "./TaskBoard";
 import { KanbanColumn } from "@/components/ui/kanban";
 import { Badge } from "@/components/ui/badge";
+import { PageHeader } from "@/components/ui/page-header";
 import { notFound } from "next/navigation";
 
 export default async function ProjectDetailPage({ params }: { params: { id: string } }) {
@@ -55,21 +56,30 @@ export default async function ProjectDetailPage({ params }: { params: { id: stri
     .where(eq(deliverables.projectId, params.id));
 
   return (
-    <div className="p-6 h-full overflow-y-auto flex flex-col space-y-6">
-      <div className="flex justify-between items-start">
-        <div>
-          <h2 className="text-2xl font-bold tracking-tight text-gray-900">{project.name}</h2>
-          <p className="text-sm text-gray-500 mt-1">{project.organizationName}</p>
-        </div>
-        <div className="flex space-x-2">
-          <Badge variant="outline" className="capitalize">{project.status}</Badge>
-          <Badge variant={project.health === 'green' ? 'default' : 'destructive'} className="capitalize">
-            {project.health} Health
-          </Badge>
-        </div>
+    <div className="h-full overflow-y-auto flex flex-col">
+      <div className="p-6 pb-0">
+        <PageHeader
+          title={project.name}
+          description={project.organizationName || ""}
+          breadcrumbs={[
+            { label: "Dashboard", href: "/dashboard" },
+            { label: "Delivery", href: "/delivery/projects" },
+            { label: "Projects", href: "/delivery/projects" },
+            { label: project.name }
+          ]}
+          kpiBadges={
+            <>
+              <Badge variant="outline" className="capitalize">{project.status}</Badge>
+              <Badge variant={project.health === 'green' ? 'default' : 'destructive'} className="capitalize ml-2">
+                {project.health} Health
+              </Badge>
+            </>
+          }
+        />
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 flex-1 min-h-[500px]">
+      <div className="flex-1 p-6 pt-0 space-y-6">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 h-full min-h-[500px]">
         {/* Task Board */}
         <div className="lg:col-span-2 flex flex-col h-full">
           <h3 className="text-lg font-semibold mb-3 text-gray-800">Task Board</h3>
@@ -98,6 +108,7 @@ export default async function ProjectDetailPage({ params }: { params: { id: stri
               </ul>
             )}
           </div>
+        </div>
         </div>
       </div>
     </div>

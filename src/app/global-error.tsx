@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
+import * as Sentry from "@sentry/nextjs";
 
 
 export default function GlobalError({
@@ -17,6 +18,7 @@ export default function GlobalError({
     if (!isExpected) {
       // Log unexpected errors internally without exposing stack traces to users
       console.error("Unexpected Global Error:", { message: error.message, name: error.name });
+      Sentry.captureException(error);
     }
   }, [error]);
 

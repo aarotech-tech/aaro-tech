@@ -5,7 +5,8 @@ import { eq } from "drizzle-orm";
 import { notFound } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { PenToolIcon, CheckCircleIcon } from "lucide-react";
-import { approveProposalAction } from "./actions";
+import { ApproveProposalForm } from "./_components/ApproveProposalForm";
+import { PageHeader } from "@/components/ui/page-header";
 
 export default async function ClientProposalViewPage({ params }: { params: Promise<{ proposalId: string }> }) {
   const resolvedParams = await params;
@@ -47,16 +48,17 @@ export default async function ClientProposalViewPage({ params }: { params: Promi
     console.error("Failed to log tracking event", error);
   }
 
-  const approveAction = approveProposalAction.bind(null, proposal.id);
-
   return (
-    <div className="max-w-4xl mx-auto py-8">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-white tracking-tight">{proposal.dealName}</h1>
-        <p className="text-gray-400 mt-2">Prepared by Aarotech for {proposal.organizationName}</p>
+    <div className="h-full overflow-y-auto flex flex-col">
+      <div className="p-6 pb-0 max-w-4xl mx-auto w-full">
+        <PageHeader 
+          title={proposal.dealName}
+          description={`Prepared by Aarotech for ${proposal.organizationName}`}
+        />
       </div>
 
-      <div className="bg-white rounded-xl shadow-2xl overflow-hidden">
+      <div className="p-6 pt-0 flex-1 max-w-4xl mx-auto w-full">
+        <div className="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden">
         <div className="p-10 border-b border-gray-200">
           <div 
             className="prose max-w-none text-gray-800"
@@ -94,31 +96,10 @@ export default async function ClientProposalViewPage({ params }: { params: Promi
                 By signing below, you agree to the scope of work and investment summarized in this proposal.
               </p>
               
-              <form action={async (fd) => {
-                "use server";
-                await approveAction(fd);
-              }} className="max-w-md">
-                <div className="mb-4">
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Type your full name to sign
-                  </label>
-                  <input 
-                    type="text"
-                    name="signature"
-                    required
-                    placeholder="e.g. Jane Doe"
-                    className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900"
-                  />
-                </div>
-                <Button type="submit" className="w-full bg-green-600 hover:bg-green-700 text-white font-semibold py-6 rounded-lg text-lg">
-                  Approve Proposal
-                </Button>
-                <p className="text-xs text-gray-500 text-center mt-4">
-                  IP address and timestamp will be recorded for security.
-                </p>
-              </form>
+              <ApproveProposalForm proposalId={proposal.id} />
             </div>
           )}
+        </div>
         </div>
       </div>
     </div>

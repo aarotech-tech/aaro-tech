@@ -60,16 +60,14 @@ describe("Sales & CRM - Milestone 2", () => {
       
       expect(result?.serverError).toBeUndefined();
       expect(result?.data).toBeDefined();
-      expect(result?.data?.organization.status).toBe("prospect");
+      expect(result?.data?.organization.status).toBe("lead");
       expect(result?.data?.organization.clerkOrgId).toContain("pending_org_");
-      expect(result?.data?.deal.stage).toBe("discovery");
 
       // Verify DB updates
       const updatedLead = await db.query.websiteLeads.findFirst({ where: eq(websiteLeads.id, lead.id) });
       expect(updatedLead?.status).toBe("qualified");
 
       // Cleanup
-      await db.delete(deals).where(eq(deals.id, result.data!.deal.id));
       await db.delete(organizations).where(eq(organizations.id, result.data!.organization.id));
       await db.delete(websiteLeads).where(eq(websiteLeads.id, lead.id));
       await db.delete(users).where(eq(users.id, internalUser.id));

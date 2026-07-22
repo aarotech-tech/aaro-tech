@@ -1,84 +1,76 @@
 import { requireAuthenticatedUser } from "@/lib/auth";
-import { auth } from "@clerk/nextjs/server";
 import { db } from "@/db";
-import { projects, organizations } from "@/db/schema";
+import { organizationMembers } from "@/db/schema";
 import { eq } from "drizzle-orm";
-import { Card, CardHeader, CardTitle, CardContent, CardDescription } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-
-export const metadata = {
-  title: "Projects | Client Hub",
-};
+import { redirect } from "next/navigation";
+import { getClientProjects } from "@/modules/delivery/services";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { FolderKanban } from "lucide-react";
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
+import { PageHeader } from "@/components/ui/page-header";
 
 export default async function ClientProjectsPage() {
-  await requireAuthenticatedUser();
-  const { orgId } = await auth();
-
-  if (!orgId) {
-    return (
-      <div className="flex flex-col items-center justify-center min-h-[50vh] text-center space-y-4">
-        <h2 className="text-2xl font-bold">No Organization Selected</h2>
-      </div>
-    );
-  }
-
-  const org = await db.query.organizations.findFirst({
-    where: eq(organizations.clerkOrgId, orgId)
+  const user = await requireAuthenticatedUser();
+  const membership = await db.query.organizationMembers.findFirst({
+    where: eq(organizationMembers.userId, user.id)
   });
 
-  if (!org) {
-    return (
-      <div className="flex flex-col items-center justify-center min-h-[50vh] text-center space-y-4">
-        <h2 className="text-2xl font-bold">Organization Syncing...</h2>
-      </div>
-    );
-  }
-
-  const clientProjects = await db.select().from(projects).where(eq(projects.organizationId, org.id));
+  if (!membership) redirect("/onboarding");
+  const projects = await getClientProjects(membership.organizationId);
 
   return (
-    <div className="flex flex-col space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
-      
-      <div className="flex flex-col space-y-2">
-        <h1 className="text-3xl font-bold tracking-tight">Your Projects</h1>
-        <p className="text-muted-foreground">Track the status and deliverables for your active and past projects.</p>
+    <div className="h-full overflow-y-auto flex flex-col">
+      <div className="p-6 pb-0 max-w-6xl mx-auto w-full">
+        <PageHeader 
+          title="Projects"
+          description="Track the progress of your ongoing and completed projects."
+          breadcrumbs={[
+            { label: "Dashboard", href: "/portal/home" },
+            { label: "Projects" }
+          ]}
+        />
       </div>
 
-      {clientProjects.length === 0 ? (
-        <Card className="border-dashed bg-muted/30">
-          <CardContent className="flex flex-col items-center justify-center py-12 text-center">
-            <h3 className="mt-4 text-lg font-semibold">No active projects</h3>
-            <p className="mt-2 text-sm text-muted-foreground max-w-sm">
-              You don't have any projects currently in progress. When you accept a proposal, your project will appear here.
-            </p>
-          </CardContent>
-        </Card>
-      ) : (
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-          {clientProjects.map(project => (
-            <Card key={project.id} className="group overflow-hidden border transition-all hover:shadow-md">
-              <CardHeader className="pb-3 border-b bg-muted/10">
-                <div className="flex justify-between items-start">
-                  <CardTitle className="text-xl group-hover:text-primary transition-colors">{project.name}</CardTitle>
-                  <Badge variant={project.status === 'active' ? 'default' : 'secondary'}>{project.status}</Badge>
+      <div className="p-6 pt-0 flex-1 max-w-6xl mx-auto w-full">
+
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {projects.map(project => (
+          <Card key={project.id} className="shadow-sm hover:shadow-md transition-shadow">
+            <CardHeader className="pb-3 border-b border-gray-100 bg-gray-50/50">
+              <div className="flex justify-between items-start">
+                <CardTitle className="text-lg">{project.name}</CardTitle>
+                <span className={`px-2 py-0.5 text-xs font-semibold rounded-full uppercase tracking-wider ${project.status === 'active' ? 'bg-indigo-100 text-indigo-800' : 'bg-gray-200 text-gray-700'}`}>
+                  {project.status}
+                </span>
+              </div>
+            </CardHeader>
+            <CardContent className="pt-4 space-y-4">
+              <div>
+                <div className="flex justify-between text-sm mb-1">
+                  <span className="font-medium text-gray-700">Progress</span>
+                  <span className="font-bold text-indigo-600">{project.progress}%</span>
                 </div>
-                <CardDescription>Started {project.createdAt ? new Date(project.createdAt).toLocaleDateString() : 'Recently'}</CardDescription>
-              </CardHeader>
-              <CardContent className="pt-4 space-y-4">
-                <div className="space-y-1">
-                  <div className="flex justify-between text-sm">
-                    <span className="text-muted-foreground">Overall Health</span>
-                    <Badge variant={project.health === 'green' ? 'default' : 'outline'} className="capitalize">{project.health}</Badge>
-                  </div>
+                <div className="w-full h-2 bg-gray-100 rounded-full overflow-hidden">
+                  <div className="h-full bg-indigo-600 rounded-full" style={{ width: `${project.progress}%` }} />
                 </div>
-                <div className="pt-4 flex justify-end">
-                  <button className="text-sm font-medium text-primary hover:underline">View Deliverables &rarr;</button>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
+              </div>
+              
+              <div className="bg-blue-50/50 p-3 rounded-md border border-blue-100 text-sm">
+                <span className="text-blue-700 font-semibold block mb-1">Next Milestone</span>
+                <span className="text-blue-900">{project.nextMilestone}</span>
+              </div>
+
+              <div className="pt-2">
+                <Link href={`/portal/projects/${project.id}`}>
+                  <Button variant="outline" className="w-full">Open Workspace →</Button>
+                </Link>
+              </div>
+            </CardContent>
+          </Card>
+        ))}
         </div>
-      )}
+      </div>
     </div>
   );
 }

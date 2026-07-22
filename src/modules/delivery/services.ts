@@ -1,51 +1,158 @@
 import * as DeliveryRepo from "./repositories";
 import { emitDomainEvent } from "../core/events";
+import { DbTx } from "@/db/types";
+
+export type ProjectStatus = "pending" | "planned" | "active" | "on_hold" | "completed" | "archived";
+export type DeliverableStatus = "draft" | "internal_review" | "ready_for_client" | "client_review" | "approved" | "archived";
 
 /**
- * Creates a project manually from a Deal.
+ * Validates project status transition.
  */
-export async function createManualProject(dealId: string, projectName: string) {
+function validateProjectTransition(current: string, next: ProjectStatus) {
+  const validTransitions: Record<string, ProjectStatus[]> = {
+    pending: ["planned"],
+    planned: ["active"],
+    active: ["on_hold", "completed"],
+    on_hold: ["active", "archived"],
+    completed: ["archived"],
+  };
+  
+  const allowed = validTransitions[current] || [];
+  if (!allowed.includes(next)) {
+    throw new Error(`Invalid project state transition from ${current} to ${next}`);
+  }
+}
+
+/**
+ * Validates deliverable status transition.
+ */
+function validateDeliverableTransition(current: string, next: DeliverableStatus) {
+  const validTransitions: Record<string, DeliverableStatus[]> = {
+    draft: ["internal_review"],
+    internal_review: ["draft", "ready_for_client"], // draft is rejected internally
+    ready_for_client: ["client_review"],
+    client_review: ["draft", "approved"], // draft indicates changes requested
+    approved: ["archived"],
+  };
+  
+  const allowed = validTransitions[current] || [];
+  if (!allowed.includes(next)) {
+    throw new Error(`Invalid deliverable state transition from ${current} to ${next}`);
+  }
+}
+
+/**
+ * Instantiates a project from a Deal (Triggered ONLY by Conversion Engine).
+ */
+export async function createProjectFromDeal(dealId: string, projectName: string, tx?: DbTx) {
   const deal = await DeliveryRepo.getDealById(dealId);
   
   if (!deal) {
     throw new Error("Deal not found");
   }
 
-  // 1. Scaffold Project
+  // 1. Scaffold Project (Initial state is pending)
   const project = await DeliveryRepo.createProject({
     organizationId: deal.organizationId,
     dealId: deal.id,
     name: projectName || `${deal.name} - Execution`,
-    status: "active",
+    status: "pending",
     health: "green",
-  });
+  }, tx);
 
-  // 2. Default task scaffolding (Template could be added here later)
+  // 2. Default task scaffolding
   await DeliveryRepo.createTask({
     projectId: project.id,
     title: "Project Kickoff",
     status: "todo",
-  });
-
-  // 3. Emit Domain Event
-  emitDomainEvent({
-    type: "ProjectCreated",
-    payload: {
-      projectId: project.id,
-      projectName: project.name,
-      organizationId: project.organizationId,
-    }
-  });
+  }, tx);
 
   return project;
 }
 
 /**
+ * Plans a project (PM action).
+ */
+export async function planProject(projectId: string, organizationId: string, tx?: DbTx) {
+  const project = await DeliveryRepo.getProjectById(projectId);
+  if (!project) throw new Error("Project not found");
+  if (project.organizationId !== organizationId) throw new Error("Unauthorized");
+  
+  validateProjectTransition(project.status || "pending", "planned");
+
+  return DeliveryRepo.updateProjectStatus(projectId, organizationId, "planned", tx);
+}
+
+/**
+ * Activates a project (Often triggered by Finance deposit paid or PM action).
+ */
+export async function activateProject(projectId: string, organizationId: string, tx?: DbTx) {
+  const project = await DeliveryRepo.getProjectById(projectId);
+  if (!project) throw new Error("Project not found");
+  if (project.organizationId !== organizationId) throw new Error("Unauthorized");
+  
+  validateProjectTransition(project.status || "planned", "active");
+
+  return DeliveryRepo.updateProjectStatus(projectId, organizationId, "active", tx);
+}
+
+/**
+ * Internal action to submit a deliverable for internal review.
+ */
+export async function createDeliverableService(data: { projectId: string; name: string; userId: string }) {
+  const deliverable = await DeliveryRepo.createDeliverable({
+    projectId: data.projectId,
+    name: data.name,
+    status: "draft",
+  });
+  
+  // Note: we can fetch the project to get the organizationId, but since we are emitting the event
+  // without it for now (like in the original action), we'll do the same, or fetch it.
+  const project = await DeliveryRepo.getProjectById(data.projectId);
+  
+  if (project) {
+    emitDomainEvent({
+      type: "DeliverableSubmitted",
+      payload: {
+        organizationId: project.organizationId,
+        projectId: data.projectId,
+        deliverableId: deliverable.id,
+        userId: data.userId,
+      }
+    });
+  }
+
+  return deliverable;
+}
+
+export async function submitDeliverableForInternalReview(deliverableId: string) {
+  const deliverable = await DeliveryRepo.getDeliverableById(deliverableId);
+  if (!deliverable) throw new Error("Deliverable not found");
+  validateDeliverableTransition(deliverable.status || "draft", "internal_review");
+  
+  return DeliveryRepo.updateDeliverableStatus(deliverableId, "internal_review");
+}
+
+/**
+ * Internal action to mark a deliverable ready for client.
+ */
+export async function markDeliverableReadyForClient(deliverableId: string) {
+  const deliverable = await DeliveryRepo.getDeliverableById(deliverableId);
+  if (!deliverable) throw new Error("Deliverable not found");
+  validateDeliverableTransition(deliverable.status || "internal_review", "ready_for_client");
+  
+  return DeliveryRepo.updateDeliverableStatus(deliverableId, "ready_for_client");
+}
+
+/**
  * Internal action to submit a deliverable for client review.
  */
-export async function submitDeliverableForReview(deliverableId: string) {
-  const deliverable = await DeliveryRepo.updateDeliverableStatus(deliverableId, "in_review");
-  return deliverable;
+export async function submitDeliverableForClientReview(deliverableId: string) {
+  const deliverable = await DeliveryRepo.getDeliverableById(deliverableId);
+  if (!deliverable) throw new Error("Deliverable not found");
+  validateDeliverableTransition(deliverable.status || "ready_for_client", "client_review");
+  
+  return DeliveryRepo.updateDeliverableStatus(deliverableId, "client_review");
 }
 
 /**
@@ -63,6 +170,8 @@ export async function approveDeliverable(deliverableId: string, commentText: str
     throw new Error("Unauthorized to approve this deliverable");
   }
 
+  validateDeliverableTransition(deliverable.status || "client_review", "approved");
+
   const updated = await DeliveryRepo.updateDeliverableStatus(deliverableId, "approved");
 
   let userId = "";
@@ -77,9 +186,6 @@ export async function approveDeliverable(deliverableId: string, commentText: str
         visibility: "client_visible",
       });
     }
-  } else {
-    const user = await DeliveryRepo.getUserByClerkId(clerkUserId);
-    if (user) userId = user.id;
   }
 
   emitDomainEvent({
@@ -110,7 +216,9 @@ export async function requestDeliverableRevision(deliverableId: string, commentT
     throw new Error("Unauthorized to access this deliverable");
   }
 
-  const updated = await DeliveryRepo.updateDeliverableStatus(deliverableId, "changes_requested");
+  validateDeliverableTransition(deliverable.status || "client_review", "draft");
+
+  const updated = await DeliveryRepo.updateDeliverableStatus(deliverableId, "draft");
 
   let userId = "";
   const user = await DeliveryRepo.getUserByClerkId(clerkUserId);
@@ -125,7 +233,7 @@ export async function requestDeliverableRevision(deliverableId: string, commentT
   }
 
   emitDomainEvent({
-    type: "RevisionRequested",
+    type: "DeliverableRejected",
     payload: {
       deliverableId,
       projectId: project.id,
@@ -135,4 +243,55 @@ export async function requestDeliverableRevision(deliverableId: string, commentT
   });
 
   return updated;
+}
+
+export async function getDashboardMetrics() {
+  // Mocked for Epic 5. Real implementation will query DB.
+  return {
+    activeProjects: 14,
+    projectsAtRisk: 2,
+    tasksDueToday: 8,
+    overdueTasks: 3,
+    deliverablesAwaitingReview: 5,
+    projectsCompletedThisMonth: 4,
+  };
+}
+
+// --- CLIENT PORTAL READ MODELS (BFF Layer) --- //
+
+export async function getClientProjects(organizationId: string) {
+  // Mocked for Epic 6 UI scaffolding
+  return [
+    { id: "proj_1", name: "Acme Corp Web Redesign", status: "active", health: "green", progress: 65, nextMilestone: "Design Approval" },
+    { id: "proj_2", name: "Acme Corp Mobile App", status: "planned", health: "yellow", progress: 10, nextMilestone: "Kickoff" },
+  ];
+}
+
+export async function getClientProjectDetails(projectId: string, organizationId: string) {
+  // Strict tenant validation would happen here
+  return {
+    id: projectId,
+    name: "Acme Corp Web Redesign",
+    status: "active",
+    overview: "A complete overhaul of the Acme Corp digital presence.",
+    deliverables: [
+      { id: "del_1", name: "Wireframes", status: "approved" },
+      { id: "del_2", name: "Design System", status: "client_review" }
+    ],
+    timeline: [
+      { phase: "Discovery", status: "completed" },
+      { phase: "Design", status: "active" },
+      { phase: "Development", status: "pending" }
+    ]
+  };
+}
+
+export async function getClientDeliverables(organizationId: string) {
+  return [
+    { id: "del_2", name: "Design System", projectName: "Acme Corp Web Redesign", status: "client_review", submittedAt: new Date().toISOString() }
+  ];
+}
+
+export async function updateTaskStatusService(taskId: string, status: string, userId: string) {
+  return DeliveryRepo.updateTaskStatus(taskId, status);
 }

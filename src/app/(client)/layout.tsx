@@ -3,11 +3,28 @@ import Link from "next/link";
 import { UserButton } from "@clerk/nextjs";
 import { requireAuthenticatedUser, ForbiddenError } from "@/lib/auth";
 
+import { db } from "@/db";
+import { organizationMembers } from "@/db/schema";
+import { eq } from "drizzle-orm";
+import { redirect } from "next/navigation";
+
 export default async function ClientLayout({ children }: { children: ReactNode }) {
   const user = await requireAuthenticatedUser();
   if (user.userType !== "client" && user.userType !== "internal") {
     throw new ForbiddenError("Only clients can access the portal.");
   }
+
+  // Get the client's primary organization
+  const membership = await db.query.organizationMembers.findFirst({
+    where: eq(organizationMembers.userId, user.id)
+  });
+
+  if (!membership && user.userType !== "internal") {
+    // If they have no organization, they need to go through onboarding/invitation
+    redirect("/onboarding");
+  }
+
+  const organizationId = membership?.organizationId || "internal-mock-org-id";
 
   return (
     <div className="flex h-screen overflow-hidden bg-gray-900 text-white">
@@ -21,28 +38,46 @@ export default async function ClientLayout({ children }: { children: ReactNode }
         
         <nav className="flex-1 p-4 space-y-1">
           <Link
-            href="/portal"
-            className="flex items-center px-4 py-2.5 text-sm font-medium rounded-md bg-gray-800 text-white"
-          >
-            Dashboard
-          </Link>
-          <Link
-            href="/portal/assets"
+            href="/portal/home"
             className="flex items-center px-4 py-2.5 text-sm font-medium rounded-md text-gray-400 hover:text-white hover:bg-gray-800 transition-colors"
           >
-            My Assets
+            Home
           </Link>
           <Link
-            href="/portal/deliverables"
+            href="/portal/projects"
             className="flex items-center px-4 py-2.5 text-sm font-medium rounded-md text-gray-400 hover:text-white hover:bg-gray-800 transition-colors"
           >
-            Deliverables
+            Projects
+          </Link>
+          <Link
+            href="/portal/reviews"
+            className="flex items-center px-4 py-2.5 text-sm font-medium rounded-md text-gray-400 hover:text-white hover:bg-gray-800 transition-colors"
+          >
+            Reviews
           </Link>
           <Link
             href="/portal/billing"
             className="flex items-center px-4 py-2.5 text-sm font-medium rounded-md text-gray-400 hover:text-white hover:bg-gray-800 transition-colors"
           >
-            Billing & Invoices
+            Billing
+          </Link>
+          <Link
+            href="/portal/documents"
+            className="flex items-center px-4 py-2.5 text-sm font-medium rounded-md text-gray-400 hover:text-white hover:bg-gray-800 transition-colors"
+          >
+            Documents
+          </Link>
+          <Link
+            href="/portal/notifications"
+            className="flex items-center px-4 py-2.5 text-sm font-medium rounded-md text-gray-400 hover:text-white hover:bg-gray-800 transition-colors"
+          >
+            Notifications
+          </Link>
+          <Link
+            href="/portal/settings"
+            className="flex items-center px-4 py-2.5 text-sm font-medium rounded-md text-gray-400 hover:text-white hover:bg-gray-800 transition-colors"
+          >
+            Settings
           </Link>
         </nav>
         

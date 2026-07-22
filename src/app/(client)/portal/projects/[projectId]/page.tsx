@@ -1,123 +1,107 @@
 import { requireAuthenticatedUser } from "@/lib/auth";
-import { auth } from "@clerk/nextjs/server";
 import { db } from "@/db";
-import { projects, tasks, deliverables, organizations } from "@/db/schema";
-import { eq, and } from "drizzle-orm";
-import { Card, CardHeader, CardTitle, CardContent, CardDescription } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { DeliverableActions } from "@/components/delivery/DeliverableActions";
+import { organizationMembers } from "@/db/schema";
+import { eq } from "drizzle-orm";
+import { redirect } from "next/navigation";
+import { getClientProjectDetails } from "@/modules/delivery/services";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { CheckCircle2, Circle, Clock } from "lucide-react";
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
+import { PageHeader } from "@/components/ui/page-header";
 
-export const metadata = {
-  title: "Project Details | Client Hub",
-};
-
-export default async function ProjectDetailsPage({ params }: { params: Promise<{ projectId: string }> }) {
-  await requireAuthenticatedUser();
-  const { orgId } = await auth();
-  const projectId = (await params).projectId;
-
-  if (!orgId) {
-    return <div className="text-center py-10">Organization required.</div>;
-  }
-
-  const org = await db.query.organizations.findFirst({
-    where: eq(organizations.clerkOrgId, orgId)
+export default async function ClientProjectWorkspacePage(props: { params: { projectId: string } }) {
+  const user = await requireAuthenticatedUser();
+  const membership = await db.query.organizationMembers.findFirst({
+    where: eq(organizationMembers.userId, user.id)
   });
 
-  if (!org) {
-    return <div className="text-center py-10">Organization not found.</div>;
-  }
-
-  const project = await db.query.projects.findFirst({
-    where: and(
-      eq(projects.id, projectId),
-      eq(projects.organizationId, org.id)
-    )
-  });
-
-  if (!project) {
-    return <div className="text-center py-10">Project not found or unauthorized.</div>;
-  }
-
-  const projectTasks = await db.select().from(tasks).where(eq(tasks.projectId, projectId));
-  const projectDeliverables = await db.select().from(deliverables).where(eq(deliverables.projectId, projectId));
+  if (!membership) redirect("/onboarding");
+  
+  const params = await props.params;
+  const project = await getClientProjectDetails(params.projectId, membership.organizationId);
 
   return (
-    <div className="flex flex-col space-y-8 animate-in fade-in duration-500">
-      
-      <div className="flex items-center justify-between">
-        <div className="flex flex-col space-y-1">
-          <h1 className="text-3xl font-bold tracking-tight">{project.name}</h1>
-          <p className="text-muted-foreground">Started {project.createdAt ? new Date(project.createdAt).toLocaleDateString() : 'Recently'}</p>
-        </div>
-        <div className="flex items-center gap-3">
-          <Badge variant={project.status === 'active' ? 'default' : 'secondary'} className="px-3 py-1 text-sm">
-            {project.status}
-          </Badge>
-          <Badge variant={project.health === 'green' ? 'default' : 'outline'} className="px-3 py-1 text-sm capitalize">
-            {project.health} Health
-          </Badge>
-        </div>
+    <div className="h-full overflow-y-auto flex flex-col">
+      <div className="p-6 pb-0 max-w-6xl mx-auto w-full">
+        <PageHeader 
+          title={project.name}
+          description={project.overview}
+          breadcrumbs={[
+            { label: "Dashboard", href: "/portal/home" },
+            { label: "Projects", href: "/portal/projects" },
+            { label: project.name }
+          ]}
+          kpiBadges={
+            <span className="px-3 py-1 bg-indigo-100 text-indigo-800 rounded-full text-sm font-semibold uppercase tracking-wide">
+              {project.status}
+            </span>
+          }
+        />
       </div>
 
-      <div className="grid gap-6 md:grid-cols-2">
-        <Card className="shadow-sm border-t-4 border-t-primary">
-          <CardHeader>
-            <CardTitle>Project Tasks</CardTitle>
-            <CardDescription>Current execution plan</CardDescription>
-          </CardHeader>
-          <CardContent>
-            {projectTasks.length === 0 ? (
-              <p className="text-sm text-muted-foreground">No tasks defined yet.</p>
-            ) : (
-              <ul className="space-y-3">
-                {projectTasks.map(task => (
-                  <li key={task.id} className="flex items-center gap-3">
-                    <div className={`w-4 h-4 rounded-full flex-shrink-0 ${task.status === 'completed' ? 'bg-green-500' : 'bg-secondary'}`} />
-                    <span className={`text-sm ${task.status === 'completed' ? 'line-through text-muted-foreground' : 'font-medium'}`}>
-                      {task.title}
-                    </span>
-                  </li>
-                ))}
-              </ul>
-            )}
-          </CardContent>
-        </Card>
+      <div className="p-6 pt-0 flex-1 max-w-6xl mx-auto w-full">
 
-        <Card className="shadow-sm">
-          <CardHeader>
-            <CardTitle>Deliverables</CardTitle>
-            <CardDescription>Items awaiting your review</CardDescription>
-          </CardHeader>
-          <CardContent>
-            {projectDeliverables.length === 0 ? (
-              <p className="text-sm text-muted-foreground">No deliverables ready for review yet.</p>
-            ) : (
-              <div className="space-y-6">
-                {projectDeliverables.map(del => (
-                  <div key={del.id} className="flex flex-col space-y-3 border p-4 rounded-lg bg-card shadow-sm hover:shadow transition-shadow">
-                    <div className="flex justify-between items-start">
-                      <div className="flex flex-col space-y-1">
-                        <span className="font-semibold">{del.name}</span>
-                      </div>
-                      <Badge variant="outline" className="capitalize">{del.status ? del.status.replace("_", " ") : 'Draft'}</Badge>
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="lg:col-span-2 space-y-6">
+          {/* Deliverables */}
+          <Card className="shadow-sm">
+            <CardHeader>
+              <CardTitle className="text-lg">Deliverables</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-3">
+                {project.deliverables.map((del: any) => (
+                  <div key={del.id} className="flex justify-between items-center p-4 border rounded-md bg-gray-50/50 hover:bg-gray-50 transition-colors">
+                    <div>
+                      <h4 className="font-medium text-gray-900">{del.name}</h4>
+                      <p className="text-sm text-gray-500 mt-0.5">Status: {del.status.replace("_", " ")}</p>
                     </div>
+                    {del.status === 'client_review' ? (
+                      <Link href={`/portal/reviews?id=${del.id}`}>
+                        <Button size="sm" className="bg-indigo-600 hover:bg-indigo-700">Review Now</Button>
+                      </Link>
+                    ) : (
+                      <CheckCircle2 className="text-emerald-500 w-5 h-5" />
+                    )}
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        </div>
 
-                    <div className="pt-3 border-t flex justify-end">
-                      {del.status === "in_review" || del.status === "approved" ? (
-                        <DeliverableActions deliverableId={del.id} currentStatus={del.status} />
+        <div className="space-y-6">
+          {/* Timeline */}
+          <Card className="shadow-sm">
+            <CardHeader>
+              <CardTitle className="text-lg">Project Timeline</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                {project.timeline.map((phase: any, index: number) => (
+                  <div key={index} className="flex items-start">
+                    <div className="mt-0.5">
+                      {phase.status === 'completed' ? (
+                        <CheckCircle2 className="w-5 h-5 text-emerald-500" />
+                      ) : phase.status === 'active' ? (
+                        <Clock className="w-5 h-5 text-indigo-500" />
                       ) : (
-                        <span className="text-xs text-muted-foreground italic">Not ready for review</span>
+                        <Circle className="w-5 h-5 text-gray-300" />
                       )}
+                    </div>
+                    <div className="ml-3">
+                      <p className={`text-sm font-medium ${phase.status === 'pending' ? 'text-gray-500' : 'text-gray-900'}`}>{phase.phase}</p>
+                      <p className="text-xs text-gray-500">{phase.status.charAt(0).toUpperCase() + phase.status.slice(1)}</p>
                     </div>
                   </div>
                 ))}
               </div>
-            )}
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
+        </div>
+        </div>
       </div>
-
     </div>
   );
 }

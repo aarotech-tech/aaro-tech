@@ -16,7 +16,7 @@ const createProjectSchema = z.object({
 export const createProjectAction = internalActionClient
   .schema(createProjectSchema)
   .action(async ({ parsedInput }) => {
-    const project = await DeliveryService.createManualProject(
+    const project = await DeliveryService.createProjectFromDeal(
       parsedInput.dealId,
       parsedInput.projectName
     );
@@ -67,5 +67,56 @@ export const requestRevisionAction = tenantActionClient
     );
 
     revalidatePath(`/portal/projects`);
+    return result;
+  });
+
+// --- Internal Lifecycle Actions ---
+
+const projectLifecycleSchema = z.object({
+  projectId: z.string().uuid(),
+  organizationId: z.string().uuid(),
+});
+
+export const planProjectAction = internalActionClient
+  .schema(projectLifecycleSchema)
+  .action(async ({ parsedInput }) => {
+    const result = await DeliveryService.planProject(parsedInput.projectId, parsedInput.organizationId);
+    revalidatePath("/delivery/projects");
+    return result;
+  });
+
+export const activateProjectAction = internalActionClient
+  .schema(projectLifecycleSchema)
+  .action(async ({ parsedInput }) => {
+    const result = await DeliveryService.activateProject(parsedInput.projectId, parsedInput.organizationId);
+    revalidatePath("/delivery/projects");
+    return result;
+  });
+
+const deliverableLifecycleSchema = z.object({
+  deliverableId: z.string().uuid(),
+});
+
+export const submitDeliverableForInternalReviewAction = internalActionClient
+  .schema(deliverableLifecycleSchema)
+  .action(async ({ parsedInput }) => {
+    const result = await DeliveryService.submitDeliverableForInternalReview(parsedInput.deliverableId);
+    revalidatePath("/delivery/reviews");
+    return result;
+  });
+
+export const markDeliverableReadyForClientAction = internalActionClient
+  .schema(deliverableLifecycleSchema)
+  .action(async ({ parsedInput }) => {
+    const result = await DeliveryService.markDeliverableReadyForClient(parsedInput.deliverableId);
+    revalidatePath("/delivery/reviews");
+    return result;
+  });
+
+export const submitDeliverableForClientReviewAction = internalActionClient
+  .schema(deliverableLifecycleSchema)
+  .action(async ({ parsedInput }) => {
+    const result = await DeliveryService.submitDeliverableForClientReview(parsedInput.deliverableId);
+    revalidatePath("/delivery/reviews");
     return result;
   });

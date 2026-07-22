@@ -1,13 +1,20 @@
 "use client";
 
 import { useState } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
+import { useAction } from "next-safe-action/hooks";
+
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { CheckCircle2 } from "lucide-react";
 import { sendGAEvent } from "@next/third-parties/google";
-import { submitContactForm } from "@/app/actions/contact";
+import { submitContactForm } from "@/actions/contact";
+import { contactFormSchema } from "@/lib/validations/contact";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { toast } from "sonner";
 
 export interface ContactFormProps {
   onSuccess?: () => void;
@@ -32,62 +39,39 @@ export function ContactForm({
     "Other",
   ],
 }: ContactFormProps) {
-  const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
-  const [selectedChallenge, setSelectedChallenge] = useState<string>("");
-  const [phoneError, setPhoneError] = useState<string>("");
-  const [emailError, setEmailError] = useState<string>("");
-  const [submitError, setSubmitError] = useState<string>("");
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
+  const form = useForm<z.infer<typeof contactFormSchema>>({
+    resolver: zodResolver(contactFormSchema),
+    defaultValues: {
+      name: "",
+      businessName: "",
+      email: "",
+      phone: "",
+      websiteUrl: "",
+      challenge: "",
+      otherChallenge: "",
+    },
+  });
 
-    // Re-validate email at submit time
-    const emailVal = (e.currentTarget.elements.namedItem("email") as HTMLInputElement)?.value?.trim() || "";
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (emailVal && !emailRegex.test(emailVal)) {
-      setEmailError("Enter a valid email address.");
-      return;
-    }
-
-    // Validate challenge selection
-    if (!selectedChallenge) {
-      setSubmitError("Please select your biggest challenge.");
-      return;
-    }
-
-    // Re-validate phone at submit time if provided
-    const phoneVal = (e.currentTarget.elements.namedItem("phone") as HTMLInputElement)?.value?.trim() || "";
-    if (phoneVal) {
-      const digits = phoneVal.replace(/\D/g, "");
-      if (digits.length < 7 || digits.length > 15) {
-        setPhoneError("Enter a valid phone number (7-15 digits).");
-        return;
-      }
-    }
-
-    setIsSubmitting(true);
-
-    const form = e.currentTarget;
-    const formData = new FormData(form);
-
-    try {
-      const result = await submitContactForm(formData);
-
-      if (result.success) {
+  const { execute, isExecuting, result } = useAction(submitContactForm, {
+    onSuccess: ({ data }) => {
+      if (data?.success) {
         setIsSuccess(true);
         form.reset();
-        setSubmitError("");
         sendGAEvent("event", "generate_lead", { value: 1, currency: "USD" });
         if (onSuccess) onSuccess();
-      } else {
-        setSubmitError(result.error || "Oops! There was a problem submitting your form. Please try again.");
       }
-    } catch {
-      setSubmitError("Oops! There was a problem submitting your form. Please check your connection and try again.");
-    } finally {
-      setIsSubmitting(false);
+    },
+    onError: ({ error }) => {
+      toast.error(error.serverError || "Oops! There was a problem submitting your form. Please try again.");
     }
+  });
+
+  const selectedChallenge = form.watch("challenge");
+
+  const onSubmit = (values: z.infer<typeof contactFormSchema>) => {
+    execute(values);
   };
 
   if (isSuccess) {
@@ -111,116 +95,124 @@ export function ContactForm({
   }
 
   return (
-    <>
-      <form onSubmit={handleSubmit} className="space-y-6">
-        <div className="space-y-2">
-          <Label htmlFor="name" className="text-white">Full Name</Label>
-          <Input id="name" name="name" placeholder="John Doe" required className="bg-slate-950 border-slate-800 text-white placeholder:text-slate-500" />
-        </div>
-
-        <div className="space-y-2">
-          <Label htmlFor="businessName" className="text-white">Business Name</Label>
-          <Input id="businessName" name="businessName" placeholder="Acme Corp" required className="bg-slate-950 border-slate-800 text-white placeholder:text-slate-500" />
-        </div>
-
-        <div className="space-y-2">
-          <Label htmlFor="email" className="text-white">Email Address</Label>
-          <Input
-            id="email"
-            name="email"
-            type="email"
-            placeholder="you@company.com"
-            required
-            className={`bg-slate-950 border-slate-800 text-white placeholder:text-slate-500 ${emailError ? "border-red-500 focus:border-red-500" : ""}`}
-            onBlur={(e) => {
-              const val = e.target.value.trim();
-              if (!val) { setEmailError(""); return; } // Handled by HTML5 required attribute now
-              const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-              if (!emailRegex.test(val)) {
-                setEmailError("Enter a valid email address (e.g. you@company.com).");
-              } else {
-                setEmailError("");
-              }
-            }}
-            onChange={() => emailError && setEmailError("")}
-          />
-          {emailError && (
-            <p className="text-red-400 text-xs mt-1">{emailError}</p>
+    <Form {...form}>
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+        
+        <FormField
+          control={form.control}
+          name="name"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel className="text-white">Full Name</FormLabel>
+              <FormControl>
+                <Input placeholder="John Doe" className="bg-slate-950 border-slate-800 text-white placeholder:text-slate-500" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
           )}
-        </div>
+        />
 
-        <div className="space-y-2">
-          <Label htmlFor="websiteUrl" className="text-white">Website URL (Optional)</Label>
-          <Input
-            id="websiteUrl"
-            name="websiteUrl"
-            type="url"
-            placeholder="https://yourwebsite.com"
-            className="bg-slate-950 border-slate-800 text-white placeholder:text-slate-500"
-          />
-        </div>
-
-        <div className="space-y-2">
-          <Label htmlFor="phone" className="text-white">Phone Number (Optional)</Label>
-          <Input
-            id="phone"
-            name="phone"
-            type="tel"
-            placeholder="+91 98765 43210"
-            className={`bg-slate-950 border-slate-800 text-white placeholder:text-slate-500 ${phoneError ? "border-red-500 focus:border-red-500" : ""}`}
-            onBlur={(e) => {
-              const val = e.target.value.trim();
-              if (!val) {
-                setPhoneError("");
-                return;
-              }
-              const digits = val.replace(/\D/g, "");
-              if (digits.length < 7 || digits.length > 15) {
-                setPhoneError("Enter a valid phone number (7-15 digits).");
-              } else {
-                setPhoneError("");
-              }
-            }}
-            onChange={() => phoneError && setPhoneError("")}
-          />
-          {phoneError && (
-            <p className="text-red-400 text-xs mt-1">{phoneError}</p>
+        <FormField
+          control={form.control}
+          name="businessName"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel className="text-white">Business Name</FormLabel>
+              <FormControl>
+                <Input placeholder="Acme Corp" className="bg-slate-950 border-slate-800 text-white placeholder:text-slate-500" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
           )}
-        </div>
+        />
 
-        <div className="space-y-2">
-          <Label htmlFor="challenge" className="text-white">{challengeLabel}</Label>
-          <Select name="challenge" required onValueChange={(val) => setSelectedChallenge(val ? String(val) : "")}>
-            <SelectTrigger className="w-full bg-slate-950 border-slate-800 text-white">
-              <SelectValue placeholder="Select an option..." />
-            </SelectTrigger>
-            <SelectContent>
-              {challengeOptions.map((option) => (
-                <SelectItem key={option} value={option}>
-                  {option}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
+        <FormField
+          control={form.control}
+          name="email"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel className="text-white">Email Address</FormLabel>
+              <FormControl>
+                <Input type="email" placeholder="you@company.com" className="bg-slate-950 border-slate-800 text-white placeholder:text-slate-500" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name="websiteUrl"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel className="text-white">Website URL (Optional)</FormLabel>
+              <FormControl>
+                <Input type="url" placeholder="https://yourwebsite.com" className="bg-slate-950 border-slate-800 text-white placeholder:text-slate-500" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name="phone"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel className="text-white">Phone Number (Optional)</FormLabel>
+              <FormControl>
+                <Input type="tel" placeholder="+91 98765 43210" className="bg-slate-950 border-slate-800 text-white placeholder:text-slate-500" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name="challenge"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel className="text-white">{challengeLabel}</FormLabel>
+              <Select onValueChange={field.onChange} defaultValue={field.value}>
+                <FormControl>
+                  <SelectTrigger className="bg-slate-950 border-slate-800 text-white">
+                    <SelectValue placeholder="Select an option..." />
+                  </SelectTrigger>
+                </FormControl>
+                <SelectContent>
+                  {challengeOptions.map((option) => (
+                    <SelectItem key={option} value={option}>
+                      {option}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
 
         {selectedChallenge === "Other" && (
-          <div className="space-y-2 animate-in fade-in slide-in-from-top-2 duration-300">
-            <Label htmlFor="otherChallenge" className="text-white">Please specify your challenge</Label>
-            <Input id="otherChallenge" name="otherChallenge" placeholder="Tell us more about your challenge..." required className="bg-slate-950 border-slate-800 text-white placeholder:text-slate-500" />
-          </div>
+          <FormField
+            control={form.control}
+            name="otherChallenge"
+            render={({ field }) => (
+              <FormItem className="animate-in fade-in slide-in-from-top-2 duration-300">
+                <FormLabel className="text-white">Please specify your challenge</FormLabel>
+                <FormControl>
+                  <Input placeholder="Tell us more about your challenge..." className="bg-slate-950 border-slate-800 text-white placeholder:text-slate-500" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
         )}
 
-        {submitError && (
-          <div className="p-3 bg-red-500/10 border border-red-500/20 text-red-400 rounded-lg text-sm">
-            {submitError}
-          </div>
-        )}
-
-        <Button type="submit" size="lg" className="w-full text-base bg-primary text-white hover:bg-primary/90" disabled={isSubmitting}>
-          {isSubmitting ? "Sending..." : ctaText}
+        <Button type="submit" size="lg" className="w-full text-base bg-primary text-white hover:bg-primary/90" disabled={isExecuting}>
+          {isExecuting ? "Sending..." : ctaText}
         </Button>
       </form>
-    </>
+    </Form>
   );
 }

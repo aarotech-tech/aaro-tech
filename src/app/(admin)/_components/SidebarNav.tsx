@@ -17,21 +17,21 @@ export function SidebarNav() {
   return (
     <nav className="flex-1 p-4 space-y-1">
       <Link
-        href="/crm/ai"
+        href="/automations"
         className="flex items-center px-4 py-2.5 text-sm font-medium rounded-md bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 text-white shadow-sm hover:opacity-90 mb-4"
       >
         ✨ Aarotech Copilot
       </Link>
-      <Link href="/crm" className={getLinkClasses("/crm", true)}>
+      <Link href="/dashboard" className={getLinkClasses("/dashboard", true)}>
         Dashboard
       </Link>
-      <Link href="/crm/leads" className={getLinkClasses("/crm/leads")}>
+      <Link href="/sales/leads" className={getLinkClasses("/sales/leads")}>
         Website Leads
       </Link>
-      <Link href="/crm/proposals" className={getLinkClasses("/crm/proposals")}>
+      <Link href="/sales/proposals" className={getLinkClasses("/sales/proposals")}>
         Proposals
       </Link>
-      <Link href="/crm/finance" className={getLinkClasses("/crm/finance")}>
+      <Link href="/finance" className={getLinkClasses("/finance")}>
         Finance
       </Link>
       
@@ -41,20 +41,8 @@ export function SidebarNav() {
         </p>
       </div>
       
-      <Link href="/crm/clients" className={getLinkClasses("/crm/clients", true)}>
-        Clients
-      </Link>
-      <Link href="/crm/projects" className={getLinkClasses("/crm/projects")}>
+      <Link href="/delivery/projects" className={getLinkClasses("/delivery/projects")}>
         Projects
-      </Link>
-      <Link href="/crm/retainers" className={getLinkClasses("/crm/retainers")}>
-        Retainers
-      </Link>
-      <Link href="/crm/contacts" className={getLinkClasses("/crm/contacts")}>
-        Contacts
-      </Link>
-      <Link href="/crm/kb" className={getLinkClasses("/crm/kb")}>
-        Knowledge Base
       </Link>
       
       <div className="pt-4 pb-2">
@@ -63,11 +51,11 @@ export function SidebarNav() {
         </p>
       </div>
       
-      <Link href="/crm/automations" className={getLinkClasses("/crm/automations")}>
+      <Link href="/automations" className={getLinkClasses("/automations")}>
         Automations
       </Link>
-      <Link href="/crm/settings/services" className={getLinkClasses("/crm/settings/services")}>
-        Services Catalog
+      <Link href="/settings" className={getLinkClasses("/settings")}>
+        Settings
       </Link>
     </nav>
   );
