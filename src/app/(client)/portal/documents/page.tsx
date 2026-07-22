@@ -34,7 +34,6 @@ export default async function ClientDocumentsPage() {
           ]}
         />
         <FilterBar 
-          onSearch={() => {}} 
           searchPlaceholder="Search documents..." 
         />
       </div>

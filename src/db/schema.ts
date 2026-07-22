@@ -464,7 +464,11 @@ export const paymentsRelations = relations(payments, ({ one }) => ({
   }),
 }));
 
-export const projectsRelations = relations(projects, ({ many }) => ({
+export const projectsRelations = relations(projects, ({ one, many }) => ({
+  organization: one(organizations, {
+    fields: [projects.organizationId],
+    references: [organizations.id]
+  }),
   tasks: many(tasks),
   milestones: many(milestones),
   invoices: many(invoices),

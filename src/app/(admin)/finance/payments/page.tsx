@@ -57,8 +57,6 @@ export default async function PaymentsPage() {
           <FilterBar 
             searchPlaceholder="Search payments..."
             hasFilters
-            onSearch={() => {}}
-            onFilterClick={() => {}}
           />
         
         <div className="flex-1 overflow-auto">

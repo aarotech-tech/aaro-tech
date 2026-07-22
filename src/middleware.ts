@@ -1,6 +1,6 @@
 import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
-import { USER_TYPES } from "./src/lib/roles";
+import { USER_TYPES } from "@/lib/roles";
 
 const isInternalRoute = createRouteMatcher(["/(admin)(.*)", "/(internal)(.*)"]);
 const isClientRoute = createRouteMatcher(["/(client)(.*)"]);

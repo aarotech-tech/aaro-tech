@@ -59,8 +59,6 @@ export default async function DeliverableReviewsPage() {
           <FilterBar 
             searchPlaceholder="Search deliverables..."
             hasFilters
-            onSearch={() => {}}
-            onFilterClick={() => {}}
           />
         
         <div className="flex-1 overflow-auto">
