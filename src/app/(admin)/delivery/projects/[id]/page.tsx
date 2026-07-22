@@ -8,91 +8,29 @@ import { Badge } from "@/components/ui/badge";
 import { PageHeader } from "@/components/ui/page-header";
 import { notFound } from "next/navigation";
 
-export default async function ProjectDetailPage({ params }: { params: Promise<{ id: string }> }) {
+export default async function ProjectOverviewPage({ params }: { params: Promise<{ id: string }> }) {
   const resolvedParams = await params;
-  const [project] = await db
-    .select({
-      id: projects.id,
-      name: projects.name,
-      status: projects.status,
-      health: projects.health,
-      organizationName: organizations.name,
-    })
-    .from(projects)
-    .leftJoin(organizations, eq(projects.organizationId, organizations.id))
-    .where(eq(projects.id, resolvedParams.id));
-
-  if (!project) notFound();
-
-  // Fetch Tasks
-  const allTasks = await db
-    .select({
-      id: tasks.id,
-      title: tasks.title,
-      status: tasks.status,
-      priority: tasks.priority,
-      assigneeName: users.firstName,
-    })
-    .from(tasks)
-    .leftJoin(users, eq(tasks.assigneeId, users.id))
-    .where(eq(tasks.projectId, resolvedParams.id));
-
-  const initialColumns: KanbanColumn[] = TASK_STATUSES.map((stage) => {
-    const stageTasks = allTasks.filter((t) => t.status === stage.id).map(t => ({
-      ...t,
-      priority: t.priority || "medium",
-    }));
-
-    return {
-      id: stage.id,
-      title: stage.label,
-      items: stageTasks,
-    };
-  });
-
-  // Fetch Deliverables
+  
+  // Fetch Overview Data (Deliverables, etc)
   const projectDeliverables = await db
     .select()
     .from(deliverables)
     .where(eq(deliverables.projectId, resolvedParams.id));
 
   return (
-    <div className="h-full overflow-y-auto flex flex-col">
-      <div className="p-6 pb-0">
-        <PageHeader
-          title={project.name}
-          description={project.organizationName || ""}
-          breadcrumbs={[
-            { label: "Dashboard", href: "/dashboard" },
-            { label: "Delivery", href: "/delivery/projects" },
-            { label: "Projects", href: "/delivery/projects" },
-            { label: project.name }
-          ]}
-          kpiBadges={
-            <>
-              <Badge variant="outline" className="capitalize">{project.status}</Badge>
-              <Badge variant={project.health === 'green' ? 'default' : 'destructive'} className="capitalize ml-2">
-                {project.health} Health
-              </Badge>
-            </>
-          }
-        />
-      </div>
-
-      <div className="flex-1 p-6 pt-0 space-y-6">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 h-full min-h-[500px]">
-        {/* Task Board */}
-        <div className="lg:col-span-2 flex flex-col h-full">
-          <h3 className="text-lg font-semibold mb-3 text-gray-800">Task Board</h3>
-          <div className="flex-1 min-h-0">
-            <TaskBoard initialColumns={initialColumns} />
+    <div className="space-y-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="lg:col-span-2 flex flex-col">
+          <h3 className="text-lg font-semibold mb-3 text-gray-800">Project Overview</h3>
+          <div className="bg-white border border-gray-200 rounded-md p-6">
+            <p className="text-gray-500">More overview widgets will be added here (e.g. open tasks, recent activity).</p>
           </div>
         </div>
 
         {/* Deliverables */}
-        <div className="flex flex-col h-full">
+        <div className="flex flex-col">
           <h3 className="text-lg font-semibold mb-3 text-gray-800">Deliverables</h3>
-          <div className="bg-white border border-gray-200 rounded-md p-4 flex-1 overflow-y-auto">
+          <div className="bg-white border border-gray-200 rounded-md p-4 flex-1">
             {projectDeliverables.length === 0 ? (
               <p className="text-sm text-gray-500 text-center py-8">No deliverables uploaded yet.</p>
             ) : (
@@ -109,7 +47,6 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
               </ul>
             )}
           </div>
-        </div>
         </div>
       </div>
     </div>

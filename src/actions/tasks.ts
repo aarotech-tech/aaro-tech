@@ -15,7 +15,19 @@ export async function updateTaskStatus(input: UpdateTaskStatusInput) {
   
   const parsed = updateTaskStatusSchema.parse(input);
 
-  const updatedTask = await updateTaskStatusService(parsed.taskId, parsed.status, authContext.userId);
+  const task = await db.query.tasks.findFirst({
+    where: eq(tasks.id, parsed.taskId),
+    with: { project: true }
+  });
+  if (!task || !task.project) throw new Error("Task not found");
+
+  const updatedTask = await updateTaskStatusService(
+    parsed.taskId,
+    parsed.status,
+    task.projectId,
+    (task as any).project.organizationId,
+    authContext.userId
+  );
 
   if (updatedTask) {
     // We could emit a "TaskStatusChanged" event if defined in DomainEvent

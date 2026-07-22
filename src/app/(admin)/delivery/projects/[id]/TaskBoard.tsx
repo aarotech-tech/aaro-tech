@@ -4,7 +4,7 @@ import type { KanbanColumn, KanbanItem } from "@/components/ui/kanban";
 import dynamic from "next/dynamic";
 
 const KanbanBoard = dynamic(() => import("@/components/ui/kanban").then(mod => mod.KanbanBoard), { ssr: false });
-import { updateTaskStatus } from "@/actions/tasks";
+import { updateTaskStatusAction } from "@/modules/delivery/actions";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
 
@@ -14,12 +14,12 @@ interface TaskItem extends KanbanItem {
   assigneeName: string | null;
 }
 
-export function TaskBoard({ initialColumns }: { initialColumns: KanbanColumn[] }) {
+export function TaskBoard({ initialColumns, projectId, organizationId }: { initialColumns: KanbanColumn[], projectId: string, organizationId: string }) {
   
   const handleDragEnd = async (taskId: string, sourceColId: string, destColId: string, newIndex: number) => {
     try {
-      const res = await updateTaskStatus({ taskId, status: destColId });
-      if (!res.success) {
+      const res = await updateTaskStatusAction({ taskId, status: destColId, projectId, organizationId }); 
+      if (!res?.data) {
         throw new Error("Failed to update");
       }
     } catch (err) {

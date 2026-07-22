@@ -42,3 +42,36 @@ export const verifyManualPaymentAction = internalActionClient
       return { serverError: e.message || "Failed to verify payment" };
     }
   });
+
+
+import * as FinanceService from "./services";
+
+const recordManualPaymentSchema = z.object({
+  invoiceId: z.string().uuid(),
+  projectId: z.string().uuid(),
+  organizationId: z.string().uuid(),
+  amount: z.number().positive(),
+  method: z.string().min(1),
+  referenceNumber: z.string().optional(),
+  notes: z.string().optional(),
+  paidAt: z.string(),
+});
+
+export const recordManualPaymentAction = internalActionClient
+  .schema(recordManualPaymentSchema)
+  .action(async ({ parsedInput, ctx }) => {
+    const result = await FinanceService.recordManualPaymentService({
+      invoiceId: parsedInput.invoiceId,
+      amount: parsedInput.amount,
+      method: parsedInput.method,
+      referenceNumber: parsedInput.referenceNumber,
+      notes: parsedInput.notes,
+      paidAt: parsedInput.paidAt,
+      userId: ctx.user.id,
+      organizationId: parsedInput.organizationId,
+    });
+    
+    revalidatePath(`/projects/${parsedInput.projectId}/finance`);
+    revalidatePath(`/portal/projects/${parsedInput.projectId}`);
+    return result;
+  });

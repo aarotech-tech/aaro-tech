@@ -1,3 +1,6 @@
+import { db } from "@/db";
+import { invoices, payments, activityLogs } from "@/db/schema";
+import { eq, desc, and } from "drizzle-orm";
 import { FinanceRepository, financeRepository } from "./repositories";
 import { DbTx } from "@/db/types";
 import { emitDomainEvent } from "@/modules/core/events";
@@ -234,3 +237,86 @@ export class FinanceService {
 
 export const financeService = new FinanceService();
 
+
+export async function getProjectInvoicesService(projectId: string) {
+  return db.query.invoices.findMany({
+    where: eq(invoices.projectId, projectId),
+    orderBy: [desc(invoices.createdAt)],
+    with: {
+      payments: true,
+    }
+  });
+}
+
+export async function getInvoicePaymentsService(invoiceId: string) {
+  return db.query.payments.findMany({
+    where: eq(payments.invoiceId, invoiceId),
+    orderBy: [desc(payments.paidAt)],
+  });
+}
+
+export async function recordManualPaymentService(data: {
+  invoiceId: string;
+  amount: number;
+  method: string;
+  referenceNumber?: string;
+  notes?: string;
+  paidAt: string;
+  userId: string;
+  organizationId: string;
+}) {
+  const [payment] = await db.insert(payments).values({
+    invoiceId: data.invoiceId,
+    amount: data.amount,
+    provider: "manual",
+    status: "succeeded",
+    method: data.method,
+    referenceNumber: data.referenceNumber,
+    notes: data.notes,
+    paidAt: new Date(data.paidAt),
+    verifiedAt: new Date(),
+    verifiedBy: data.userId,
+    createdBy: data.userId,
+  }).returning();
+
+  // Update invoice status logic
+  const invoice = await db.query.invoices.findFirst({
+    where: eq(invoices.id, data.invoiceId),
+    with: { payments: true }
+  });
+
+  if (invoice) {
+    // Total paid including this new payment
+    const totalPaid = (invoice as any).payments
+      .filter((p: any) => p.status === "succeeded")
+      .reduce((sum: number, p: any) => sum + p.amount, 0) + payment.amount;
+
+    let newStatus = invoice.status;
+    if (totalPaid >= invoice.amount) {
+      newStatus = "paid";
+    } else if (totalPaid > 0) {
+      newStatus = "partially_paid"; // Assuming we want to track this, but schema defaults 'open' 'paid' 'void'. We can just use 'open' if not fully paid or add 'partially_paid'.
+      // Actually schema says: draft, open, paid, void. So if not fully paid, keep it open.
+      // If we want "partially_paid" we can just push it, drizzle varchar handles any string. Let's stick to "open" and "paid" for safety.
+      if (invoice.status === "open" && totalPaid >= invoice.amount) {
+          newStatus = "paid";
+      }
+    }
+
+    if (newStatus !== invoice.status) {
+      await db.update(invoices).set({ status: newStatus }).where(eq(invoices.id, invoice.id));
+    }
+    
+    // Log activity
+    await db.insert(activityLogs).values({
+      organizationId: data.organizationId,
+      entityType: "invoice",
+      entityId: invoice.id,
+      action: "payment.recorded",
+      userId: data.userId,
+      metadata: JSON.stringify({ paymentId: payment.id, amount: payment.amount, method: payment.method }),
+    });
+  }
+
+  return payment;
+}

@@ -131,5 +131,8 @@ export default withSentryConfig(bundleAnalyzer(nextConfig), {
   // Hides source maps from generated client bundles
   sourcemaps: {
     disable: true
-  }
+  },
+
+  // Disables automatic instrumentation of middleware to prevent build errors with Turbopack/Edge runtime
+  autoInstrumentMiddleware: false,
 });

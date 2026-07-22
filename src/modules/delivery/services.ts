@@ -304,9 +304,7 @@ export async function getClientDeliverables(organizationId: string) {
   .orderBy(desc(deliverables.createdAt));
 }
 
-export async function updateTaskStatusService(taskId: string, status: string, userId: string) {
-  return DeliveryRepo.updateTaskStatus(taskId, status);
-}export async function submitClientReviewService(
+export async function submitClientReviewService(
   deliverableId: string,
   versionId: string,
   action: "approve" | "request_changes",
@@ -372,4 +370,179 @@ export async function updateTaskStatusService(taskId: string, status: string, us
 
   await sendDeliverableClientResponseEmail("info@aarotech.in", deliverable.name, newDeliverableStatus);
   return { orgId };
+}
+
+
+import { db } from "@/db";
+import { projects, tasks, milestones, activityLogs, files } from "@/db/schema";
+import { eq, and, desc, asc } from "drizzle-orm";
+
+export async function getProjectsService(organizationId?: string) {
+  if (organizationId) {
+    return db.query.projects.findMany({
+      where: eq(projects.organizationId, organizationId),
+      orderBy: [desc(projects.createdAt)],
+      with: {
+        organization: true,
+      },
+    });
+  }
+  return db.query.projects.findMany({
+    orderBy: [desc(projects.createdAt)],
+    with: {
+      organization: true,
+    },
+  });
+}
+
+export async function getProjectByIdService(projectId: string) {
+  return db.query.projects.findFirst({
+    where: eq(projects.id, projectId),
+    with: {
+      organization: true,
+    },
+  });
+}
+
+export async function getProjectTasksService(projectId: string) {
+  return db.query.tasks.findMany({
+    where: eq(tasks.projectId, projectId),
+    orderBy: [asc(tasks.createdAt)],
+    with: {
+      assignee: true,
+    },
+  });
+}
+
+export async function getProjectMilestonesService(projectId: string) {
+  return db.query.milestones.findMany({
+    where: eq(milestones.projectId, projectId),
+    orderBy: [asc(milestones.dueDate)],
+  });
+}
+
+export async function getProjectActivitiesService(projectId: string) {
+  return db.query.activityLogs.findMany({
+    where: and(
+      eq(activityLogs.entityType, "project"),
+      eq(activityLogs.entityId, projectId)
+    ),
+    orderBy: [desc(activityLogs.createdAt)],
+    with: {
+      user: true,
+    },
+  });
+}
+
+export async function getProjectFilesService(projectId: string) {
+  return db.query.files.findMany({
+    where: eq(files.projectId, projectId),
+    orderBy: [desc(files.createdAt)],
+    with: {
+      uploadedBy: true,
+    }
+  });
+}
+
+export async function logProjectActivity(
+  organizationId: string,
+  projectId: string,
+  action: string,
+  userId?: string,
+  metadata?: any
+) {
+  await db.insert(activityLogs).values({
+    organizationId,
+    entityType: "project",
+    entityId: projectId,
+    action,
+    userId,
+    metadata: metadata ? JSON.stringify(metadata) : null,
+  });
+}
+
+// Tasks
+export async function createTaskService(data: {
+  projectId: string;
+  organizationId: string;
+  title: string;
+  description?: string;
+  priority?: string;
+  dueDate?: string;
+  assigneeId?: string;
+  userId: string;
+}) {
+  const [task] = await db.insert(tasks).values({
+    projectId: data.projectId,
+    title: data.title,
+    description: data.description,
+    priority: data.priority || "medium",
+    dueDate: data.dueDate ? new Date(data.dueDate) : null,
+    assigneeId: data.assigneeId,
+    createdBy: data.userId,
+    status: "todo",
+  }).returning();
+
+  await logProjectActivity(data.organizationId, data.projectId, "task.created", data.userId, { taskId: task.id, title: task.title });
+  
+  return task;
+}
+
+export async function updateTaskStatusService(
+  taskId: string,
+  status: string,
+  projectId: string,
+  organizationId: string,
+  userId: string
+) {
+  const [task] = await db.update(tasks)
+    .set({ status, updatedAt: new Date() })
+    .where(eq(tasks.id, taskId))
+    .returning();
+
+  await logProjectActivity(organizationId, projectId, "task.status_changed", userId, { taskId: task.id, title: task.title, status });
+  
+  return task;
+}
+
+// Milestones
+export async function createMilestoneService(data: {
+  projectId: string;
+  organizationId: string;
+  name: string;
+  dueDate?: string;
+  userId: string;
+}) {
+  const [milestone] = await db.insert(milestones).values({
+    projectId: data.projectId,
+    name: data.name,
+    dueDate: data.dueDate ? new Date(data.dueDate) : null,
+  }).returning();
+
+  await logProjectActivity(data.organizationId, data.projectId, "milestone.created", data.userId, { milestoneId: milestone.id, name: milestone.name });
+  
+  return milestone;
+}
+
+export async function updateMilestoneStatusService(
+  milestoneId: string,
+  status: string,
+  projectId: string,
+  organizationId: string,
+  userId: string
+) {
+  const [milestone] = await db.update(milestones)
+    .set({ 
+      status, 
+      completedAt: status === "completed" ? new Date() : null,
+      updatedAt: new Date() 
+    })
+    .where(eq(milestones.id, milestoneId))
+    .returning();
+
+  if (status === "completed") {
+    await logProjectActivity(organizationId, projectId, "milestone.completed", userId, { milestoneId: milestone.id, name: milestone.name });
+  }
+
+  return milestone;
 }

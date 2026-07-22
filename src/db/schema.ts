@@ -140,15 +140,39 @@ export const tasks = pgTable("tasks", {
   projectId: uuid("project_id").references(() => projects.id, { onDelete: "cascade" }).notNull(),
   assigneeId: uuid("assignee_id").references(() => users.id, { onDelete: "set null" }),
   title: varchar("title", { length: 255 }).notNull(),
-  status: varchar("status", { length: 50 }).default("todo"), // todo, in_progress, done
+  description: text("description"),
+  status: varchar("status", { length: 50 }).default("todo"), // backlog, todo, in_progress, review, completed
   dueDate: timestamp("due_date"),
-    priority: varchar("priority", { length: 50 }).default("medium"),
+  priority: varchar("priority", { length: 50 }).default("medium"),
+  labels: jsonb("labels"), // array of strings or objects
+  attachments: jsonb("attachments"), // array of file objects
   completedAt: timestamp("completed_at"),
   deletedAt: timestamp("deleted_at"),
   createdBy: uuid("created_by").references(() => users.id, { onDelete: "set null" }),
   updatedBy: uuid("updated_by").references(() => users.id, { onDelete: "set null" }),
-    updatedAt: timestamp("updated_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
   createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const milestones = pgTable("milestones", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  projectId: uuid("project_id").references(() => projects.id, { onDelete: "cascade" }).notNull(),
+  name: varchar("name", { length: 255 }).notNull(),
+  status: varchar("status", { length: 50 }).default("pending"), // pending, completed
+  dueDate: timestamp("due_date"),
+  completedAt: timestamp("completed_at"),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+export const taskComments = pgTable("task_comments", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  taskId: uuid("task_id").references(() => tasks.id, { onDelete: "cascade" }).notNull(),
+  userId: uuid("user_id").references(() => users.id, { onDelete: "cascade" }).notNull(),
+  text: text("text").notNull(),
+  visibility: varchar("visibility", { length: 50 }).default("client_visible"), // client_visible, internal_only
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
 });
 
 export const knowledgeBase = pgTable("knowledge_base", {
@@ -158,8 +182,6 @@ export const knowledgeBase = pgTable("knowledge_base", {
   category: varchar("category", { length: 100 }), // e.g., "SEO", "Sales", "Onboarding"
   createdAt: timestamp("created_at").defaultNow(),
 });
-
-
 
 export const automationLogs = pgTable("automation_logs", {
   id: uuid("id").primaryKey().defaultRandom(),
