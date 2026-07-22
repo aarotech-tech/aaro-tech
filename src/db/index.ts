@@ -1,10 +1,9 @@
 import { neon } from "@neondatabase/serverless";
 import { drizzle } from "drizzle-orm/neon-http";
 import * as schema from "./schema";
-import { validateEnv } from "@/env";
+import { env } from "@/env.mjs";
 
-// Validate env vars immediately upon backend initialization
-validateEnv();
+// Validation happens automatically upon importing env
 
 function getDb() {
   if (!process.env.DATABASE_URL) {

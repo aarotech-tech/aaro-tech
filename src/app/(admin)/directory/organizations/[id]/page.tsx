@@ -3,8 +3,9 @@ import { Building2, Mail, Phone, MapPin, Target, Briefcase, FileText, CreditCard
 import { PageHeader } from "@/components/ui/page-header";
 import { CoreService } from "@/modules/core/services";
 
-export default async function OrganizationDetailPage({ params }: { params: { id: string } }) {
-  const details = await CoreService.getOrganizationDetails(params.id);
+export default async function OrganizationDetailPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
+  const details = await CoreService.getOrganizationDetails(id);
 
   if (!details) {
     notFound();
