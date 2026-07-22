@@ -68,8 +68,6 @@ export function ContactForm({
     }
   });
 
-  // React Hook Form's watch() returns a function that isn't memoized correctly by React Compiler yet.
-  // eslint-disable-next-line react-hooks/incompatible-library
   const selectedChallenge = form.watch("challenge");
 
   const onSubmit = (values: z.infer<typeof contactFormSchema>) => {

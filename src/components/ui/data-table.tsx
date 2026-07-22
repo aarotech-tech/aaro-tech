@@ -100,8 +100,6 @@ export function DataTable<TData, TValue>({
   const activePagination = manualPagination ? (pagination || { pageIndex: 0, pageSize: 10 }) : internalPagination;
   const setActivePagination = manualPagination ? (onPaginationChange || setInternalPagination) : setInternalPagination;
 
-  // TanStack Table's useReactTable() returns functions that aren't memoized correctly by React Compiler yet.
-  // eslint-disable-next-line react-hooks/incompatible-library
   const table = useReactTable({
     data,
     columns,
