@@ -43,7 +43,7 @@ export default function BlogPost({ params }: { params: { slug: string } }) {
 
   // A very simple markdown to HTML parser for standard tags used in the blog data
   const renderMarkdown = (text: string) => {
-    let html = text
+    const html = text
       .replace(/^### (.*$)/gim, '<h3 class="text-2xl font-bold mt-8 mb-4">$1</h3>')
       .replace(/^## (.*$)/gim, '<h2 class="text-3xl font-bold mt-10 mb-6">$1</h2>')
       .replace(/^\* (.*$)/gim, '<li class="ml-6 list-disc mb-2">$1</li>')
