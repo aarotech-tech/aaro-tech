@@ -61,7 +61,7 @@ export default async function Image() {
             marginBottom: "20px",
           }}
         >
-          Get More Leads, Customers, and Revenue for Your Business
+          Trusted Digital Marketing Agency & SEO Company in Trichy
         </h2>
 
         <p

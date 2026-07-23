@@ -211,27 +211,27 @@ export const processSteps = [
 export const caseStudies = [
   {
     id: "cs-1",
-    clientIndustry: "Healthcare Client (Orthopedic)",
-    challenge: "The Clinic faced very low physical walk-ins and was losing patients to heavy local competition.",
-    solution: "We deployed a comprehensive trust-building content strategy to establish medical authority, paired with an aggressive local visibility campaign to drive high footfalls.",
-    outcome: "Increased physical walk-ins by 210% and established a dominant local search presence, drastically reducing reliance on traditional marketing.",
-    image: "/images/showcase/orthopedic.jpeg",
+    clientIndustry: "Healthcare Client (TOSH Clinic)",
+    challenge: "TOSH Clinic, a leading healthcare provider, needed to increase physical patient walk-ins and establish a dominant local search presence in their area.",
+    solution: "Launched targeted Social Media Marketing campaigns on Meta optimized for foot traffic, completely overhauled their Google Business Profile for local SEO, and executed high-intent Google Ads targeting local healthcare search queries.",
+    outcome: "Driven up to 200% growth in physical patient walk-ins while significantly elevating clinic credibility and trust through a cohesive digital footprint across Google and social platforms.",
+    image: "/images/showcase/tosh.jpeg",
   },
   {
     id: "cs-2",
-    clientIndustry: "Local Service Client",
-    challenge: "Started with extremely low initial footfalls and had weak local visibility for their primary services.",
-    solution: "Launched hyper-targeted Meta Ads, fully optimized their Google My Business (GMB) profile, and set up direct lead generation campaigns.",
-    outcome: "Achieved a 300% increase in local foot traffic and generated 200+ highly qualified service leads within the first 60 days.",
-    image: "/images/showcase/services.jpeg",
+    clientIndustry: "Education Client (Shine Academy)",
+    challenge: "Shine Academy was experiencing poor returns from a previous agency and required a reliable, high-volume lead generation funnel to drive new student admissions.",
+    solution: "Deployed high-intent Google Search Ads for admission keywords, launched Meta remarketing campaigns to capture lost leads, and rigorously optimized their landing pages for maximum conversion rates.",
+    outcome: "Generated a massive surge in qualified admissions enquiries, resulting in 500–1000 completed student enrollments over recent months and completely transforming their digital ROI.",
+    image: "/images/showcase/shine-academy.jpeg",
   },
   {
     id: "cs-3",
-    clientIndustry: "Healthcare Client (Skin & Haircare)",
-    challenge: "Struggling to attract new daily patients and competing against long-established clinics in their immediate vicinity.",
-    solution: "Executed highly targeted performance marketing campaigns and optimized their local search presence to immediately gain patient trust.",
-    outcome: "Generated a consistent flow of 70+ new patient consultations per week, effectively doubling their monthly revenue.",
-    image: "/images/showcase/skincare.jpeg",
+    clientIndustry: "Service Client (Gleam Cleaning Service)",
+    challenge: "Gleam Cleaning Service struggled with local visibility and needed a scalable strategy to increase inbound calls, daily bookings, and recurring revenue.",
+    solution: "Developed a comprehensive Local SEO strategy, overhauled their Google Business Profile (GMB) for maximum map pack visibility, cleaned up local citations, and implemented conversion-focused on-page SEO.",
+    outcome: "Scaled daily pre-bookings from ~2 to over 20+ per day, successfully boosting total revenue by ~300% through a massive increase in organic inbound calls.",
+    image: "/images/showcase/gleam.jpeg",
   },
 ];
 
@@ -240,9 +240,9 @@ export const founders = [
     name: "Aaron",
     fullName: "Aaron John",
     role: "Founder & Lead Strategist",
-    bio: "As an elite boutique agency, I personally oversee the high-level strategy for our enterprise and growth-stage clients, ensuring we drive measurable pipeline and revenue.",
+    bio: "I personally oversee the strategy for our clients, ensuring we drive meaningful growth and real results for your business.",
     quote: "Helping businesses generate measurable growth through data-driven digital marketing.",
-    linkedin: "",
+    linkedin: "https://www.linkedin.com/in/aaron-j-028664237/",
     photo: "/images/crew/aaron.jpeg",
   },
   {
@@ -347,3 +347,24 @@ export const faqs = [
     answer: "When you work with us, you're talking to decision-makers who genuinely care about your growth, not layers of account managers. This means faster turnarounds, sharper strategy, and a team that treats your business like their own.",
   },
 ];
+
+export const companyInfo = {
+  name: "Aarotech",
+  tagline: "Trust. Transparency. Growth.",
+  shortDescription: "Aarotech is the most trusted digital marketing agency in Trichy, serving businesses across Tamil Nadu. We combine local SEO services, social media marketing, and creative web development to help local businesses reach more customers.",
+  longDescription: `Aarotech is a preferred digital marketing company based in Trichy (Tiruchirappalli), dedicated to helping small businesses, startups, and growing brands build a strong online presence. As a leading SEO and web development company in Trichy, we proudly serve businesses across Tamil Nadu, including Madurai, Coimbatore, Chennai, Thanjavur, and Tiruppur.
+
+We work with businesses that have great products and services but struggle with effective digital marketing or reaching new customers online. Whether you are a local shop looking to get found on Google Maps with local SEO, a startup building awareness through social media marketing, or a growing company looking for better leads, Aarotech turns your goals into practical digital solutions.
+
+We don't just act as an external vendor; we work closely with you. We take the time to understand your daily challenges and your customers before suggesting a plan. From content creation and social media management to running high-ROI Google ads, custom website development, and local SEO services in Trichy, we use proven methods to help your business grow.
+
+Our approach is built on trust, transparency, and accountability. We give you honest recommendations, take responsibility for our work, and focus on building long-term relationships rather than just finishing a quick project. 
+
+Aarotech exists to make professional digital marketing services accessible and affordable for all businesses across Tamil Nadu. We work alongside you to help you connect with your community and increase your revenue steadily.`,
+  mission: "To empower businesses with straightforward, effective digital marketing solutions that improve local search visibility, attract real customers, and drive sustainable growth.",
+  vision: "To be recognized as Tamil Nadu's most trusted digital marketing agency for local businesses, known for delivering transparent results and building long-term relationships.",
+  purpose: "To bridge the gap between hard-working businesses and their local customers by using expert digital marketing tools to create practical growth opportunities.",
+  email: "info@aarotech.in",
+  website: "aarotech.in",
+  location: "Trichy"
+};

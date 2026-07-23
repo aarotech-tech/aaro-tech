@@ -7,10 +7,10 @@ This document serves as the master checklist for collecting all real business in
 | Item | Required | Current Status | File(s) | Priority |
 |------|----------|---------------|----------|----------|
 | Company Name | Official legal and brand name | COMPLETE (`Aarotech`) | `src/app/layout.tsx`, `seo.ts` | P0 |
-| Tagline | Short brand tagline | MOCK | `src/app/layout.tsx` | P1 |
-| Short Description | 1-2 sentence description | MOCK (Generic text) | `src/app/layout.tsx` | P0 |
-| Long Description | Full company about text | MISSING | `src/data/content.ts` | P1 |
-| Mission & Vision | Core company goals | MISSING | `src/data/content.ts` | P1 |
+| Tagline | Short brand tagline | COMPLETE | `src/data/content.ts` | P1 |
+| Short Description | 1-2 sentence description | COMPLETE | `src/app/layout.tsx`, `src/data/content.ts` | P0 |
+| Long Description | Full company about text | COMPLETE | `src/data/content.ts` | P1 |
+| Mission & Vision | Core company goals | COMPLETE | `src/data/content.ts` | P1 |
 | Company Story | Background/Founding story | MISSING | N/A | P2 |
 | Years of Experience | Numeric value | MISSING | `src/app/page.tsx` | P2 |
 | Team Size | Numeric value | MISSING | N/A | P3 |
@@ -30,9 +30,9 @@ This document serves as the master checklist for collecting all real business in
 |------|----------|---------------|----------|----------|
 | Primary Logo | High-res transparent PNG/SVG | MOCK (`footer-logo-primary.png`) | `src/components/layout/Header.tsx` | P0 |
 | Favicon | .ico / .png for browser tab | COMPLETE (`icon.png`) | `src/app/icon.png` | P0 |
-| Brand Colors | Hex codes (Primary/Secondary) | MOCK (`slate` theme used) | `tailwind.config.ts` | P0 |
+| Brand Colors | Hex codes (Primary/Secondary) | COMPLETE (`#FA0201` & `#020617`) | `src/app/globals.css` | P0 |
 | Fonts | Primary and Secondary Fonts | COMPLETE (`Inter`) | `src/app/layout.tsx` | P0 |
-| Brand Guidelines | Document for consistency | MISSING | N/A | P2 |
+| Brand Guidelines | Document for consistency | COMPLETE | `src/app/globals.css` | P2 |
 | Hero Images | High-res background/hero images | MOCK (`placeholder.svg`) | `src/app/page.tsx` | P0 |
 | Team Photos | Professional headshots | MOCK (`/images/crew/*.jpeg`) | `src/data/content.ts` | P1 |
 
@@ -55,11 +55,11 @@ This document serves as the master checklist for collecting all real business in
 
 | Item | Required | Current Status | File(s) | Priority |
 |------|----------|---------------|----------|----------|
-| Client Name | Real client/company name | MOCK ("Healthcare Client") | `src/data/content.ts` | P0 |
-| Industry | Client industry | MOCK | `src/data/content.ts` | P0 |
-| Problem | Initial challenge faced | MOCK (Generic text) | `src/data/content.ts` | P0 |
-| Solution | Exact services provided | MOCK | `src/data/content.ts` | P0 |
-| Outcomes / Metrics | Hard numbers (e.g., +210% ROI) | MOCK | `src/data/content.ts` | P0 |
+| Client Name | Real client/company name | COMPLETE (Shine Academy, Gleam, Tosh) | `src/data/content.ts` | P0 |
+| Industry | Client industry | COMPLETE | `src/data/content.ts` | P0 |
+| Problem | Initial challenge faced | COMPLETE | `src/data/content.ts` | P0 |
+| Solution | Exact services provided | COMPLETE | `src/data/content.ts` | P0 |
+| Outcomes / Metrics | Hard numbers (e.g., +210% ROI) | COMPLETE | `src/data/content.ts` | P0 |
 | Case Study Images | Real campaign/website screenshots | MOCK (`/images/showcase/*.jpeg`) | `src/data/content.ts` | P0 |
 | Client Logo | Permission to use logo | MOCK (`tosh.jpeg`, etc.) | `src/data/content.ts` | P1 |
 
@@ -93,7 +93,7 @@ This document serves as the master checklist for collecting all real business in
 | Full Names | Suriyanarayanan, Aaron, Susinthiran | COMPLETE | `src/data/content.ts` | P0 |
 | Roles | Exact job titles | COMPLETE | `src/data/content.ts` | P0 |
 | Bios | Real background / experience | COMPLETE | `src/data/content.ts` | P1 |
-| LinkedIn URLs | Direct links to profiles | MISSING (Empty strings) | `src/data/content.ts` | P1 |
+| LinkedIn URLs | Direct links to profiles | COMPLETE (Aaron & Surya, Susinthran pending) | `src/data/content.ts` | P1 |
 | Team Photos | Real headshots | COMPLETE | `src/data/content.ts` | P0 |
 
 ## 8. Contact

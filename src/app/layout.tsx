@@ -18,19 +18,19 @@ export const viewport: Viewport = {
 
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || process.env.SITE_URL || "https://aarotech.in"),
-  title: "Aarotech | Digital Marketing Agency in Trichy, Tamil Nadu",
-  description: "Aarotech is Trichy's leading digital marketing agency. We help businesses across Tiruchirappalli and Tamil Nadu grow with SEO, web design, paid ads, and social media.",
+  title: "Aarotech | Trusted Digital Marketing Agency & SEO Company in Trichy",
+  description: "Aarotech is Trichy's preferred digital marketing company. We provide expert SEO services, social media marketing, and web development to help local businesses grow online with complete transparency.",
   openGraph: {
-    title: "Aarotech | Digital Marketing Agency in Trichy, Tamil Nadu",
-    description: "Aarotech is Trichy's leading digital marketing agency. We help businesses across Tiruchirappalli and Tamil Nadu grow with SEO, web design, paid ads, and social media.",
+    title: "Aarotech | Trusted Digital Marketing Agency & SEO Company in Trichy",
+    description: "Aarotech is Trichy's preferred digital marketing company. We provide expert SEO services, social media marketing, and web development to help local businesses grow online with complete transparency.",
     siteName: "Aarotech",
     locale: "en_IN",
     type: "website",
   },
   twitter: {
     card: "summary_large_image",
-    title: "Aarotech | Digital Marketing Agency in Trichy, Tamil Nadu",
-    description: "Aarotech is Trichy's leading digital marketing agency. We help businesses across Tiruchirappalli and Tamil Nadu grow with SEO, web design, paid ads, and social media.",
+    title: "Aarotech | Trusted Digital Marketing Agency & SEO Company in Trichy",
+    description: "Aarotech is Trichy's preferred digital marketing company. We provide expert SEO services, social media marketing, and web development to help local businesses grow online with complete transparency.",
   },
 };
 

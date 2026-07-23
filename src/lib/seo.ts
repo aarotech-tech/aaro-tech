@@ -40,7 +40,7 @@ export function generateWebSiteSchema() {
 }
 
 // Schema for Local Business (Homepage or City pages)
-export function generateLocalBusinessSchema(city = PRIMARY_CITY, description = "Digital Marketing Agency in Trichy") {
+export function generateLocalBusinessSchema(city = PRIMARY_CITY, description = "Trusted Digital Marketing Agency & SEO Company in Trichy") {
   return {
     "@context": "https://schema.org",
     "@type": "LocalBusiness",

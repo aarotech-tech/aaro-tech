@@ -1,9 +1,9 @@
-export type ServiceCategory = 
-  | "Website Development" 
-  | "SEO" 
-  | "Social Media Marketing" 
-  | "Branding" 
-  | "Content Creation" 
+export type ServiceCategory =
+  | "Website Development"
+  | "SEO"
+  | "Social Media Marketing"
+  | "Branding"
+  | "Content Creation"
   | "Graphic Design"
   | "Marketing Campaigns";
 
@@ -44,165 +44,170 @@ export interface Project {
 export const projects: Project[] = [
   {
     id: "cs-1",
-    title: "Complete Rebrand & Digital Positioning",
-    slug: "nexus-branding",
-    industry: "Financial Services",
-    serviceCategory: "Branding",
-    client: "Nexus Wealth",
-    clientOverview: "Nexus Wealth is a prominent, traditional wealth management firm that has successfully served high-net-worth individuals for over two decades. However, as wealth transfers to the next generation, they found themselves struggling to attract millennial and Gen-Z clients who prefer digital-first experiences and modern aesthetics.",
-    heroImage: "https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&q=80&w=1200",
+    title: "Getting More Local Patients for Healthcare",
+    slug: "tosh-clinic-local-seo",
+    industry: "Healthcare",
+    serviceCategory: "SEO",
+    client: "TOSH Clinic",
+    clientOverview: "TOSH Clinic is a well-known orthopedic and healthcare provider in Trichy. Despite having excellent doctors and facilities, they were struggling to attract a steady stream of new patients online. Their local search presence was weak, allowing newer clinics to capture their potential patients simply by having a better optimized Google Business Profile.",
+    heroImage: "https://images.unsplash.com/photo-1538108149393-fbbd81895907?auto=format&fit=crop&q=80&w=1200",
     gallery: [
-      "https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&q=80&w=1200",
-      "https://images.unsplash.com/photo-1600880292203-757bb62b4baf?auto=format&fit=crop&q=80&w=1200",
-      "https://images.unsplash.com/photo-1553413077-190dd305871c?auto=format&fit=crop&q=80&w=1200"
+      "https://images.unsplash.com/photo-1538108149393-fbbd81895907?auto=format&fit=crop&q=80&w=1200",
+      "https://images.unsplash.com/photo-1551076805-e18690c5e53b?auto=format&fit=crop&q=80&w=1200"
     ],
-    duration: "2 Months",
-    websiteUrl: "https://example.com",
+    duration: "Ongoing",
     businessChallenge: [
-      "Outdated visual identity that looked like a 1990s bank.",
-      "Inconsistent branding across marketing materials.",
-      "Failing to resonate with millennial and Gen-Z demographics.",
-      "No clear brand voice or positioning strategy."
+      "Not showing up in local 'near me' searches for orthopedic doctors.",
+      "Inconsistent contact details online confusing search engines and patients.",
+      "Low patient walk-ins coming from digital marketing channels.",
+      "Lack of a clear social media plan to build trust and connect with the community."
     ],
     research: [
-      "Conducted focus groups with millennial high-net-worth individuals to understand their wealth management expectations.",
-      "Analyzed top modern fintech competitors to identify design trends and communication styles.",
-      "Audited Nexus Wealth's entire existing marketing collateral to identify brand inconsistencies."
+      "Looked closely at the top 10 competing clinics in a 20km radius.",
+      "Analyzed what local patients were actually searching for online.",
+      "Checked their existing Google Business Profile and found missing services and unoptimized photos."
     ],
     strategy: [
-      "Shift the narrative from 'traditional stability' to 'modern, transparent wealth growth'.",
-      "Introduce a vibrant, digital-native palette with brutalist typographic elements to signal disruption while maintaining trust.",
-      "Standardize the brand voice to be educational, transparent, and approachable."
+      "Update and improve the Google Business Profile (GMB) to show up in local map searches.",
+      "Run focused Facebook and Instagram ads designed specifically to drive foot traffic and direct phone calls.",
+      "Use Google Search Ads targeting specific treatments to reach people actively looking for help."
     ],
     execution: [
-      "Designed a complete new logo suite and typography system.",
-      "Developed a comprehensive 60-page brand guideline document.",
-      "Redesigned all client-facing materials including pitch decks, business cards, and social media templates."
+      "Updated their entire GMB profile, adding regular posts, detailed service lists, and clear clinic photos.",
+      "Set up proper tracking to measure exactly which campaigns were bringing in booked appointments.",
+      "Created helpful, simple video content featuring their doctors explaining common procedures.",
+      "Fixed over 40 local directory listings to make sure their phone number and address were correct everywhere."
     ],
     deliverables: [
-      "Logo Suite",
-      "Brand Guidelines",
-      "Color Palette & Typography",
-      "Pitch Decks",
-      "Social Media Templates",
-      "Business Cards"
+      "Local SEO Audit & Setup",
+      "Google Business Profile Optimization",
+      "Facebook & Google Ads Management",
+      "Social Media Content Plan",
+      "Website Conversion Improvements"
     ],
     outcome: [
-      { label: "Demographic Shift", value: "+40% Millennial Clients", isQuantitative: true },
-      { label: "Brand Consistency", value: "100% unified visual identity", isQuantitative: false }
+      { label: "Walk-ins", value: "200% growth in physical patient walk-ins", isQuantitative: true },
+      { label: "Visibility", value: "350% increase in Google Map views", isQuantitative: true },
+      { label: "Ad Spend", value: "Reduced Cost-Per-Acquisition (CPA) by 45%", isQuantitative: true }
     ],
     lessonsLearned: [
-      "Traditional firms are often hesitant to embrace bold colors; presenting competitive analysis early helped ease this transition.",
-      "A brand guidelines document is only effective if the client's internal team is trained on how to use it."
+      "In healthcare marketing, trust is everything. Featuring real doctors in videos worked 4x better than generic stock photos.",
+      "Patients in pain don't want to browse; they want to call. Adding direct-call buttons on mobile ads brought in great results."
     ],
-    technologiesUsed: ["Figma", "Adobe Illustrator", "Adobe InDesign"],
-    relatedServices: ["branding", "digital-advertising"],
+    technologiesUsed: ["Meta Ads", "Google Ads", "Google Business Profile", "Ahrefs", "Google Analytics"],
+    relatedServices: ["seo", "digital-advertising", "social-media-marketing"],
     isNDA: false
   },
   {
     id: "cs-2",
-    title: "Local SEO Dominance for Retail Chain",
-    slug: "urban-seo",
-    industry: "Retail",
-    serviceCategory: "SEO",
-    client: "Urban Outfitters Regional",
-    clientOverview: "A fast-growing regional retail chain with 12 physical store locations across Tamil Nadu, specializing in contemporary fashion.",
-    heroImage: "https://images.unsplash.com/photo-1441986300917-64674bd600d8?auto=format&fit=crop&q=80&w=1200",
+    title: "Increasing Student Admissions for Education",
+    slug: "shine-academy-lead-gen",
+    industry: "Education",
+    serviceCategory: "Marketing Campaigns",
+    client: "Shine Academy",
+    clientOverview: "Shine Academy is a respected educational institution offering specialized courses. However, after a bad experience with a previous marketing agency, they were facing a drop in new student admissions. They needed a reliable, transparent way to get more students to enroll for their upcoming batches.",
+    heroImage: "https://images.unsplash.com/photo-1523240795612-9a054b0db644?auto=format&fit=crop&q=80&w=1200",
     gallery: [
-      "https://images.unsplash.com/photo-1441986300917-64674bd600d8?auto=format&fit=crop&q=80&w=1200"
+      "https://images.unsplash.com/photo-1523240795612-9a054b0db644?auto=format&fit=crop&q=80&w=1200",
+      "https://images.unsplash.com/photo-1513258496099-48166314a708?auto=format&fit=crop&q=80&w=1200"
     ],
-    duration: "6 Months",
+    duration: "Ongoing",
     businessChallenge: [
-      "Inconsistent NAP (Name, Address, Phone) data across the web.",
-      "Unoptimized Google Business Profiles causing poor map pack visibility.",
-      "No location-specific landing pages on their main website.",
-      "Low volume of online reviews compared to local competitors."
+      "Burned by a previous agency, leading to skepticism and a tight budget.",
+      "Cost to acquire a lead was too high, and the leads they did get were often poor quality.",
+      "Website landing pages were slow and hard to use on mobile phones.",
+      "No system in place to follow up with students who visited the site but didn't sign up right away."
     ],
     research: [
-      "Audited all 12 locations on Google Maps and 50+ local directories.",
-      "Identified top search terms for fashion retail in their specific neighborhoods.",
-      "Analyzed competitor review generation strategies."
+      "Checked the previous agency's Google and Facebook ad accounts to see where money was being wasted.",
+      "Mapped out the steps a student takes from seeing an ad to finally enrolling.",
+      "Looked at competitor websites to see what was missing on Shine Academy's pages."
     ],
     strategy: [
-      "Standardize all directory listings using a centralized data management approach.",
-      "Create 12 unique, highly-optimized location landing pages with LocalBusiness Schema.",
-      "Implement an automated point-of-sale review request system."
+      "Stop the old, wasteful campaigns and build a clear, targeted Google Search Ads plan.",
+      "Create fast, mobile-friendly landing pages for each specific course they offered.",
+      "Run a 30-day Facebook remarketing campaign to gently remind undecided parents and students to enroll."
     ],
     execution: [
-      "Developed individual location pages detailing store hours, specific inventory, and local team photos.",
-      "Optimized Google Business Profiles with fresh content, FAQs, and weekly update posts.",
-      "Rolled out an SMS-based review generation campaign post-purchase."
+      "Started new Google Search campaigns focusing only on people actively searching for 'admissions'.",
+      "Built 5 custom landing pages that load quickly to keep visitors from leaving.",
+      "Set up proper tracking so the academy knew exactly where their best students were coming from.",
+      "Created simple, clear ads highlighting batch deadlines and seat availability."
     ],
     deliverables: [
-      "12 Location Landing Pages",
-      "Optimized Google Business Profiles",
-      "Automated Review System",
-      "Local Citation Audit & Fix"
+      "Google Search Ads Setup",
+      "Facebook Remarketing",
+      "Custom Landing Pages",
+      "Proper Analytics Tracking",
+      "Ad Design & Copywriting"
     ],
     outcome: [
-      { label: "Visibility", value: "215% Increase in Local Search Impressions", isQuantitative: true },
-      { label: "Foot Traffic", value: "+45% increase in direction requests", isQuantitative: true },
-      { label: "Reviews", value: "Generated 500+ new 5-star reviews", isQuantitative: true }
+      { label: "Admissions", value: "500–1000 completed student enrollments", isQuantitative: true },
+      { label: "Lead Quality", value: "65% increase in lead-to-admission conversion rate", isQuantitative: true },
+      { label: "Cost", value: "Reduced Cost-Per-Lead by 55% within the first month", isQuantitative: true }
     ],
     lessonsLearned: [
-      "Local SEO requires physical validation. Ensuring consistency between the physical store's signage and digital footprint was crucial for Google's verification process.",
-      "Customers are 3x more likely to leave a review if asked via SMS within 2 hours of leaving the store."
+      "In education, both the student and the parent are involved in the decision. Ad text needs to speak to both of them.",
+      "A fast website makes a huge difference. Making the page load just 2 seconds faster doubled the number of sign-ups."
     ],
-    technologiesUsed: ["Google Business Profile", "Ahrefs", "Schema Markup", "Twilio API (for reviews)"],
-    relatedServices: ["seo"],
+    technologiesUsed: ["Google Ads", "Meta Ads", "Google Tag Manager", "Next.js (Landing Pages)", "Facebook CAPI"],
+    relatedServices: ["marketing-campaigns", "digital-advertising", "website-development"],
     isNDA: false
   },
   {
     id: "cs-3",
-    title: "Headless E-Commerce Migration",
-    slug: "retail-headless",
-    industry: "E-Commerce",
-    serviceCategory: "Website Development",
-    client: "Global Threads",
-    clientOverview: "Global Threads is a high-volume online fashion retailer serving a global customer base. They process thousands of transactions daily.",
-    heroImage: "https://images.unsplash.com/photo-1661956602116-aa6865609028?auto=format&fit=crop&q=80&w=1200",
+    title: "Increasing Calls & Bookings with Local SEO",
+    slug: "gleam-cleaning-local-seo",
+    industry: "Service Industry",
+    serviceCategory: "SEO",
+    client: "Gleam Cleaning Service",
+    clientOverview: "Gleam Cleaning Service is a trusted residential and commercial cleaning company. While they provided great service, local customers couldn't find them online. They relied heavily on word-of-mouth and needed a consistent way to increase daily phone calls, get more bookings, and find regular commercial cleaning jobs.",
+    heroImage: "https://images.unsplash.com/photo-1581578731548-c64695cc6952?auto=format&fit=crop&q=80&w=1200",
     gallery: [
-      "https://images.unsplash.com/photo-1661956602116-aa6865609028?auto=format&fit=crop&q=80&w=1200"
+      "https://images.unsplash.com/photo-1581578731548-c64695cc6952?auto=format&fit=crop&q=80&w=1200",
+      "https://images.unsplash.com/photo-1527515637462-cff94eecc1ac?auto=format&fit=crop&q=80&w=1200"
     ],
-    duration: "4 Months",
+    duration: "Ongoing",
     businessChallenge: [
-      "Poor Core Web Vitals scores negatively impacting organic search rankings.",
-      "Slow time-to-interactive causing high bounce rates on mobile devices.",
-      "Inability to create highly customized, interactive product experiences within standard Shopify templates.",
-      "Difficulties in integrating multi-region pricing and content natively."
+      "Not showing up on the first page of Google for basic cleaning services.",
+      "Struggling to get daily bookings, averaging only about 2 per day.",
+      "No easy way for happy customers to leave online reviews.",
+      "The website didn't have specific pages for services like Deep Cleaning or Office Cleaning."
     ],
     research: [
-      "Audited the existing Shopify monolithic architecture and identified massive javascript payloads from third-party apps.",
-      "Conducted user testing which revealed checkout abandonment due to slow cart loading times."
+      "Ran a full check of their website and local online directories.",
+      "Found that competitors were ranking higher simply because they had more Google Reviews.",
+      "Checked local search trends to see what specific cleaning services people in the area were looking for."
     ],
     strategy: [
-      "Decouple the frontend from the backend (Headless Architecture).",
-      "Use Next.js for blazing-fast static generation and server-side rendering.",
-      "Retain Shopify as the backend commerce engine via the Storefront API."
+      "Focus on getting their Google Business Profile to show up in the local map pack.",
+      "Add new, clear pages to their website for every specific cleaning service they offered.",
+      "Set up an automated system to ask customers for a review after a job was finished."
     ],
     execution: [
-      "Built a custom React-based design system from scratch.",
-      "Integrated Sanity CMS to give their marketing team total control over non-product pages.",
-      "Implemented Algolia for instant, typo-tolerant predictive search.",
-      "Redesigned the mobile checkout flow to reduce friction."
+      "Updated their Google Business Profile and made sure their contact details matched across 50+ local websites.",
+      "Wrote helpful, local-focused descriptions for their new website service pages.",
+      "Connected an SMS tool that texts a review link to customers right after a cleaning job is done.",
+      "Improved the website's titles and descriptions to encourage more clicks from search results."
     ],
     deliverables: [
-      "Custom Next.js Frontend",
-      "Headless Shopify Integration",
-      "Sanity CMS Implementation",
-      "Algolia Search Integration"
+      "Local SEO Plan",
+      "New Website Service Pages",
+      "Automated Review System via SMS",
+      "Online Directory Cleanup",
+      "Website Text Optimization"
     ],
     outcome: [
-      { label: "Performance", value: "70% Faster Page Loads", isQuantitative: true },
-      { label: "Revenue", value: "+2.4% Conversion Rate Increase", isQuantitative: true },
-      { label: "SEO", value: "Passed all Core Web Vitals", isQuantitative: true }
+      { label: "Bookings", value: "Grew daily pre-bookings from ~2 to 20+", isQuantitative: true },
+      { label: "Revenue", value: "Boosted total revenue by ~300% within 6 months", isQuantitative: true },
+      { label: "Search Traffic", value: "400% increase in organic local search visits", isQuantitative: true }
     ],
     lessonsLearned: [
-      "Headless migrations require rigorous QA to ensure state management (like cart syncing) remains flawless across different devices and network conditions.",
-      "Training the marketing team on the new CMS (Sanity) early in the process prevented launch delays."
+      "For home service businesses, getting 5-star reviews is the best way to get more calls. Automating the ask made it easy.",
+      "Having a dedicated page for 'Office Cleaning' works much better than just listing it on a general 'Our Services' page."
     ],
-    technologiesUsed: ["Next.js", "React", "Shopify Storefront API", "Sanity CMS", "Algolia"],
-    relatedServices: ["website-development", "seo"],
-    isNDA: true
+    technologiesUsed: ["Google Business Profile", "Ahrefs", "Schema Markup", "Twilio API (for SMS)"],
+    relatedServices: ["seo", "content-creation"],
+    isNDA: false
   }
 ];

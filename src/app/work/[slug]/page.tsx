@@ -216,14 +216,14 @@ export default async function WorkPage({ params }: Props) {
       </section>
 
       {/* 5. Outcome & Impact */}
-      <section className="py-24 bg-primary text-white">
+      <section className="py-24 bg-slate-950 text-white">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h2 className="text-3xl md:text-5xl font-bold mb-16">Business Outcome & Impact</h2>
           <div className="grid md:grid-cols-2 gap-8">
             {study.outcome.map((stat, idx) => (
-              <div key={idx} className="bg-white/10 p-8 rounded-3xl border border-white/20 backdrop-blur-sm">
-                <div className="text-4xl md:text-5xl font-extrabold mb-2">{stat.value}</div>
-                {stat.label && <div className="text-lg text-primary-100 font-medium">{stat.label}</div>}
+              <div key={idx} className="bg-white/5 p-8 rounded-3xl border border-white/10 backdrop-blur-sm hover:border-primary/50 transition-colors duration-300">
+                <div className="text-3xl md:text-4xl font-extrabold mb-3 leading-tight">{stat.value}</div>
+                {stat.label && <div className="text-lg text-primary font-bold tracking-wider uppercase">{stat.label}</div>}
               </div>
             ))}
           </div>

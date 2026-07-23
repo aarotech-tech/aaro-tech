@@ -23,13 +23,14 @@ export function Hero() {
               </span>
               Accepting new clients
             </div>
+            <h1 className="sr-only">Trusted Digital Marketing Agency in Trichy, Tamil Nadu</h1>
             <TextReveal 
-              text="Get More Leads, Customers, and Revenue for Your Business" 
+              text="Grow Your Business with Trichy's Most Trusted Digital Marketing Agency" 
               className="text-4xl md:text-5xl lg:text-6xl font-extrabold tracking-tighter leading-[1.1] max-w-3xl mb-4 [text-shadow:_0_4px_16px_rgb(0_0_0_/_30%)]" 
               delay={2}
             />
             <p className="text-lg md:text-xl text-white/90 max-w-2xl mb-6 leading-relaxed animate-slide-up-fade" style={{ animationDelay: "0.3s" }}>
-              We help businesses generate more leads, improve online visibility, and grow revenue through high-converting websites, SEO, advertising, and social media.
+              We are a leading SEO and web development company helping local businesses generate more leads, improve online visibility, and grow revenue through expert digital marketing.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 w-full sm:w-auto mb-2 animate-slide-up-fade" style={{ animationDelay: "0.4s" }}>
               <ContactPopup>
