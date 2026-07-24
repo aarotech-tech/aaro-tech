@@ -1,4 +1,5 @@
 import { getClientProposalView } from "@/modules/sales/services";
+import crypto from "crypto";
 import { notFound } from "next/navigation";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -34,7 +35,7 @@ export default async function PublicProposalPage({
       notFound(); // Link expired
     }
 
-    const crypto = require("crypto");
+
     const secret = process.env.PROPOSAL_SECRET || process.env.JWT_SECRET || "default_insecure_secret_for_dev";
     const expectedSig = crypto.createHmac("sha256", secret).update(`${proposal.id}:${expires}`).digest("hex");
     
@@ -85,7 +86,12 @@ export default async function PublicProposalPage({
 
         {/* Signature Area */}
         {proposal.status === 'sent' && (
-          <ProposalSignatureClient proposalId={proposal.id} organizationName={proposal.organizationName} />
+          <ProposalSignatureClient 
+            proposalId={proposal.id} 
+            organizationName={proposal.organizationName} 
+            sig={sig}
+            expires={expires}
+          />
         )}
 
         {proposal.status === 'accepted' && (

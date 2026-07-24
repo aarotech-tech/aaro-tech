@@ -92,6 +92,12 @@ describe("Sales & CRM - Milestone 2", () => {
       // No auth required for public action
       mockAuth.mockResolvedValue({ userId: null, orgId: null });
 
+      // Generate valid signature
+      const crypto = require("crypto");
+      const expires = (Date.now() + 1000000).toString();
+      const secret = process.env.PROPOSAL_SECRET || process.env.JWT_SECRET || "default_insecure_secret_for_dev";
+      const sig = crypto.createHmac("sha256", secret).update(`${proposal.id}:${expires}`).digest("hex");
+
       const result = await publicApproveProposalAction({
         proposalId: proposal.id,
         signatureText: "Jane Doe Signature",
@@ -122,6 +128,12 @@ describe("Sales & CRM - Milestone 2", () => {
         expiresAt: pastDate
       }).returning();
 
+      // Generate valid signature
+      const crypto = require("crypto");
+      const expires = (Date.now() + 1000000).toString();
+      const secret = process.env.PROPOSAL_SECRET || process.env.JWT_SECRET || "default_insecure_secret_for_dev";
+      const sig = crypto.createHmac("sha256", secret).update(`${proposal.id}:${expires}`).digest("hex");
+
       const result = await publicApproveProposalAction({
         proposalId: proposal.id,
         signatureText: "Jane Doe Expired",
@@ -147,6 +159,12 @@ describe("Sales & CRM - Milestone 2", () => {
         status: "accepted", // Already accepted
         expiresAt: futureDate
       }).returning();
+
+      // Generate valid signature
+      const crypto = require("crypto");
+      const expires = (Date.now() + 1000000).toString();
+      const secret = process.env.PROPOSAL_SECRET || process.env.JWT_SECRET || "default_insecure_secret_for_dev";
+      const sig = crypto.createHmac("sha256", secret).update(`${proposal.id}:${expires}`).digest("hex");
 
       const result = await publicApproveProposalAction({
         proposalId: proposal.id,

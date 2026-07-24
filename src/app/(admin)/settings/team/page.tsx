@@ -3,11 +3,21 @@ import { Card, CardHeader, CardTitle, CardContent, CardDescription } from "@/com
 import { TeamTable } from "./TeamTable";
 import { PageHeader } from "@/components/ui/page-header";
 
-export default function TeamSettingsPage() {
-  const dummyTeam = [
-    { id: 1, name: "Admin User", email: "admin@aarotech.in", role: "Owner" },
-    { id: 2, name: "Jane Doe", email: "jane@aarotech.in", role: "Manager" },
-  ];
+import { db } from "@/db";
+import { users } from "@/db/schema";
+import { requireInternalUser } from "@/lib/auth";
+
+export default async function TeamSettingsPage() {
+  await requireInternalUser();
+  const team = await db.select().from(users);
+  
+  // Format to match TeamTable props, if needed. TeamTable expects {id, name, email, role}
+  const formattedTeam = team.map(u => ({
+    id: u.id,
+    name: `${u.firstName || ''} ${u.lastName || ''}`.trim() || 'Unknown',
+    email: u.email,
+    role: u.globalRole || u.role || 'Member',
+  }));
 
   return (
     <div className="h-full overflow-y-auto flex flex-col">
@@ -33,7 +43,7 @@ export default function TeamSettingsPage() {
           <CardDescription>People currently in your organization.</CardDescription>
         </CardHeader>
         <CardContent>
-          <TeamTable team={dummyTeam} />
+          <TeamTable team={formattedTeam} />
         </CardContent>
       </Card>
         </div>

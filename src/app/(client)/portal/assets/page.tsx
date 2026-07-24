@@ -7,18 +7,8 @@ import { PageHeader } from "@/components/ui/page-header";
 import { requireAuthenticatedUser, requireOrganizationAccess } from "@/lib/auth";
 import { portalService } from "@/modules/portal/services";
 
-// Server action for MVP uploading
-async function uploadMockAsset(formData: FormData) {
-  "use server";
-  const name = formData.get("name") as string;
-  const orgId = formData.get("organizationId") as string;
-  
-  if (!name || !orgId) return;
-  await requireOrganizationAccess(orgId);
-  
-  await portalService.uploadMockAsset(orgId, name);
-  revalidatePath("/portal/assets");
-}
+import { UploadDropzone } from "@/lib/uploadthing";
+import { CoreService } from "@/modules/core/services";
 
 export default async function ClientAssetsPage() {
   const user = await requireAuthenticatedUser();
@@ -36,7 +26,7 @@ export default async function ClientAssetsPage() {
   }
 
   const { myOrg } = membershipData;
-  const assets = await portalService.getClientAssets(myOrg.id);
+  const assets = await CoreService.getOrganizationFiles(myOrg.id);
 
   return (
     <div className="h-full overflow-y-auto flex flex-col">
@@ -49,19 +39,25 @@ export default async function ClientAssetsPage() {
             { label: "Assets" }
           ]}
           primaryAction={
-            <form action={uploadMockAsset} className="flex gap-2">
-              <input type="hidden" name="organizationId" value={myOrg.id} />
-              <input 
-                type="text" 
-                name="name" 
-                placeholder="Document Name..." 
-                className="bg-white border-gray-300 text-gray-900 rounded-md px-3 py-1.5 text-sm border focus:ring-indigo-500 focus:border-indigo-500"
-                required
+            <div className="w-[300px]">
+              <UploadDropzone
+                endpoint="assetUploader"
+                input={{ organizationId: myOrg.id }}
+                onClientUploadComplete={() => {
+                  "use client";
+                  window.location.reload();
+                }}
+                onUploadError={(error: Error) => {
+                  "use client";
+                  alert(`Upload Error: ${error.message}`);
+                }}
+                appearance={{
+                  container: "p-2 min-h-0 min-w-0 border-indigo-200 bg-indigo-50/50",
+                  button: "hidden",
+                  label: "text-xs font-medium text-indigo-700",
+                }}
               />
-              <Button type="submit" size="sm">
-                <UploadIcon className="w-4 h-4 mr-2" /> Upload Test File
-              </Button>
-            </form>
+            </div>
           }
         />
       </div>
@@ -94,11 +90,11 @@ export default async function ClientAssetsPage() {
                       <FileIcon className="w-5 h-5 text-indigo-500 mr-3" />
                       {asset.name}
                     </td>
-                    <td className="px-6 py-4 uppercase text-xs font-semibold text-gray-500">{asset.fileType}</td>
-                    <td className="px-6 py-4">{asset.createdAt?.toLocaleDateString()}</td>
+                    <td className="px-6 py-4 uppercase text-xs font-semibold text-gray-500">{asset.mimeType || 'FILE'}</td>
+                    <td className="px-6 py-4">{asset.createdAt ? new Date(asset.createdAt as any).toLocaleDateString() : 'N/A'}</td>
                     <td className="px-6 py-4 text-right">
                       <a 
-                        href={asset.fileUrl} 
+                        href={asset.url} 
                         target="_blank" 
                         rel="noreferrer"
                         className="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 hover:bg-gray-100 hover:text-gray-900 h-9 px-3 text-gray-500"

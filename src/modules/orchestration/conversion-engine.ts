@@ -9,6 +9,16 @@ export class ConversionEngine {
    * Wraps the entire flow in a single Drizzle database transaction.
    */
   async handleProposalAccepted(dealId: string, organizationId: string) {
+    // Idempotency check: see if a project already exists for this deal
+    const existingProject = await db.query.projects.findFirst({
+      where: (projects, { eq }) => eq(projects.dealId, dealId)
+    });
+    
+    if (existingProject) {
+      console.log(`Project already exists for deal ${dealId}, skipping creation.`);
+      return { project: existingProject, skipped: true };
+    }
+
     // 1. Sales: Mark the deal as won
     const deal = await salesService.markDealWon(dealId, organizationId);
 

@@ -1,10 +1,11 @@
-import { db } from "@/db";
-import { invoices, payments, activityLogs } from "@/db/schema";
-import { eq, desc, and } from "drizzle-orm";
+import { db, db as database } from "@/db";
+import { invoices, payments, activityLogs, retainers, organizations, projects, retainerPeriods } from "@/db/schema";
+import { eq, desc, and, like, gte } from "drizzle-orm";
 import { FinanceRepository, financeRepository } from "./repositories";
 import { DbTx } from "@/db/types";
 import { emitDomainEvent } from "@/modules/core/events";
 import { validateInvoiceTransition, validatePaymentTransition, InvoiceStatusType, PaymentStatusType } from "./validators";
+import { manualPaymentProvider } from "./providers/manual";
 
 export class FinanceService {
   constructor(private repo: FinanceRepository = financeRepository) {}
@@ -21,9 +22,6 @@ export class FinanceService {
     
     // Find highest invoice number for this year
     let maxNumber = 0;
-    const { db: database } = require('@/db');
-    const { invoices } = require('@/db/schema');
-    const { like, desc } = require('drizzle-orm');
     
     const latestInvoice = await database.query.invoices.findFirst({
       where: like(invoices.invoiceNumber, `${prefix}%`),
@@ -58,9 +56,6 @@ export class FinanceService {
     const prefix = `ARO-${year}-`;
     
     let maxNumber = 0;
-    const { db: database } = require('@/db');
-    const { invoices } = require('@/db/schema');
-    const { like, desc } = require('drizzle-orm');
     
     const latestInvoice = await database.query.invoices.findFirst({
       where: like(invoices.invoiceNumber, `${prefix}%`),
@@ -196,9 +191,6 @@ export class FinanceService {
   }
 
   async getFinancialMetrics(organizationId?: string) {
-    const { db } = require('@/db');
-    const { invoices, payments, retainers, organizations } = require('@/db/schema');
-    const { eq, and, desc, gte } = require('drizzle-orm');
 
     const now = new Date();
     const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
@@ -210,6 +202,7 @@ export class FinanceService {
     let revenueThisMonthCents = 0;
     let outstandingRevenueCents = 0;
     let overdueAmountCents = 0;
+    let overdueInvoicesCount = 0;
     let totalPaidInvoicesAmount = 0;
     let totalInvoicesAmount = 0;
 
@@ -222,6 +215,7 @@ export class FinanceService {
       }
       if (inv.status === 'overdue') {
         overdueAmountCents += inv.amount || 0;
+        overdueInvoicesCount += 1;
       }
       if (inv.status !== 'draft' && inv.status !== 'cancelled') {
         totalInvoicesAmount += inv.amount || 0;
@@ -262,6 +256,7 @@ export class FinanceService {
       revenueThisMonthCents,
       outstandingRevenueCents,
       overdueAmountCents,
+      overdueInvoicesCount,
       collectionRate,
       mrrRetainers,
       recentlyPaidInvoices: recentlyPaid.map((p: any) => ({
@@ -274,9 +269,6 @@ export class FinanceService {
   }
 
   async getClientInvoices(organizationId: string) {
-    const { db } = require('@/db');
-    const { invoices } = require('@/db/schema');
-    const { eq, desc } = require('drizzle-orm');
 
     const allInvoices = await db.query.invoices.findMany({
       where: eq(invoices.organizationId, organizationId),
@@ -294,9 +286,6 @@ export class FinanceService {
   }
 
   async getClientPayments(organizationId: string) {
-    const { db } = require('@/db');
-    const { payments, invoices } = require('@/db/schema');
-    const { eq, desc } = require('drizzle-orm');
 
     const allPayments = await db
       .select({
@@ -322,9 +311,6 @@ export class FinanceService {
     }));
   }
   async getClientInvoiceDetails(invoiceId: string, organizationId: string) {
-    const { db } = require('@/db');
-    const { invoices, projects, retainerPeriods, payments } = require('@/db/schema');
-    const { eq, desc } = require('drizzle-orm');
 
     const invoice = await db.query.invoices.findFirst({
       where: eq(invoices.id, invoiceId)
@@ -352,40 +338,58 @@ export class FinanceService {
     return { invoice, project, period, payments: invoicePayments };
   }
 
-  async processMockPayment(invoiceId: string, organizationId: string) {
-    const { db } = require('@/db');
-    const { invoices, payments } = require('@/db/schema');
-    const { eq } = require('drizzle-orm');
-
-    const invoice = await db.query.invoices.findFirst({
-      where: eq(invoices.id, invoiceId)
-    });
-
-    if (!invoice || invoice.organizationId !== organizationId) {
-      return false;
-    }
-
-    if (invoice.status !== 'paid') {
-      await db.update(invoices).set({ status: 'paid' }).where(eq(invoices.id, invoiceId));
-      await db.insert(payments).values({
-        invoiceId,
-        amount: invoice.amount,
-        status: 'succeeded',
-        provider: 'stripe (mock)',
-        paidAt: new Date()
-      });
-      return true;
-    }
-    return false;
-  }
 }
-
 export const financeService = new FinanceService();
 
+export async function updateInvoiceService(invoiceId: string, organizationId: string, data: { subTotal: number, gstAmount: number, discountAmount: number, dueDate: string, notes?: string }, userId: string) {
+  const invoice = await db.query.invoices.findFirst({ where: and(eq(invoices.id, invoiceId), eq(invoices.organizationId, organizationId)) });
+  if (!invoice) throw new Error("Invoice not found");
 
+  const totalAmount = data.subTotal + data.gstAmount - data.discountAmount;
+  
+  const [updated] = await db.update(invoices).set({
+    subTotal: data.subTotal,
+    gstAmount: data.gstAmount,
+    discountAmount: data.discountAmount,
+    amount: totalAmount,
+    dueDate: new Date(data.dueDate),
+    notes: data.notes,
+    updatedAt: new Date(),
+    updatedBy: userId
+  }).where(eq(invoices.id, invoiceId)).returning();
 
+  return updated;
+}
 
-export async function recordManualPaymentService(data: {
+export async function voidInvoiceService(invoiceId: string, organizationId: string, userId: string) {
+  const invoice = await db.query.invoices.findFirst({ where: and(eq(invoices.id, invoiceId), eq(invoices.organizationId, organizationId)) });
+  if (!invoice) throw new Error("Invoice not found");
+
+  if (invoice.status === "paid" || invoice.status === "voided") throw new Error("Cannot void a paid or already voided invoice.");
+
+  const [updated] = await db.update(invoices).set({
+    status: "voided",
+    updatedAt: new Date(),
+    updatedBy: userId
+  }).where(eq(invoices.id, invoiceId)).returning();
+
+  return updated;
+}
+
+export async function cancelInvoiceService(invoiceId: string, organizationId: string, userId: string) {
+  const invoice = await db.query.invoices.findFirst({ where: and(eq(invoices.id, invoiceId), eq(invoices.organizationId, organizationId)) });
+  if (!invoice) throw new Error("Invoice not found");
+
+  if (invoice.status === "paid" || invoice.status === "cancelled") throw new Error("Cannot cancel a paid or already cancelled invoice.");
+
+  const [updated] = await db.update(invoices).set({
+    status: "cancelled",
+    updatedAt: new Date(),
+    updatedBy: userId
+  }).where(eq(invoices.id, invoiceId)).returning();
+
+  return updated;
+}export async function recordManualPaymentService(data: {
   invoiceId: string;
   amount: number;
   method: string;
@@ -394,68 +398,174 @@ export async function recordManualPaymentService(data: {
   paidAt: string;
   userId: string;
   organizationId: string;
+  attachments?: any;
 }) {
-  // 1. Verify invoice exists and belongs to the organization
   const invoice = await db.query.invoices.findFirst({
-    where: and(
-      eq(invoices.id, data.invoiceId),
-      eq(invoices.organizationId, data.organizationId)
-    ),
+    where: and(eq(invoices.id, data.invoiceId), eq(invoices.organizationId, data.organizationId)),
     with: { payments: true }
   });
 
-  if (!invoice) {
-    throw new Error("Invoice not found or unauthorized.");
-  }
+  if (!invoice) throw new Error("Invoice not found or unauthorized.");
 
-  // 2. Create the payment
+  // Use the Manual Payment Provider
+  const { providerPaymentId } = await manualPaymentProvider.createPaymentIntent(invoice, data.amount);
+
   const [payment] = await db.insert(payments).values({
     invoiceId: data.invoiceId,
     amount: data.amount,
-    provider: "manual",
-    status: "succeeded",
+    provider: manualPaymentProvider.name,
+    providerPaymentId,
+    status: "pending", // Record as pending until verified
     method: data.method,
     referenceNumber: data.referenceNumber,
     notes: data.notes,
+    attachments: data.attachments || null,
     paidAt: new Date(data.paidAt),
-    verifiedAt: new Date(),
-    verifiedBy: data.userId,
     createdBy: data.userId,
   }).returning();
 
-  // 3. Update invoice status logic
-  if (invoice) {
-    // Total paid including this new payment
-    const totalPaid = (invoice as any).payments
-      .filter((p: any) => p.status === "succeeded")
-      .reduce((sum: number, p: any) => sum + p.amount, 0) + payment.amount;
+  return payment;
+}
 
-    let newStatus = invoice.status;
-    if (totalPaid >= invoice.amount) {
-      newStatus = "paid";
-    } else if (totalPaid > 0) {
-      newStatus = "partially_paid"; // Assuming we want to track this, but schema defaults 'open' 'paid' 'void'. We can just use 'open' if not fully paid or add 'partially_paid'.
-      // Actually schema says: draft, open, paid, void. So if not fully paid, keep it open.
-      // If we want "partially_paid" we can just push it, drizzle varchar handles any string. Let's stick to "open" and "paid" for safety.
-      if (invoice.status === "open" && totalPaid >= invoice.amount) {
-          newStatus = "paid";
+export async function verifyManualPaymentService(paymentId: string, organizationId: string, userId: string) {
+  const payment = await db.query.payments.findFirst({
+    where: eq(payments.id, paymentId),
+    with: { invoice: true }
+  });
+  
+  if (!payment || !payment.invoice || payment.invoice.organizationId !== organizationId) {
+    throw new Error("Payment not found");
+  }
+
+  const isValid = await manualPaymentProvider.verifyPayment(payment.providerPaymentId!, null);
+  if (!isValid) throw new Error("Verification failed by provider");
+
+  const [updatedPayment] = await db.update(payments).set({
+    status: "succeeded",
+    verifiedAt: new Date(),
+    verifiedBy: userId,
+    updatedAt: new Date(),
+    updatedBy: userId
+  }).where(eq(payments.id, paymentId)).returning();
+
+  // Recalculate invoice status
+  const allPayments = await db.query.payments.findMany({ where: eq(payments.invoiceId, payment.invoiceId) });
+  const totalPaid = allPayments.filter(p => p.status === "succeeded").reduce((acc, p) => acc + p.amount, 0);
+
+  let newStatus = payment.invoice.status;
+  if (totalPaid >= payment.invoice.amount) {
+    newStatus = "paid";
+  } else if (totalPaid > 0) {
+    newStatus = "partially_paid";
+  }
+
+  if (newStatus !== payment.invoice.status) {
+    await db.update(invoices).set({ status: newStatus }).where(eq(invoices.id, payment.invoiceId));
+  }
+
+  return updatedPayment;
+}
+
+export async function rejectManualPaymentService(paymentId: string, organizationId: string, userId: string) {
+  const payment = await db.query.payments.findFirst({
+    where: eq(payments.id, paymentId),
+    with: { invoice: true }
+  });
+  
+  if (!payment || !payment.invoice || payment.invoice.organizationId !== organizationId) {
+    throw new Error("Payment not found");
+  }
+
+  const [updatedPayment] = await db.update(payments).set({
+    status: "failed",
+    updatedAt: new Date(),
+    updatedBy: userId
+  }).where(eq(payments.id, paymentId)).returning();
+
+  return updatedPayment;
+}
+
+export async function getFinanceDashboardMetricsService(organizationId: string) {
+
+  const now = new Date();
+  const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+
+  const allInvoices = await db.query.invoices.findMany({
+    where: eq(invoices.organizationId, organizationId),
+    with: { payments: true }
+  });
+
+  let revenueThisMonthCents = 0;
+  let outstandingRevenueCents = 0;
+  let collectionAmountThisMonth = 0;
+  
+  // Payment methods breakdown
+  const methodMap: Record<string, number> = {};
+
+  for (const inv of allInvoices) {
+    const isPaid = inv.status === 'paid';
+    if (isPaid && inv.updatedAt && new Date(inv.updatedAt) >= startOfMonth) {
+      revenueThisMonthCents += inv.amount || 0;
+    }
+    
+    if (['open', 'partially_paid', 'overdue'].includes(inv.status || '')) {
+      const paidSoFar = inv.payments.filter((p: any) => p.status === "succeeded").reduce((acc: number, p: any) => acc + p.amount, 0);
+      outstandingRevenueCents += (inv.amount - paidSoFar);
+    }
+
+    // Collections based on successful payments in month
+    for (const p of inv.payments) {
+      if (p.status === "succeeded" && p.verifiedAt && new Date(p.verifiedAt) >= startOfMonth) {
+        collectionAmountThisMonth += p.amount;
+      }
+      if (p.status === "succeeded") {
+        methodMap[p.method || 'unknown'] = (methodMap[p.method || 'unknown'] || 0) + p.amount;
+      }
+    }
+  }
+
+  // Monthly Revenue Data (real aggregation)
+  const monthlyRevenue = [];
+  for (let i = 5; i >= 0; i--) {
+    const monthStart = new Date(now.getFullYear(), now.getMonth() - i, 1);
+    const monthEnd = new Date(now.getFullYear(), now.getMonth() - i + 1, 0, 23, 59, 59, 999);
+    
+    let monthRevenue = 0;
+    for (const inv of allInvoices) {
+      for (const p of inv.payments) {
+        if (p.status === "succeeded" && p.verifiedAt) {
+          const paidDate = new Date(p.verifiedAt);
+          if (paidDate >= monthStart && paidDate <= monthEnd) {
+            monthRevenue += p.amount;
+          }
+        }
       }
     }
 
-    if (newStatus !== invoice.status) {
-      await db.update(invoices).set({ status: newStatus }).where(eq(invoices.id, invoice.id));
-    }
-    
-    // Log activity
-    await db.insert(activityLogs).values({
-      organizationId: data.organizationId,
-      entityType: "invoice",
-      entityId: invoice.id,
-      action: "payment.recorded",
-      userId: data.userId,
-      metadata: JSON.stringify({ paymentId: payment.id, amount: payment.amount, method: payment.method }),
+    monthlyRevenue.push({
+      month: monthStart.toLocaleString('default', { month: 'short' }),
+      revenue: Math.floor(monthRevenue / 100)
     });
   }
 
-  return payment;
+  // Aging Report
+  const agingReport = {
+    "0-30": 0,
+    "31-60": 0,
+    "61-90": 0,
+    "90+": 0
+  };
+
+  const gstSummary = allInvoices.reduce((acc: number, inv: any) => acc + (inv.gstAmount || 0), 0);
+
+  return {
+    revenueThisMonthCents,
+    outstandingRevenueCents,
+    collectionAmountThisMonth,
+    monthlyRevenue,
+    agingReport,
+    gstSummary,
+    paymentMethods: Object.entries(methodMap).map(([method, amount]) => ({ method, amount }))
+  };
 }
+

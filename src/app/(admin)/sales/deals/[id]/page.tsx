@@ -20,7 +20,7 @@ export default async function DealDetailsPage({ params }: { params: Promise<{ id
   }
 
   const { deal, proposals } = data;
-  const formattedValue = formatCurrency(deal.value);
+  const formattedValue = formatCurrency(deal.value || 0);
 
   return (
     <div className="h-full overflow-y-auto flex flex-col">

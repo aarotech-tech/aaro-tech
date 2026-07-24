@@ -12,6 +12,7 @@ const mockCurrentUser = vi.fn();
 vi.mock('@clerk/nextjs/server', () => ({
   auth: () => mockAuth(),
   currentUser: () => mockCurrentUser(),
+  redirectToSignIn: () => { throw new Error('NEXT_REDIRECT'); },
 }));
 
 vi.mock('next/cache', () => ({
@@ -37,7 +38,7 @@ describe('Security Regression Tests', () => {
 
   describe('Authentication & Authorization', () => {
     it('Unauthenticated user cannot promote a lead (requireAuthenticatedUser throws)', async () => {
-      mockAuth.mockResolvedValue({ userId: null });
+      mockAuth.mockResolvedValue({ userId: null, redirectToSignIn: () => { throw new Error('NEXT_REDIRECT'); } });
       mockCurrentUser.mockResolvedValue(null);
       await expect(requireAuthenticatedUser()).rejects.toThrow('NEXT_REDIRECT');
     }, 15000);
@@ -104,8 +105,16 @@ describe('Security Regression Tests', () => {
         expiresAt: futureDate
       }).returning();
 
+      // Generate valid signature
+      const crypto = require("crypto");
+      const expires = (Date.now() + 1000000).toString();
+      const secret = process.env.PROPOSAL_SECRET || process.env.JWT_SECRET || "default_insecure_secret_for_dev";
+      const sig = crypto.createHmac("sha256", secret).update(`${proposal.id}:${expires}`).digest("hex");
+
       const result = await approveProposalAction({
         proposalId: proposal.id,
+        sig,
+        expires,
         signature: 'John Doe'
       });
       expect(result?.data?.success).toBe(true);
@@ -133,8 +142,16 @@ describe('Security Regression Tests', () => {
         expiresAt: futureDate
       }).returning();
 
+      // Generate valid signature
+      const crypto = require("crypto");
+      const expires = (Date.now() + 1000000).toString();
+      const secret = process.env.PROPOSAL_SECRET || process.env.JWT_SECRET || "default_insecure_secret_for_dev";
+      const sig = crypto.createHmac("sha256", secret).update(`${proposal.id}:${expires}`).digest("hex");
+
       const result = await approveProposalAction({
         proposalId: proposal.id,
+        sig,
+        expires,
         signature: 'John Doe Again'
       });
       expect(result?.data?.success).toBe(false);
@@ -159,8 +176,16 @@ describe('Security Regression Tests', () => {
         expiresAt: pastDate
       }).returning();
 
+      // Generate valid signature
+      const crypto = require("crypto");
+      const expires = (Date.now() + 1000000).toString();
+      const secret = process.env.PROPOSAL_SECRET || process.env.JWT_SECRET || "default_insecure_secret_for_dev";
+      const sig = crypto.createHmac("sha256", secret).update(`${proposal.id}:${expires}`).digest("hex");
+
       const result = await approveProposalAction({
         proposalId: proposal.id,
+        sig,
+        expires,
         signature: 'John Doe Expired'
       });
       expect(result?.data?.success).toBe(false);

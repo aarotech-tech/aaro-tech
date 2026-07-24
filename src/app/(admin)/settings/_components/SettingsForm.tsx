@@ -4,7 +4,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useAction } from "next-safe-action/hooks";
-import { updateOrganizationSettings } from "@/actions/settings";
+import { updateOrganizationSettings } from "@/modules/core/actions";
 import { updateOrganizationSettingsSchema } from "@/lib/validations/settings";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";

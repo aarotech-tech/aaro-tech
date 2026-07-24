@@ -13,14 +13,18 @@ import { Loader2 } from "lucide-react";
 
 const schema = z.object({
   proposalId: z.string().uuid(),
+  sig: z.string().min(1, "Signature token is required"),
+  expires: z.string().min(1, "Expiry is required"),
   signature: z.string().min(1, "Signature is required"),
 });
 
-export function ApproveProposalForm({ proposalId }: { proposalId: string }) {
+export function ApproveProposalForm({ proposalId, sig, expires }: { proposalId: string, sig: string, expires: string }) {
   const form = useForm<z.infer<typeof schema>>({
     resolver: zodResolver(schema),
     defaultValues: {
       proposalId,
+      sig: sig || "",
+      expires: expires || "",
       signature: "",
     },
   });

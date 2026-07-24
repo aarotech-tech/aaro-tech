@@ -55,10 +55,13 @@ describe("Delivery Engine - Milestone 4", () => {
       expect(defaultTasks[0].title).toBe("Project Kickoff");
 
       // Verify Event Bus
-      expect(emitSpy).toHaveBeenCalledWith("project.created", {
-        projectId: result.data!.id,
-        dealId: deal.id,
-        organizationId: org.id,
+      expect(emitSpy).toHaveBeenCalledWith({
+        type: "project.created",
+        payload: {
+          projectId: result.data!.id,
+          dealId: deal.id,
+          organizationId: org.id,
+        }
       });
 
       // Cleanup
@@ -85,7 +88,7 @@ describe("Delivery Engine - Milestone 4", () => {
       const [deliverable] = await db.insert(deliverables).values({
         projectId: project.id,
         name: "Mockup V1",
-        status: "in_review"
+        status: "client_review"
       }).returning();
 
       // Auth as client from the correct org

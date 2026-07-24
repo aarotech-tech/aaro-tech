@@ -5,9 +5,18 @@ import { ApproveProposalForm } from "./_components/ApproveProposalForm";
 import { PageHeader } from "@/components/ui/page-header";
 import { getClientProposalView, logTrackingEventSilently } from "@/modules/sales/services";
 
-export default async function ClientProposalViewPage({ params }: { params: Promise<{ proposalId: string }> }) {
+export default async function ClientProposalViewPage({ 
+  params,
+  searchParams
+}: { 
+  params: Promise<{ proposalId: string }>,
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>
+}) {
   const resolvedParams = await params;
+  const resolvedSearchParams = await searchParams;
   const proposalId = resolvedParams.proposalId;
+  const sig = resolvedSearchParams.sig as string;
+  const expires = resolvedSearchParams.expires as string;
 
   const proposalData = await getClientProposalView(proposalId);
 
@@ -68,7 +77,11 @@ export default async function ClientProposalViewPage({ params }: { params: Promi
                 By signing below, you agree to the scope of work and investment summarized in this proposal.
               </p>
               
-              <ApproveProposalForm proposalId={proposal.id} />
+              <ApproveProposalForm 
+                proposalId={proposal.id} 
+                sig={sig}
+                expires={expires}
+              />
             </div>
           )}
         </div>

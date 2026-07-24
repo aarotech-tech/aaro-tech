@@ -5,7 +5,9 @@ import { actionClient, internalActionClient, tenantActionClient } from "@/lib/sa
 import { createDealAction, addDealLineItemAction } from "@/modules/sales/actions";
 import { createInvoiceAction, recordManualPaymentAction } from "@/modules/finance/actions";
 import { createProjectAction, createTaskAction } from "@/modules/delivery/actions";
-import { financeService } from "@/modules/finance/services";
+import { financeService, recordManualPaymentService } from "@/modules/finance/services";
+import * as SalesService from "@/modules/sales/services";
+import * as DeliveryService from "@/modules/delivery/services";
 
 async function run() {
   console.log("Starting E2E Validation...");
@@ -45,7 +47,6 @@ async function run() {
   try {
     // 1. Create Deal
     console.log("1. Creating Deal...");
-    const SalesService = require("@/modules/sales/services");
     const deal = await SalesService.createDealService({
       organizationId: org.id, 
       name: "E2E Test Deal", 
@@ -77,7 +78,7 @@ async function run() {
 
     // 4. Approve Proposal (Client)
     console.log("4. Client Approving Proposal...");
-    await SalesService.approveProposalByToken(proposal.id, "John Doe E2E", "127.0.0.1");
+    await SalesService.approveProposalByToken(proposal.id, "mock-sig", "9999999999999", "John Doe E2E", "127.0.0.1");
 
     // The event bus should have created a project. Let's wait a moment for async events.
     await new Promise(r => setTimeout(r, 2000));
@@ -90,12 +91,11 @@ async function run() {
 
     // 6. Create Task
     console.log("6. Creating Task...");
-    const DeliveryService = require("@/modules/delivery/services");
     const task = await DeliveryService.createTaskService({
       projectId: project.id,
       title: "Design Mockups",
       assigneeId: internalUser.id,
-      createdBy: internalUser.id,
+      userId: internalUser.id,
       organizationId: org.id
     });
     console.log("Task created:", task.id);
@@ -112,7 +112,6 @@ async function run() {
 
     // 8. Record Payment
     console.log("8. Recording Payment...");
-    const { recordManualPaymentService } = require("@/modules/finance/services");
     const payment = await recordManualPaymentService({
       invoiceId: invoice.id,
       amount: invoice.amount,

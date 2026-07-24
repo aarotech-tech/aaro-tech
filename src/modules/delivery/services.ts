@@ -1,6 +1,10 @@
 import * as DeliveryRepo from "./repositories";
 import { emitDomainEvent } from "../core/events";
 import { DbTx } from "@/db/types";
+import { db } from "@/db";
+import { projects, tasks, milestones, activityLogs, files, retainerPeriods, retainers, deliverables, deliverableVersions, comments, auditLogs, projectMembers, taskComments } from "@/db/schema";
+import { eq, and, desc, asc, sql, ilike, or } from "drizzle-orm";
+import { sendDeliverableClientResponseEmail } from "@/lib/email";
 
 export type ProjectStatus = "pending" | "planned" | "active" | "on_hold" | "completed" | "archived";
 export type DeliverableStatus = "draft" | "internal_review" | "ready_for_client" | "client_review" | "approved" | "archived";
@@ -370,9 +374,6 @@ export async function getClientProjectDetails(projectId: string, organizationId:
 }
 
 export async function getClientDeliverables(organizationId: string) {
-  const { db } = await import("@/db");
-  const { deliverables, projects } = await import("@/db/schema");
-  const { eq, desc } = await import("drizzle-orm");
 
   return await db.select({
     id: deliverables.id,
@@ -394,10 +395,7 @@ export async function submitClientReviewService(
   commentText?: string,
   userId?: string
 ) {
-  const { db } = require('@/db');
-  const { deliverables, deliverableVersions, comments, projects, retainerPeriods, retainers, auditLogs } = require('@/db/schema');
-  const { eq } = require('drizzle-orm');
-  const { sendDeliverableClientResponseEmail } = require('@/lib/email');
+
 
   const deliverable = await db.query.deliverables.findFirst({
     where: eq(deliverables.id, deliverableId)
@@ -456,9 +454,7 @@ export async function submitClientReviewService(
 }
 
 
-import { db } from "@/db";
-import { projects, tasks, milestones, activityLogs, files } from "@/db/schema";
-import { eq, and, desc, asc } from "drizzle-orm";
+
 
 export async function getProjectsService(organizationId?: string) {
   if (organizationId) {
@@ -700,3 +696,18 @@ export async function deleteTaskService(
   
   return task;
 }
+
+// Dummy functions to fix build errors for unimplemented server actions
+export async function createProjectService(data: any) { throw new Error('Not implemented'); }
+export async function updateProjectService(data: any) { throw new Error('Not implemented'); }
+export async function archiveProjectService(id: string) { throw new Error('Not implemented'); }
+export async function addProjectMemberService(data: any) { throw new Error('Not implemented'); }
+export async function removeProjectMemberService(data: any) { throw new Error('Not implemented'); }
+export async function addTaskCommentService(data: any) { throw new Error('Not implemented'); }
+export async function updateTaskLabelsService(id: string, labels: string[]) { throw new Error('Not implemented'); }
+export async function addTaskAttachmentService(data: any) { throw new Error('Not implemented'); }
+export async function deleteMilestoneService(id: string) { throw new Error('Not implemented'); }
+export async function updateMilestoneDependenciesService(id: string, deps: string[]) { throw new Error('Not implemented'); }
+export async function updateDeliverableService(data: any) { throw new Error('Not implemented'); }
+export async function deleteDeliverableService(id: string) { throw new Error('Not implemented'); }
+export async function uploadDeliverableVersionService(data: any) { throw new Error('Not implemented'); }

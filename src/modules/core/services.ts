@@ -62,6 +62,14 @@ export const CoreService = {
     });
   },
 
+  getOrganizationFiles: async (organizationId: string) => {
+    return await db.query.files.findMany({
+      where: eq(files.organizationId, organizationId),
+      orderBy: [desc(files.createdAt)],
+      with: { uploadedBy: true }
+    });
+  },
+
   checkDatabaseHealth: async () => {
     try {
       await db.execute(sql`SELECT 1`);

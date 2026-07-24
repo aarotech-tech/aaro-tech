@@ -11,7 +11,7 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { CheckCircle2 } from "lucide-react";
 import { sendGAEvent } from "@next/third-parties/google";
-import { submitContactForm } from "@/actions/contact";
+import { submitContactForm } from "@/modules/sales/actions";
 import { contactFormSchema } from "@/lib/validations/contact";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { toast } from "sonner";
@@ -54,7 +54,7 @@ export function ContactForm({
     },
   });
 
-  const { execute, isExecuting, result } = useAction(submitContactForm, {
+  const { execute, isExecuting } = useAction(submitContactForm, {
     onSuccess: ({ data }) => {
       if (data?.success) {
         setIsSuccess(true);

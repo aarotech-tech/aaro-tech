@@ -1,5 +1,6 @@
 import { requireAuthenticatedUser } from "@/lib/auth";
 import { redirect } from "next/navigation";
+import { OrganizationProfile, UserProfile } from "@clerk/nextjs";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { User, Building2, Bell, Shield } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -80,7 +81,11 @@ export default async function ClientSettingsPage() {
                 <label className="text-sm font-medium text-gray-700">Company Name</label>
                 <input type="text" defaultValue={org?.name || ""} className="w-full p-2 border rounded-md" disabled />
               </div>
-              <p className="text-xs text-gray-500">Contact your project manager to update billing details or organization structure.</p>
+              <p className="text-xs text-gray-500 mb-4">Contact your project manager to update billing details or organization structure.</p>
+
+              <div className="mt-8 flex justify-center">
+                <OrganizationProfile />
+              </div>
             </CardContent>
           </Card>
         </div>

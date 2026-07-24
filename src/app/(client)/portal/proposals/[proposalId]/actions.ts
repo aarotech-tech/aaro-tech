@@ -9,6 +9,8 @@ import { rateLimit } from '@/lib/rate-limit';
 
 const approveProposalSchema = z.object({
   proposalId: z.string().uuid(),
+  sig: z.string().min(1, "Signature token is required"),
+  expires: z.string().min(1, "Expiry is required"),
   signature: z.string().min(1, "Signature is required"),
 });
 

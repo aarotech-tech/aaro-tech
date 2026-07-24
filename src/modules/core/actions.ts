@@ -1,12 +1,11 @@
 "use server";
 
 import { db } from "@/db";
-import { organizations } from "@/db/schema";
+import { organizations, contacts } from "@/db/schema";
 import { eq } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { CoreService } from "@/modules/core/services";
 import { internalActionClient } from "@/lib/safe-action";
-import { z } from "zod";
 import { updateOrganizationSettingsSchema } from "@/lib/validations/settings";
 
 export const updateOrganizationSettings = internalActionClient
@@ -36,3 +35,5 @@ export const updateOrganizationSettings = internalActionClient
     
     return { success: true };
   });
+
+

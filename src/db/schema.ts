@@ -73,8 +73,11 @@ export const deals = pgTable("deals", {
   name: varchar("name", { length: 255 }).notNull(),
   stage: varchar("stage", { length: 50 }).default("discovery"), 
   value: integer("value").default(0), // Deal value
+  probability: integer("probability").default(0), // 0 to 100
+  forecastValue: integer("forecast_value").default(0),
+  lostReason: text("lost_reason"),
   expectedCloseDate: timestamp("expected_close_date"),
-    deletedAt: timestamp("deleted_at"),
+  deletedAt: timestamp("deleted_at"),
     createdBy: uuid("created_by").references(() => users.id, { onDelete: "set null" }),
   updatedBy: uuid("updated_by").references(() => users.id, { onDelete: "set null" }),
   deletedBy: uuid("deleted_by").references(() => users.id, { onDelete: "set null" }),
@@ -160,6 +163,7 @@ export const milestones = pgTable("milestones", {
   name: varchar("name", { length: 255 }).notNull(),
   status: varchar("status", { length: 50 }).default("pending"), // pending, completed
   dueDate: timestamp("due_date"),
+  dependsOn: jsonb("depends_on").$type<string[]>(), // Array of milestone UUIDs
   completedAt: timestamp("completed_at"),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
@@ -315,8 +319,11 @@ export const invoices = pgTable("invoices", {
   dealId: uuid("deal_id").references(() => deals.id, { onDelete: "set null" }), // Keep existing field to prevent breaking changes
   projectId: uuid("project_id").references(() => projects.id, { onDelete: "set null" }), // Added for Phase 4
   retainerPeriodId: uuid("retainer_period_id").references(() => retainerPeriods.id, { onDelete: "set null" }), // Added for Phase 4
-  amount: integer("amount").notNull(), // Amount in cents
-  status: varchar("status", { length: 50 }).default("open"), // draft, open, partially_paid, paid, overdue, cancelled
+  amount: integer("amount").notNull(), // Total Amount in cents
+  subTotal: integer("sub_total").default(0).notNull(), // Sub total in cents
+  gstAmount: integer("gst_amount").default(0).notNull(), // GST in cents
+  discountAmount: integer("discount_amount").default(0).notNull(), // Discount in cents
+  status: varchar("status", { length: 50 }).default("open"), // draft, open, partially_paid, paid, overdue, cancelled, voided
   razorpayOrderId: varchar("razorpay_order_id", { length: 255 }),
   paymentUtr: varchar("payment_utr", { length: 255 }),
   paymentReceiptUrl: text("payment_receipt_url"),
@@ -343,7 +350,8 @@ export const payments = pgTable("payments", {
   verifiedAt: timestamp("verified_at"),
     referenceNumber: varchar("reference_number", { length: 255 }),
   verifiedBy: uuid("verified_by").references(() => users.id, { onDelete: "set null" }),
-    notes: text("notes"),
+  attachments: jsonb("attachments"), // UploadThing file URLs
+  notes: text("notes"),
     createdBy: uuid("created_by").references(() => users.id, { onDelete: "set null" }),
   updatedBy: uuid("updated_by").references(() => users.id, { onDelete: "set null" }),
   deletedBy: uuid("deleted_by").references(() => users.id, { onDelete: "set null" }),
@@ -352,6 +360,19 @@ export const payments = pgTable("payments", {
   createdAt: timestamp("created_at").defaultNow(),
 }, (t) => ({
   invoiceIdx: index("payments_invoice_idx").on(t.invoiceId),
+}));
+
+export const creditNotes = pgTable("credit_notes", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  organizationId: uuid("organization_id").references(() => organizations.id, { onDelete: "cascade" }).notNull(),
+  invoiceId: uuid("invoice_id").references(() => invoices.id, { onDelete: "set null" }),
+  creditNumber: varchar("credit_number", { length: 50 }).unique(), 
+  amount: integer("amount").notNull(), // Amount in cents
+  reason: text("reason"),
+  status: varchar("status", { length: 50 }).default("draft"), // draft, issued, applied
+  createdAt: timestamp("created_at").defaultNow(),
+}, (t) => ({
+  orgIdx: index("credit_notes_org_idx").on(t.organizationId),
 }));
 
 export const files = pgTable("files", {
@@ -374,7 +395,7 @@ export const deliverables = pgTable("deliverables", {
   retainerPeriodId: uuid("retainer_period_id").references(() => retainerPeriods.id, { onDelete: "cascade" }),
   name: varchar("name", { length: 255 }).notNull(),
   status: varchar("status", { length: 50 }).default("draft"), // draft, in_review, changes_requested, approved
-  currentVersionId: uuid("current_version_id"), // Manually updated to track latest
+  currentVersionId: uuid("current_version_id").references((): any => deliverableVersions.id, { onDelete: 'set null' }), // Manually updated to track latest
   createdAt: timestamp("created_at").defaultNow(),
 });
 
@@ -475,6 +496,7 @@ export const projectsRelations = relations(projects, ({ one, many }) => ({
   tasks: many(tasks),
   milestones: many(milestones),
   invoices: many(invoices),
+  deliverables: many(deliverables),
   activities: many(activityLogs, { relationName: "projectActivities" })
 }));
 
@@ -492,7 +514,11 @@ export const tasksRelations = relations(tasks, ({ one }) => ({
 export const activityLogsRelations = relations(activityLogs, ({ one }) => ({
   user: one(users, {
     fields: [activityLogs.userId],
-    references: [users.id],
+    references: [users.id]
+  }),
+  project: one(projects, {
+    fields: [activityLogs.entityId],
+    references: [projects.id],
     relationName: "projectActivities"
   })
 }));
@@ -503,3 +529,43 @@ export const filesRelations = relations(files, ({ one }) => ({
     references: [users.id]
   })
 }));
+
+export const proposalVersions = pgTable("proposal_versions", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  proposalId: uuid("proposal_id").references(() => proposals.id, { onDelete: "cascade" }).notNull(),
+  versionNumber: integer("version_number").notNull(),
+  documentData: text("document_data"), // JSON or Markdown snapshot
+  aiPrompt: text("ai_prompt"),
+  createdAt: timestamp("created_at").defaultNow(),
+}, (t) => ({
+  proposalIdx: index("proposal_versions_proposal_id_idx").on(t.proposalId),
+}));
+
+export const dealNotes = pgTable("deal_notes", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  dealId: uuid("deal_id").references(() => deals.id, { onDelete: "cascade" }).notNull(),
+  content: text("content").notNull(),
+  authorId: uuid("author_id").references(() => users.id, { onDelete: "set null" }),
+  createdAt: timestamp("created_at").defaultNow(),
+}, (t) => ({
+  dealIdx: index("deal_notes_deal_id_idx").on(t.dealId),
+}));
+
+export const projectMembers = pgTable(
+  "project_members",
+  {
+    projectId: uuid("project_id")
+      .references(() => projects.id, { onDelete: "cascade" })
+      .notNull(),
+    userId: uuid("user_id")
+      .references(() => users.id, { onDelete: "cascade" })
+      .notNull(),
+    role: varchar("role", { length: 50 }).notNull(), // manager, contributor, client
+    createdAt: timestamp("created_at").defaultNow(),
+  },
+  (t) => ({
+    pk: primaryKey({ columns: [t.projectId, t.userId] }),
+    projectIdx: index("project_members_project_idx").on(t.projectId),
+  })
+);
+

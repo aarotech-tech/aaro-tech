@@ -73,6 +73,82 @@ export const ourFileRouter = {
 
       return { uploadedBy: metadata.userId, fileUrl: file.url, fileKey: file.key };
     }),
+
+  assetUploader: f({
+    image: { maxFileSize: "16MB", maxFileCount: 4 },
+    pdf: { maxFileSize: "32MB", maxFileCount: 4 },
+    video: { maxFileSize: "256MB", maxFileCount: 1 },
+    blob: { maxFileSize: "32MB", maxFileCount: 4 },
+  })
+    .input(z.object({
+      organizationId: z.string().uuid()
+    }))
+    .middleware(async ({ req, input }) => {
+      const { rateLimit } = await import("@/lib/rate-limit");
+      const ip = req.headers.get("x-forwarded-for")?.split(',')[0] || "unknown";
+      try {
+        await rateLimit.check(`upload_asset_${ip}`, { points: 20, durationInSeconds: 3600 });
+      } catch (e) {
+        throw new UploadThingError("Too many requests");
+      }
+
+      const user = await requireAuthenticatedUser().catch(() => null);
+      if (!user) throw new UploadThingError("Unauthorized");
+
+      const { requireOrganizationMember } = await import("@/lib/auth");
+      try {
+        await requireOrganizationMember(input.organizationId);
+      } catch (e: any) {
+        throw new UploadThingError(e.message || "Forbidden");
+      }
+
+      return {
+        userId: user.id,
+        organizationId: input.organizationId
+      };
+    })
+    .onUploadComplete(async ({ metadata, file }) => {
+      logger.info({ userId: metadata.userId, org: metadata.organizationId }, "Asset Upload complete");
+      const { CoreService } = await import("@/modules/core/services");
+      await CoreService.saveUploadedFile({ ...metadata, projectId: undefined, retainerPeriodId: undefined }, file);
+      return { uploadedBy: metadata.userId, fileUrl: file.url, fileKey: file.key };
+    }),
+
+  receiptUploader: f({
+    image: { maxFileSize: "4MB", maxFileCount: 1 },
+    pdf: { maxFileSize: "4MB", maxFileCount: 1 }
+  })
+    .input(z.object({
+      organizationId: z.string().uuid(),
+      invoiceId: z.string().uuid()
+    }))
+    .middleware(async ({ req, input }) => {
+      const { rateLimit } = await import("@/lib/rate-limit");
+      const ip = req.headers.get("x-forwarded-for")?.split(',')[0] || "unknown";
+      try {
+        await rateLimit.check(`upload_receipt_${ip}`, { points: 20, durationInSeconds: 3600 });
+      } catch (e) {
+        throw new UploadThingError("Too many requests");
+      }
+
+      const user = await requireAuthenticatedUser().catch(() => null);
+      if (!user) throw new UploadThingError("Unauthorized");
+      const { requireOrganizationMember } = await import("@/lib/auth");
+      try {
+        await requireOrganizationMember(input.organizationId);
+      } catch (e: any) {
+        throw new UploadThingError(e.message || "Forbidden");
+      }
+      return {
+        userId: user.id,
+        organizationId: input.organizationId,
+        invoiceId: input.invoiceId
+      };
+    })
+    .onUploadComplete(async ({ metadata, file }) => {
+      logger.info({ userId: metadata.userId, invoiceId: metadata.invoiceId }, "Receipt Upload complete");
+      return { uploadedBy: metadata.userId, fileUrl: file.url, fileKey: file.key };
+    })
 } satisfies FileRouter;
 
 export type OurFileRouter = typeof ourFileRouter;

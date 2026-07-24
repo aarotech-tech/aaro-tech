@@ -58,7 +58,7 @@ export default async function DashboardPage() {
             <Target className="h-4 w-4 text-blue-500" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">${(salesMetrics.deals.pipelineValueCents / 100).toLocaleString()}</div>
+            <div className="text-2xl font-bold">₹{(salesMetrics.deals.pipelineValueCents / 100).toLocaleString()}</div>
             <p className="text-xs text-muted-foreground mt-1">
               {salesMetrics.websiteLeads.newToday} New Leads Today
             </p>
@@ -90,7 +90,7 @@ export default async function DashboardPage() {
             <DollarSign className="h-4 w-4 text-amber-500" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">${(financeMetrics.outstandingRevenueCents / 100).toLocaleString()}</div>
+            <div className="text-2xl font-bold">₹{(financeMetrics.outstandingRevenueCents / 100).toLocaleString()}</div>
             <p className="text-xs text-muted-foreground mt-1">
               {financeMetrics.collectionRate * 100}% Collection Rate
             </p>
@@ -142,7 +142,7 @@ export default async function DashboardPage() {
                       <div className="h-2 w-2 rounded-full bg-emerald-500"></div>
                       <span className="text-sm font-medium">Stalled Deals</span>
                     </div>
-                    <Badge variant="secondary">3</Badge>
+                    <Badge variant="secondary">{salesMetrics.deals.stalled}</Badge>
                   </div>
                 </div>
               </CardContent>
@@ -207,7 +207,7 @@ export default async function DashboardPage() {
                     <AlertTriangle className="h-5 w-5 text-red-600" />
                     <div>
                       <p className="text-sm font-semibold">Overdue Payments</p>
-                      <p className="text-xs text-red-700">${(financeMetrics.overdueAmountCents / 100).toLocaleString()} across 2 invoices</p>
+                      <p className="text-xs text-red-700">₹{(financeMetrics.overdueAmountCents / 100).toLocaleString()} across {financeMetrics.overdueInvoicesCount} invoices</p>
                     </div>
                   </div>
                   <Button variant="destructive" size="sm" render={<Link href="/finance/invoices?status=overdue" />}>

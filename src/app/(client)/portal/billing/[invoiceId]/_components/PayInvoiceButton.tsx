@@ -12,19 +12,22 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
+import { UploadDropzone } from "@/lib/uploadthing";
 
-export default function PayInvoiceButton({ invoiceId }: { invoiceId: string }) {
+export default function PayInvoiceButton({ invoiceId, amount, orgId }: { invoiceId: string, amount: number, orgId: string }) {
   const [isOpen, setIsOpen] = useState(false);
   const [success, setSuccess] = useState(false);
+  const [receiptUrl, setReceiptUrl] = useState<string | null>(null);
 
   const form = useForm<z.input<typeof recordManualPaymentSchema>>({
     resolver: zodResolver(recordManualPaymentSchema),
     defaultValues: {
       invoiceId: invoiceId,
+      organizationId: orgId,
       referenceNumber: "",
-      amount: 0, // This is mock since amount is set in backend
+      amount: amount, 
       method: "bank_transfer",
-      paidAt: new Date()
+      paidAt: new Date().toISOString()
     },
   });
 
@@ -40,8 +43,11 @@ export default function PayInvoiceButton({ invoiceId }: { invoiceId: string }) {
     }
   });
 
-  const onSubmit = (values: z.input<typeof recordManualPaymentSchema>) => {
-    execute(values);
+  const onSubmit = (values: any) => {
+    execute({
+      ...values,
+      attachments: receiptUrl ? [receiptUrl] : undefined
+    });
   };
 
   if (success) {
@@ -86,6 +92,33 @@ export default function PayInvoiceButton({ invoiceId }: { invoiceId: string }) {
                     </FormItem>
                   )}
                 />
+
+                <div className="space-y-2">
+                  <FormLabel>Payment Receipt (Optional)</FormLabel>
+                  {!receiptUrl ? (
+                    <UploadDropzone
+                      endpoint="receiptUploader"
+                      input={{ invoiceId, organizationId: orgId }}
+                      onClientUploadComplete={(res) => {
+                        setReceiptUrl(res[0].url);
+                        toast.success("Receipt uploaded successfully");
+                      }}
+                      onUploadError={(error: Error) => {
+                        toast.error(`Upload Error: ${error.message}`);
+                      }}
+                      appearance={{
+                        container: "p-2 min-h-[100px] border-indigo-200 bg-indigo-50/50 cursor-pointer",
+                        button: "text-xs px-3 py-1 bg-indigo-600 text-white rounded",
+                        label: "text-xs font-medium text-indigo-700 hover:text-indigo-800",
+                      }}
+                    />
+                  ) : (
+                    <div className="p-3 bg-emerald-50 border border-emerald-200 rounded text-sm text-emerald-700 flex justify-between items-center">
+                      <span>Receipt Attached ✓</span>
+                      <button type="button" onClick={() => setReceiptUrl(null)} className="text-emerald-900 underline text-xs">Remove</button>
+                    </div>
+                  )}
+                </div>
 
                 <div className="flex justify-end gap-3 pt-2">
                   <button

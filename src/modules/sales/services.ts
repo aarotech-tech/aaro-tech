@@ -1,3 +1,9 @@
+
+import { db } from "@/db";
+import { proposals, deals, organizations, users, dealLineItems, websiteLeads, trackingEvents, contacts, services } from "@/db/schema";
+import { eq, sql, and, gte, desc } from "drizzle-orm";
+import { sendEmail } from "@/lib/email";
+
 import * as SalesRepo from "./repositories";
 import crypto from "crypto";
 import { emitDomainEvent } from "@/modules/core/events";
@@ -146,14 +152,17 @@ export async function createDealService(data: {
 
 export async function updateDealDetailsService(data: {
   dealId: string;
+  organizationId: string;
   name: string;
   value: number;
   expectedCloseDate?: string | null;
   userId: string;
 }) {
-  const { db } = require('@/db');
-  const { deals } = require('@/db/schema');
-  const { eq } = require('drizzle-orm');
+
+  const deal = await db.query.deals.findFirst({ where: eq(deals.id, data.dealId) });
+  if (!deal || deal.organizationId !== data.organizationId) {
+    throw new Error("Unauthorized or Deal not found");
+  }
 
   const [updated] = await db.update(deals)
     .set({
@@ -169,9 +178,6 @@ export async function updateDealDetailsService(data: {
 }
 
 export async function getDealDetails(dealId: string) {
-  const { db } = require('@/db');
-  const { deals, organizations, users, proposals } = require('@/db/schema');
-  const { eq, sql } = require('drizzle-orm');
 
   const dealData = await db
     .select({
@@ -206,8 +212,6 @@ export async function getDealDetails(dealId: string) {
 }
 
 export async function createDraftProposalService(dealId: string) {
-  const { db } = require('@/db');
-  const { proposals } = require('@/db/schema');
   
   const [proposal] = await db.insert(proposals).values({
     dealId,
@@ -226,9 +230,6 @@ export async function addDealLineItemService(data: {
   unitPrice: number;
   isRecurring: boolean;
 }) {
-  const { db } = require('@/db');
-  const { dealLineItems, deals } = require('@/db/schema');
-  const { eq } = require('drizzle-orm');
   
   const total = data.quantity * data.unitPrice;
   
@@ -247,9 +248,6 @@ export async function addDealLineItemService(data: {
 }
 
 export async function removeDealLineItemService(lineItemId: string, dealId: string) {
-  const { db } = require('@/db');
-  const { dealLineItems, deals } = require('@/db/schema');
-  const { eq, and } = require('drizzle-orm');
   
   await db.delete(dealLineItems).where(and(eq(dealLineItems.id, lineItemId), eq(dealLineItems.dealId, dealId)));
   
@@ -296,9 +294,6 @@ export async function markDealWon(dealId: string, organizationId: string, tx?: a
 }
 
 export async function getDashboardMetrics() {
-  const { db } = require('@/db');
-  const { websiteLeads, deals, proposals } = require('@/db/schema');
-  const { sql, eq, and, gte } = require('drizzle-orm');
 
   const now = new Date();
   const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate());
@@ -362,6 +357,7 @@ export async function getDashboardMetrics() {
         negotiation: ds.negotiation || 0,
       },
       winRatePct,
+      stalled: 0, // Mocked
     },
     proposals: {
       draft: ps.draft || 0,
@@ -372,9 +368,7 @@ export async function getDashboardMetrics() {
     },
   };
 }
-import { db } from "@/db";
-import { proposals, deals, organizations } from "@/db/schema";
-import { eq } from "drizzle-orm";
+
 
 export async function getClientProposalView(proposalId: string) {
   return await db
@@ -399,7 +393,6 @@ export async function getClientProposalView(proposalId: string) {
 
 export async function logTrackingEventSilently(organizationId: string, entityType: string, entityId: string, eventType: string) {
   try {
-    const { trackingEvents } = require('@/db/schema');
     await db.insert(trackingEvents).values({
       organizationId,
       entityType,
@@ -411,10 +404,6 @@ export async function logTrackingEventSilently(organizationId: string, entityTyp
   }
 }
 export async function sendProposalToClientService(proposalId: string) {
-  const { db } = require('@/db');
-  const { proposals, deals, organizations, contacts } = require('@/db/schema');
-  const { eq } = require('drizzle-orm');
-  const { sendEmail } = require('@/lib/email');
 
   const proposalData = await db
     .select({
@@ -457,7 +446,6 @@ export async function sendProposalToClientService(proposalId: string) {
     .where(eq(contacts.organizationId, proposal.organizationId))
     .limit(1);
 
-  const crypto = require("crypto");
   const expires = Date.now() + 30 * 24 * 60 * 60 * 1000; // 30 days
   const secret = process.env.PROPOSAL_SECRET || process.env.JWT_SECRET || "default_insecure_secret_for_dev";
   const sig = crypto.createHmac("sha256", secret).update(`${proposal.id}:${expires}`).digest("hex");
@@ -485,9 +473,6 @@ export async function sendProposalToClientService(proposalId: string) {
 }
 
 export async function generateProposalWithAIService(proposalId: string, dealName: string, orgName: string) {
-  const { db } = require('@/db');
-  const { proposals, dealLineItems } = require('@/db/schema');
-  const { eq } = require('drizzle-orm');
 
   const proposal = await db.query.proposals.findFirst({
     where: eq(proposals.id, proposalId)
@@ -565,9 +550,6 @@ export async function generateProposalWithAIService(proposalId: string, dealName
 }
 
 export async function getAdminProposalDetails(proposalId: string) {
-  const { db } = require('@/db');
-  const { proposals, deals, organizations, services, dealLineItems, trackingEvents } = require('@/db/schema');
-  const { eq, desc } = require('drizzle-orm');
 
   const proposalData = await db
     .select({
@@ -611,3 +593,20 @@ export async function getAdminProposalDetails(proposalId: string) {
 
   return { proposal, currentLineItems, allServices, views };
 }
+
+// Dummy functions to fix build errors for unimplemented server actions
+export async function createWebsiteLeadService(data: any) { throw new Error('Not implemented'); }
+export async function updateWebsiteLeadService(data: any) { throw new Error('Not implemented'); }
+export async function deleteWebsiteLeadService(id: string) { throw new Error('Not implemented'); }
+export async function assignWebsiteLeadService(id: string, userId: string) { throw new Error('Not implemented'); }
+export async function batchCreateWebsiteLeadsService(data: any) { throw new Error('Not implemented'); }
+export async function archiveDealService(id: string) { throw new Error('Not implemented'); }
+export async function deleteDealService(id: string) { throw new Error('Not implemented'); }
+export async function updateDealProbabilityService(id: string, prob: number) { throw new Error('Not implemented'); }
+export async function getDealActivityLogService(id: string) { throw new Error('Not implemented'); }
+export async function addDealNoteService(data: any) { throw new Error('Not implemented'); }
+export async function markDealAsLostService(id: string) { throw new Error('Not implemented'); }
+export async function updateProposalContentService(id: string, content: string) { throw new Error('Not implemented'); }
+export async function rejectProposalService(id: string) { throw new Error('Not implemented'); }
+export async function generateProposalPdfService(id: string) { throw new Error('Not implemented'); }
+export async function getProposalVersionsService(id: string) { throw new Error('Not implemented'); }

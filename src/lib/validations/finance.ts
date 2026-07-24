@@ -13,13 +13,15 @@ export type CreateInvoiceInput = z.infer<typeof createInvoiceSchema>;
 
 export const recordManualPaymentSchema = z.object({
   invoiceId: z.string().uuid("Invalid Invoice ID"),
+  organizationId: z.string().uuid("Invalid Org ID").optional(),
   amount: z.number().positive("Amount must be positive"),
   method: z.string().refine((val) => PAYMENT_METHODS.some((s) => s.id === val), {
     message: "Invalid payment method",
   }),
-  referenceNumber: z.string().min(1, "Reference number is required"),
+  referenceNumber: z.string().optional(),
   paidAt: z.union([z.string(), z.date()]).transform(v => new Date(v)),
   notes: z.string().optional(),
+  attachments: z.any().optional(),
 });
 
 export type RecordManualPaymentInput = z.infer<typeof recordManualPaymentSchema>;

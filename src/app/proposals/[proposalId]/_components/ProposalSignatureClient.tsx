@@ -12,7 +12,7 @@ import { toast } from "sonner";
 import { PenTool } from "lucide-react";
 import Link from "next/link";
 
-export function ProposalSignatureClient({ proposalId, organizationName }: { proposalId: string, organizationName: string }) {
+export function ProposalSignatureClient({ proposalId, organizationName, sig, expires }: { proposalId: string, organizationName: string, sig?: string, expires?: string }) {
   const [signature, setSignature] = useState("");
   const [agreed, setAgreed] = useState(false);
 
@@ -38,6 +38,8 @@ export function ProposalSignatureClient({ proposalId, organizationName }: { prop
     
     execute({
       proposalId,
+      sig: sig || "",
+      expires: expires || "",
       signatureText: signature,
       ipAddress: "127.0.0.1", // Mocked IP for now
     });

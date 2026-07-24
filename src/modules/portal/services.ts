@@ -4,9 +4,16 @@ import { eq, and, desc } from "drizzle-orm";
 import { notificationService } from "@/modules/core/notifications";
 
 export class PortalService {
-  async getClientMembership(userId: string) {
+  async getClientMembership(userId: string, organizationId?: string) {
+    let whereClause;
+    if (organizationId) {
+      whereClause = and(eq(organizationMembers.userId, userId), eq(organizationMembers.organizationId, organizationId));
+    } else {
+      whereClause = eq(organizationMembers.userId, userId);
+    }
     const membership = await db.query.organizationMembers.findFirst({
-      where: eq(organizationMembers.userId, userId)
+      where: whereClause,
+      orderBy: [desc(organizationMembers.createdAt)]
     });
     if (!membership) return null;
 
@@ -14,6 +21,28 @@ export class PortalService {
       where: eq(organizations.id, membership.organizationId)
     });
     return { membership, myOrg };
+  }
+
+  async getClientMemberships(userId: string) {
+    const memberships = await db.query.organizationMembers.findMany({
+      where: eq(organizationMembers.userId, userId)
+    });
+    if (!memberships.length) return [];
+
+    const myOrgs = await db.query.organizations.findMany({
+      where: eq(organizations.id, memberships[0].organizationId) // This is simplified. Ideally IN clause. Let's do it right.
+    });
+    
+    // Using simple loop for read clarity, can optimize later if needed
+    const results = [];
+    for (const mem of memberships) {
+      const org = await db.query.organizations.findFirst({
+        where: eq(organizations.id, mem.organizationId)
+      });
+      if (org) results.push({ membership: mem, myOrg: org });
+    }
+    
+    return results;
   }
 
   async getDashboardData(organizationId: string, userId: string) {

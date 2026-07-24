@@ -24,7 +24,7 @@ export default async function ClientInvoiceDetailsPage(
 
   // Handle mock payment success
   if (searchParams.mock_payment === 'success') {
-    await financeService.processMockPayment(invoiceId, orgId);
+    /* mock payment disabled */
   }
 
   const details = await financeService.getClientInvoiceDetails(invoiceId, orgId);
@@ -52,7 +52,7 @@ export default async function ClientInvoiceDetailsPage(
               {invoice.status}
             </span>
           }
-          primaryAction={invoice.status === 'open' ? <PayInvoiceButton invoiceId={invoiceId} /> : undefined}
+          primaryAction={invoice.status === 'open' ? <PayInvoiceButton invoiceId={invoiceId} amount={invoice.amount} orgId={orgId} /> : undefined}
         />
       </div>
 

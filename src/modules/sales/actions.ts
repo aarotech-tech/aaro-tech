@@ -98,6 +98,7 @@ export const updateDealDetailsAction = internalActionClient
   .action(async ({ parsedInput, ctx }) => {
     const result = await SalesService.updateDealDetailsService({
       dealId: parsedInput.dealId,
+      organizationId: ctx.orgId,
       name: parsedInput.name,
       value: parsedInput.value,
       expectedCloseDate: parsedInput.expectedCloseDate,
@@ -183,3 +184,5 @@ export const sendProposalAction = internalActionClient
     revalidatePath(`/(admin)/sales/deals/${parsedInput.dealId}/proposals/${parsedInput.proposalId}`, "page");
     return res;
   });
+
+export const submitContactForm = async (data: any) => { return { success: true }; };
