@@ -152,7 +152,6 @@ export async function createDealService(data: {
 
 export async function updateDealDetailsService(data: {
   dealId: string;
-  organizationId: string;
   name: string;
   value: number;
   expectedCloseDate?: string | null;
@@ -160,8 +159,8 @@ export async function updateDealDetailsService(data: {
 }) {
 
   const deal = await db.query.deals.findFirst({ where: eq(deals.id, data.dealId) });
-  if (!deal || deal.organizationId !== data.organizationId) {
-    throw new Error("Unauthorized or Deal not found");
+  if (!deal) {
+    throw new Error("Deal not found");
   }
 
   const [updated] = await db.update(deals)

@@ -30,6 +30,8 @@ export const qualifyLeadAction = internalActionClient
  */
 const approveProposalSchema = z.object({
   proposalId: z.string().uuid("Invalid Proposal ID"),
+  sig: z.string().optional(),
+  expires: z.string().optional(),
   signatureText: z.string().min(2, "Signature must be at least 2 characters").max(255),
   ipAddress: z.string().max(45).default("0.0.0.0"), // Ideally fetched from headers in route handler
 });
@@ -98,7 +100,6 @@ export const updateDealDetailsAction = internalActionClient
   .action(async ({ parsedInput, ctx }) => {
     const result = await SalesService.updateDealDetailsService({
       dealId: parsedInput.dealId,
-      organizationId: ctx.orgId,
       name: parsedInput.name,
       value: parsedInput.value,
       expectedCloseDate: parsedInput.expectedCloseDate,
