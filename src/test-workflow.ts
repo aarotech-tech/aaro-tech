@@ -78,7 +78,7 @@ async function run() {
 
     // 4. Approve Proposal (Client)
     console.log("4. Client Approving Proposal...");
-    await SalesService.approveProposalByToken(proposal.id, "mock-sig", "9999999999999", "John Doe E2E", "127.0.0.1");
+    await SalesService.approveProposalByToken(proposal.id, "John Doe E2E", "127.0.0.1");
 
     // The event bus should have created a project. Let's wait a moment for async events.
     await new Promise(r => setTimeout(r, 2000));

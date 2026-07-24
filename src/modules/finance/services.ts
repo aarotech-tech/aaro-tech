@@ -104,7 +104,7 @@ export class FinanceService {
 
     const updated = await this.repo.updateInvoice(invoiceId, { status: newStatus }, tx);
     
-    if (newStatus === "sent") {
+    if (newStatus === "open") {
       emitDomainEvent({
         type: "InvoiceCreated",
         payload: { organizationId: invoice.organizationId, invoiceId: invoice.id, amount: invoice.amount }
