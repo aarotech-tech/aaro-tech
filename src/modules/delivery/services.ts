@@ -1,5 +1,5 @@
 import * as DeliveryRepo from "./repositories";
-import { emitDomainEvent } from "../core/events";
+import { eventBus } from "../core/events";
 import { DbTx } from "@/db/types";
 import { db } from "@/db";
 import { projects, tasks, milestones, activityLogs, files, retainerPeriods, retainers, deliverables, deliverableVersions, comments, auditLogs, projectMembers, taskComments } from "@/db/schema";
@@ -71,6 +71,15 @@ export async function createProjectFromDeal(dealId: string, projectName: string,
     status: "todo",
   }, tx);
 
+  eventBus.emit({
+    type: "ProjectCreated",
+    payload: {
+      projectId: project.id,
+      projectName: project.name,
+      organizationId: deal.organizationId,
+    }
+  });
+
   return project;
 }
 
@@ -115,7 +124,7 @@ export async function createDeliverableService(data: { projectId: string; name: 
   const project = await DeliveryRepo.getProjectById(data.projectId);
   
   if (project) {
-    emitDomainEvent({
+    eventBus.emit({
       type: "DeliverableSubmitted",
       payload: {
         organizationId: project.organizationId,
@@ -208,7 +217,7 @@ export async function approveDeliverable(deliverableId: string, commentText: str
     }
   }
 
-  emitDomainEvent({
+  eventBus.emit({
     type: "DeliverableApproved",
     payload: {
       deliverableId,
@@ -268,7 +277,7 @@ export async function requestDeliverableRevision(deliverableId: string, commentT
     });
   }
 
-  emitDomainEvent({
+  eventBus.emit({
     type: "DeliverableRejected",
     payload: {
       deliverableId,

@@ -51,7 +51,9 @@ export async function seedFinance(db: any, orgs: any[], users: any[], deals: any
     }
   }
 
-  await db.insert(invoices).values(generatedInvoices);
+  if (generatedInvoices.length > 0) {
+    await db.insert(invoices).values(generatedInvoices);
+  }
   if (generatedPayments.length > 0) {
     await db.insert(payments).values(generatedPayments);
   }

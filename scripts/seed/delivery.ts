@@ -55,9 +55,15 @@ export async function seedDelivery(db: any, orgs: any[], users: any[], deals: an
     }
   }
 
-  await db.insert(projects).values(generatedProjects);
-  await db.insert(tasks).values(generatedTasks);
-  await db.insert(deliverables).values(generatedDeliverables);
+  if (generatedProjects.length > 0) {
+    await db.insert(projects).values(generatedProjects);
+  }
+  if (generatedTasks.length > 0) {
+    await db.insert(tasks).values(generatedTasks);
+  }
+  if (generatedDeliverables.length > 0) {
+    await db.insert(deliverables).values(generatedDeliverables);
+  }
 
   return { projects: generatedProjects };
 }

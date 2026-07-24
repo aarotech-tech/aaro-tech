@@ -56,10 +56,10 @@ describe("Delivery Engine - Milestone 4", () => {
 
       // Verify Event Bus
       expect(emitSpy).toHaveBeenCalledWith({
-        type: "project.created",
+        type: "ProjectCreated",
         payload: {
           projectId: result.data!.id,
-          dealId: deal.id,
+          projectName: "Custom Execution Plan",
           organizationId: org.id,
         }
       });

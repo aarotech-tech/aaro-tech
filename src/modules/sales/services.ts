@@ -7,6 +7,7 @@ import { sendEmail } from "@/lib/email";
 import * as SalesRepo from "./repositories";
 import crypto from "crypto";
 import { emitDomainEvent } from "@/modules/core/events";
+import { ValidationError } from "@/lib/errors";
 
 /**
  * Qualifies a Website Lead, converting them into a Prospect Organization with an initial Deal.
@@ -91,11 +92,11 @@ export async function approveProposalByToken(proposalId: string, signatureText: 
   }
   
   if (proposal.status === "accepted") {
-    throw new Error("Proposal is already accepted");
+    throw new ValidationError("Proposal is already accepted");
   }
 
   if (proposal.expiresAt && new Date() > proposal.expiresAt) {
-    throw new Error("Proposal approval link has expired");
+    throw new ValidationError("Proposal approval link has expired");
   }
 
   // Update proposal to accepted
@@ -108,7 +109,7 @@ export async function approveProposalByToken(proposalId: string, signatureText: 
 
   const deal = await SalesRepo.getDealById(updatedProposal.dealId);
 
-  emitDomainEvent({
+  await emitDomainEvent({
     type: "ProposalAccepted",
     payload: {
       organizationId: deal?.organizationId || "",

@@ -124,6 +124,14 @@ describe('Security Regression Tests', () => {
       expect(updatedProp?.signatureText).toBe('John Doe');
 
       await db.delete(proposals).where(eq(proposals.id, proposal.id));
+      
+      const { invoices, projects } = await import('@/db/schema');
+      const testProjects = await db.select().from(projects).where(eq(projects.dealId, deal.id));
+      for (const p of testProjects) {
+        await db.delete(invoices).where(eq(invoices.projectId, p.id));
+      }
+      await db.delete(projects).where(eq(projects.dealId, deal.id));
+      
       await db.delete(deals).where(eq(deals.id, deal.id));
       await db.delete(organizations).where(eq(organizations.id, org.id));
     }, 15000);
@@ -158,6 +166,14 @@ describe('Security Regression Tests', () => {
       expect(result?.data?.error).toContain('already accepted');
 
       await db.delete(proposals).where(eq(proposals.id, proposal.id));
+      
+      const { invoices, projects } = await import('@/db/schema');
+      const testProjects = await db.select().from(projects).where(eq(projects.dealId, deal.id));
+      for (const p of testProjects) {
+        await db.delete(invoices).where(eq(invoices.projectId, p.id));
+      }
+      await db.delete(projects).where(eq(projects.dealId, deal.id));
+      
       await db.delete(deals).where(eq(deals.id, deal.id));
       await db.delete(organizations).where(eq(organizations.id, org.id));
     }, 15000);
@@ -192,6 +208,14 @@ describe('Security Regression Tests', () => {
       expect(result?.data?.error).toContain('expired');
 
       await db.delete(proposals).where(eq(proposals.id, proposal.id));
+      
+      const { invoices, projects } = await import('@/db/schema');
+      const testProjects = await db.select().from(projects).where(eq(projects.dealId, deal.id));
+      for (const p of testProjects) {
+        await db.delete(invoices).where(eq(invoices.projectId, p.id));
+      }
+      await db.delete(projects).where(eq(projects.dealId, deal.id));
+      
       await db.delete(deals).where(eq(deals.id, deal.id));
       await db.delete(organizations).where(eq(organizations.id, org.id));
     }, 15000);
