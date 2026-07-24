@@ -5,6 +5,8 @@ import { Button } from "@/components/ui/button";
 import { InvoicesTable } from "./InvoicesTable";
 import { PlusIcon } from "lucide-react";
 import { PageHeader } from "@/components/ui/page-header";
+import { CreateInvoiceDialog } from "./_components/CreateInvoiceDialog";
+import { projects } from "@/db/schema";
 
 export default async function AdminFinancePage() {
   const allInvoices = await db
@@ -21,8 +23,11 @@ export default async function AdminFinancePage() {
     .orderBy(desc(invoices.createdAt));
 
   const totalOutstanding = allInvoices
-    .filter(inv => ["sent", "viewed", "partially_paid", "overdue"].includes(inv.status!))
+    .filter(inv => ["open", "partially_paid", "overdue"].includes(inv.status!))
     .reduce((acc, curr) => acc + curr.amount, 0);
+
+  const orgsList = await db.select({ id: organizations.id, name: organizations.name }).from(organizations);
+  const projectsList = await db.select({ id: projects.id, name: projects.name, organizationId: projects.organizationId }).from(projects);
 
   return (
     <div className="h-full overflow-y-auto flex flex-col">
@@ -36,9 +41,11 @@ export default async function AdminFinancePage() {
             { label: "Invoices" }
           ]}
           primaryAction={
-            <Button>
-              <PlusIcon className="w-4 h-4 mr-2" /> Create Invoice
-            </Button>
+            <CreateInvoiceDialog organizations={orgsList} projects={projectsList}>
+              <Button>
+                <PlusIcon className="w-4 h-4 mr-2" /> Create Invoice
+              </Button>
+            </CreateInvoiceDialog>
           }
         />
       </div>

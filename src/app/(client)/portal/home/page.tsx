@@ -27,8 +27,8 @@ export default async function ClientDashboardPage() {
     notificationService.getClientDashboardFeed(orgId)
   ]);
 
-  const activeProjects = projects.filter(p => p.status === "active");
-  const outstandingInvoices = invoices.filter(i => i.status === "issued");
+  const activeProjects = projects.filter((p: any) => p.status === "active");
+  const outstandingInvoices = invoices.filter((i: any) => i.status === "open" || i.status === "partially_paid" || i.status === "overdue");
 
   return (
     <div className="h-full overflow-y-auto flex flex-col">
@@ -77,7 +77,7 @@ export default async function ClientDashboardPage() {
                 <p className="text-sm text-gray-500 text-center py-4">No active projects at this time.</p>
               ) : (
                 <div className="space-y-4">
-                  {activeProjects.map(project => (
+                  {activeProjects.map((project: any) => (
                     <div key={project.id} className="p-4 border rounded-lg bg-gray-50/50 flex justify-between items-center">
                       <div>
                         <h4 className="font-semibold text-gray-900">{project.name}</h4>
@@ -110,7 +110,7 @@ export default async function ClientDashboardPage() {
                 <p className="text-sm text-gray-500 text-center py-4">You have no outstanding invoices.</p>
               ) : (
                 <div className="space-y-3">
-                  {outstandingInvoices.map(invoice => (
+                  {outstandingInvoices.map((invoice: any) => (
                     <div key={invoice.id} className="flex justify-between items-center p-3 border border-emerald-100 bg-emerald-50/30 rounded-lg">
                       <div>
                         <p className="font-medium text-emerald-900">{invoice.number}</p>

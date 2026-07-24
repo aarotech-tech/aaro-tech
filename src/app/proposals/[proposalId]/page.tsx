@@ -5,11 +5,16 @@ import { Badge } from "@/components/ui/badge";
 import { ProposalSignatureClient } from "./_components/ProposalSignatureClient";
 
 export default async function PublicProposalPage({ 
-  params 
+  params,
+  searchParams
 }: { 
-  params: Promise<{ proposalId: string }> 
+  params: Promise<{ proposalId: string }>;
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }) {
   const resolvedParams = await params;
+  const resolvedSearchParams = await searchParams;
+  const sig = resolvedSearchParams.sig as string;
+  const expires = resolvedSearchParams.expires as string;
   const proposalData = await getClientProposalView(resolvedParams.proposalId);
   
   if (!proposalData || proposalData.length === 0) {
@@ -17,6 +22,26 @@ export default async function PublicProposalPage({
   }
 
   const proposal = proposalData[0];
+
+  // Enforce signed tokens for proposals created after Day 4 rollout (July 24, 2026)
+  const cutoffDate = new Date("2026-07-24T00:00:00Z");
+  if (proposal.createdAt && new Date(proposal.createdAt) > cutoffDate) {
+    if (!sig || !expires) {
+      notFound();
+    }
+    
+    if (Date.now() > parseInt(expires, 10)) {
+      notFound(); // Link expired
+    }
+
+    const crypto = require("crypto");
+    const secret = process.env.PROPOSAL_SECRET || process.env.JWT_SECRET || "default_insecure_secret_for_dev";
+    const expectedSig = crypto.createHmac("sha256", secret).update(`${proposal.id}:${expires}`).digest("hex");
+    
+    if (sig !== expectedSig) {
+      notFound(); // Invalid signature
+    }
+  }
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col py-12 px-4 sm:px-6 lg:px-8">

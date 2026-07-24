@@ -6,6 +6,7 @@ import Link from "next/link";
 
 const KanbanBoard = dynamic(() => import("@/components/ui/kanban").then(mod => mod.KanbanBoard), { ssr: false });
 import { updateDealStageAction } from "@/modules/sales/actions";
+import { formatCurrency } from "@/lib/formatters";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
 
@@ -41,7 +42,7 @@ export function PipelineBoard({ initialColumns }: { initialColumns: KanbanColumn
 
   const renderItem = (item: KanbanItem) => {
     const deal = item as DealItem;
-    const formattedValue = new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR" }).format(deal.value / 100);
+    const formattedValue = formatCurrency(deal.value);
 
     return (
       <Link href={`/sales/deals/${deal.id}`} className="block p-3 hover:bg-slate-50 transition-colors">
@@ -62,7 +63,7 @@ export function PipelineBoard({ initialColumns }: { initialColumns: KanbanColumn
 
   const renderColumnHeader = (col: KanbanColumn) => {
     const totalValue = col.items.reduce((sum, item) => sum + (item as DealItem).value, 0);
-    const formattedTotal = new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR", maximumFractionDigits: 0 }).format(totalValue / 100);
+    const formattedTotal = formatCurrency(totalValue, { maximumFractionDigits: 0 });
 
     return (
       <div className="flex flex-col items-end">

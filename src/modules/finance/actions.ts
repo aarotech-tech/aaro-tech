@@ -1,77 +1,48 @@
 "use server";
 
-import { financeService } from "./services";
-import { auth } from "@clerk/nextjs/server";
 import { revalidatePath } from "next/cache";
-import { z } from "zod";
-// unused imports removed
-import { internalActionClient } from "@/lib/safe-action";
+import { internalActionClient, tenantActionClient } from "@/lib/safe-action";
+import { financeService } from "@/modules/finance/services";
+import { createInvoiceSchema, recordManualPaymentSchema, verifyPaymentSchema } from "@/lib/validations/finance";
 
-export const recordPaymentAction = internalActionClient
-  .schema(z.object({
-    invoiceId: z.string().uuid(),
-    amount: z.number().positive(),
-    referenceNumber: z.string().min(1),
-  }))
-  .action(async ({ parsedInput: { invoiceId, amount, referenceNumber }, ctx }) => {
-    try {
-      const payment = await financeService.recordPayment(invoiceId, amount, referenceNumber);
-      
-      revalidatePath("/finance/payments");
-      revalidatePath("/finance/invoices");
-      
-      return { success: true, paymentId: payment.id };
-    } catch (e: any) {
-      return { serverError: e.message || "Failed to record payment" };
-    }
-  });
-
-export const verifyManualPaymentAction = internalActionClient
-  .schema(z.object({
-    paymentId: z.string().uuid(),
-  }))
-  .action(async ({ parsedInput: { paymentId }, ctx }) => {
-    try {
-      await financeService.verifyManualPayment(paymentId, ctx.user.id);
-      
-      revalidatePath("/finance/payments");
-      revalidatePath("/finance/invoices");
-      
-      return { success: true };
-    } catch (e: any) {
-      return { serverError: e.message || "Failed to verify payment" };
-    }
-  });
-
-
-import * as FinanceService from "./services";
-
-const recordManualPaymentSchema = z.object({
-  invoiceId: z.string().uuid(),
-  projectId: z.string().uuid(),
-  organizationId: z.string().uuid(),
-  amount: z.number().positive(),
-  method: z.string().min(1),
-  referenceNumber: z.string().optional(),
-  notes: z.string().optional(),
-  paidAt: z.string(),
-});
-
-export const recordManualPaymentAction = internalActionClient
-  .schema(recordManualPaymentSchema)
-  .action(async ({ parsedInput, ctx }) => {
-    const result = await FinanceService.recordManualPaymentService({
-      invoiceId: parsedInput.invoiceId,
-      amount: parsedInput.amount,
-      method: parsedInput.method,
-      referenceNumber: parsedInput.referenceNumber,
-      notes: parsedInput.notes,
-      paidAt: parsedInput.paidAt,
-      userId: ctx.user.id,
+export const createInvoiceAction = internalActionClient
+  .schema(createInvoiceSchema)
+  .action(async ({ parsedInput }) => {
+    const newInvoice = await financeService.issueInvoice({
       organizationId: parsedInput.organizationId,
+      projectId: parsedInput.projectId,
+      amount: parsedInput.amount,
+      dueDate: parsedInput.dueDate,
     });
-    
-    revalidatePath(`/projects/${parsedInput.projectId}/finance`);
-    revalidatePath(`/portal/projects/${parsedInput.projectId}`);
-    return result;
+
+    revalidatePath("/(admin)/finance", "layout");
+    return { success: true, invoiceId: newInvoice.id };
+  });
+
+export const recordManualPaymentAction = tenantActionClient
+  .schema(recordManualPaymentSchema)
+  .action(async ({ parsedInput }) => {
+    const newPayment = await financeService.recordPayment(
+      parsedInput.invoiceId, 
+      parsedInput.amount, 
+      parsedInput.referenceNumber || ""
+    );
+
+    revalidatePath("/(client)/portal/billing/[invoiceId]", "page");
+    revalidatePath("/(admin)/finance", "layout");
+    return { success: true, paymentId: newPayment.id };
+  });
+
+export const verifyPaymentAction = internalActionClient
+  .schema(verifyPaymentSchema)
+  .action(async ({ parsedInput, ctx }) => {
+    if (parsedInput.status === "verified") {
+      await financeService.verifyManualPayment(parsedInput.paymentId, ctx.user.id);
+    } else {
+      throw new Error("Only verification is supported via this endpoint currently.");
+    }
+
+    revalidatePath("/(admin)/finance", "layout");
+    revalidatePath("/(client)/portal/billing/[invoiceId]", "page");
+    return { success: true };
   });

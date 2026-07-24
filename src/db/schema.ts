@@ -236,7 +236,9 @@ export const contacts = pgTable("contacts", {
   phone: varchar("phone", { length: 50 }),
   createdAt: timestamp("created_at").defaultNow(),
   deletedAt: timestamp("deleted_at"),
-});
+}, (t) => ({
+  orgEmailIdx: uniqueIndex("contacts_org_email_idx").on(t.organizationId, t.email),
+}));
 
 export const services = pgTable("services", {
   id: uuid("id").primaryKey().defaultRandom(),
@@ -308,12 +310,13 @@ export const retainerPeriods = pgTable("retainer_periods", {
 
 export const invoices = pgTable("invoices", {
   id: uuid("id").primaryKey().defaultRandom(),
+  invoiceNumber: varchar("invoice_number", { length: 50 }).unique(), // E.g., ARO-2026-000001
   organizationId: uuid("organization_id").references(() => organizations.id, { onDelete: "cascade" }).notNull(),
   dealId: uuid("deal_id").references(() => deals.id, { onDelete: "set null" }), // Keep existing field to prevent breaking changes
   projectId: uuid("project_id").references(() => projects.id, { onDelete: "set null" }), // Added for Phase 4
   retainerPeriodId: uuid("retainer_period_id").references(() => retainerPeriods.id, { onDelete: "set null" }), // Added for Phase 4
   amount: integer("amount").notNull(), // Amount in cents
-  status: varchar("status", { length: 50 }).default("open"), // draft, open, paid, void
+  status: varchar("status", { length: 50 }).default("open"), // draft, open, partially_paid, paid, overdue, cancelled
   razorpayOrderId: varchar("razorpay_order_id", { length: 255 }),
   paymentUtr: varchar("payment_utr", { length: 255 }),
   paymentReceiptUrl: text("payment_receipt_url"),

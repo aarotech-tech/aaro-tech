@@ -16,7 +16,32 @@ export class FinanceService {
     amount: number, // in dollars
     dueDate: Date
   }, tx?: DbTx) {
+    const year = new Date().getFullYear();
+    const prefix = `ARO-${year}-`;
+    
+    // Find highest invoice number for this year
+    let maxNumber = 0;
+    const { db: database } = require('@/db');
+    const { invoices } = require('@/db/schema');
+    const { like, desc } = require('drizzle-orm');
+    
+    const latestInvoice = await database.query.invoices.findFirst({
+      where: like(invoices.invoiceNumber, `${prefix}%`),
+      orderBy: [desc(invoices.invoiceNumber)]
+    });
+
+    if (latestInvoice && latestInvoice.invoiceNumber) {
+      const parts = latestInvoice.invoiceNumber.split('-');
+      if (parts.length === 3) {
+        maxNumber = parseInt(parts[2], 10) || 0;
+      }
+    }
+
+    const nextNumber = maxNumber + 1;
+    const invoiceNumber = `${prefix}${String(nextNumber).padStart(6, '0')}`;
+
     const invoice = await this.repo.createInvoice({
+      invoiceNumber,
       organizationId: data.organizationId,
       projectId: data.projectId,
       retainerPeriodId: data.retainerPeriodId,
@@ -29,12 +54,36 @@ export class FinanceService {
   }
 
   async createDepositInvoice(organizationId: string, projectId: string, depositAmountCents: number, tx?: DbTx) {
+    const year = new Date().getFullYear();
+    const prefix = `ARO-${year}-`;
+    
+    let maxNumber = 0;
+    const { db: database } = require('@/db');
+    const { invoices } = require('@/db/schema');
+    const { like, desc } = require('drizzle-orm');
+    
+    const latestInvoice = await database.query.invoices.findFirst({
+      where: like(invoices.invoiceNumber, `${prefix}%`),
+      orderBy: [desc(invoices.invoiceNumber)]
+    });
+
+    if (latestInvoice && latestInvoice.invoiceNumber) {
+      const parts = latestInvoice.invoiceNumber.split('-');
+      if (parts.length === 3) {
+        maxNumber = parseInt(parts[2], 10) || 0;
+      }
+    }
+
+    const nextNumber = maxNumber + 1;
+    const invoiceNumber = `${prefix}${String(nextNumber).padStart(6, '0')}`;
+
     const invoice = await this.repo.createInvoice({
+      invoiceNumber,
       organizationId,
       projectId,
       amount: depositAmountCents,
       dueDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // Due in 7 days
-      status: "issued" // Deposit invoices are issued immediately
+      status: "open" // Deposit invoices are open immediately
     }, tx);
 
     emitDomainEvent({
@@ -75,7 +124,7 @@ export class FinanceService {
     if (!invoice) throw new Error("Invoice not found");
 
     // Integrity Rule: Cannot add payment to a voided/archived invoice
-    if (["voided", "archived", "paid"].includes(invoice.status || "")) {
+    if (["cancelled", "paid"].includes(invoice.status || "")) {
       throw new Error(`Cannot record payment against an invoice in status: ${invoice.status}`);
     }
 
@@ -147,34 +196,130 @@ export class FinanceService {
   }
 
   async getFinancialMetrics(organizationId?: string) {
-    // In a real system, we'd query the DB with agg functions.
-    // For now, returning mocked structure matching requirements.
+    const { db } = require('@/db');
+    const { invoices, payments, retainers, organizations } = require('@/db/schema');
+    const { eq, and, desc, gte } = require('drizzle-orm');
+
+    const now = new Date();
+    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+
+    const allInvoices = await db.query.invoices.findMany({
+      where: organizationId ? eq(invoices.organizationId, organizationId) : undefined,
+    });
+
+    let revenueThisMonthCents = 0;
+    let outstandingRevenueCents = 0;
+    let overdueAmountCents = 0;
+    let totalPaidInvoicesAmount = 0;
+    let totalInvoicesAmount = 0;
+
+    for (const inv of allInvoices) {
+      if (inv.status === 'paid' && inv.updatedAt && new Date(inv.updatedAt) >= startOfMonth) {
+        revenueThisMonthCents += inv.amount || 0;
+      }
+      if (['open', 'partially_paid', 'overdue'].includes(inv.status || '')) {
+        outstandingRevenueCents += inv.amount || 0;
+      }
+      if (inv.status === 'overdue') {
+        overdueAmountCents += inv.amount || 0;
+      }
+      if (inv.status !== 'draft' && inv.status !== 'cancelled') {
+        totalInvoicesAmount += inv.amount || 0;
+        if (inv.status === 'paid') {
+          totalPaidInvoicesAmount += inv.amount || 0;
+        }
+      }
+    }
+
+    const collectionRate = totalInvoicesAmount > 0 ? (totalPaidInvoicesAmount / totalInvoicesAmount) : 0;
+
+    // MRR Retainers
+    const allRetainers = await db.query.retainers.findMany({
+      where: organizationId ? eq(retainers.organizationId, organizationId) : undefined,
+    });
+    const mrrRetainers = allRetainers.filter((r: any) => r.status === 'active').length;
+
+    // Recently Paid Invoices
+    const recentlyPaid = await db
+      .select({
+        id: invoices.id,
+        amountCents: invoices.amount,
+        paidAt: invoices.updatedAt,
+        clientName: organizations.name,
+      })
+      .from(invoices)
+      .leftJoin(organizations, eq(invoices.organizationId, organizations.id))
+      .where(
+        and(
+          eq(invoices.status, 'paid'),
+          organizationId ? eq(invoices.organizationId, organizationId) : undefined
+        )
+      )
+      .orderBy(desc(invoices.updatedAt))
+      .limit(5);
+
     return {
-      revenueThisMonthCents: 1200000,
-      outstandingRevenueCents: 1500000,
-      overdueAmountCents: 200000,
-      collectionRate: 0.95,
-      mrrRetainers: 4,
-      recentlyPaidInvoices: [
-        { id: "inv_123", amountCents: 50000, paidAt: new Date().toISOString(), clientName: "Acme Corp" },
-        { id: "inv_124", amountCents: 15000, paidAt: new Date(Date.now() - 86400000).toISOString(), clientName: "Stark Ind" }
-      ]
+      revenueThisMonthCents,
+      outstandingRevenueCents,
+      overdueAmountCents,
+      collectionRate,
+      mrrRetainers,
+      recentlyPaidInvoices: recentlyPaid.map((p: any) => ({
+        id: p.id,
+        amountCents: p.amountCents || 0,
+        paidAt: (p.paidAt || new Date()).toISOString(),
+        clientName: p.clientName || 'Unknown',
+      })),
     };
   }
 
   async getClientInvoices(organizationId: string) {
-    // Mocked for Epic 6 UI scaffolding
-    return [
-      { id: "inv_1", number: "INV-2026-001", amountCents: 1500000, status: "issued", dueAt: new Date(Date.now() + 86400000 * 5).toISOString() },
-      { id: "inv_2", number: "INV-2026-002", amountCents: 500000, status: "paid", paidAt: new Date().toISOString() }
-    ];
+    const { db } = require('@/db');
+    const { invoices } = require('@/db/schema');
+    const { eq, desc } = require('drizzle-orm');
+
+    const allInvoices = await db.query.invoices.findMany({
+      where: eq(invoices.organizationId, organizationId),
+      orderBy: [desc(invoices.createdAt)],
+    });
+
+    return allInvoices.map((inv: any) => ({
+      id: inv.id,
+      number: `INV-${inv.id.substring(0, 8)}`,
+      amountCents: inv.amount || 0,
+      status: inv.status || "draft",
+      dueAt: inv.dueDate ? new Date(inv.dueDate).toISOString() : new Date().toISOString(),
+      paidAt: inv.status === 'paid' && inv.updatedAt ? new Date(inv.updatedAt).toISOString() : undefined,
+    }));
   }
 
   async getClientPayments(organizationId: string) {
-    // Mocked for Epic 6 UI scaffolding
-    return [
-      { id: "pay_1", invoiceNumber: "INV-2026-002", amountCents: 500000, method: "credit_card", status: "applied", appliedAt: new Date().toISOString() }
-    ];
+    const { db } = require('@/db');
+    const { payments, invoices } = require('@/db/schema');
+    const { eq, desc } = require('drizzle-orm');
+
+    const allPayments = await db
+      .select({
+        id: payments.id,
+        invoiceId: invoices.id,
+        amountCents: payments.amount,
+        method: payments.provider,
+        status: payments.status,
+        appliedAt: payments.paidAt,
+      })
+      .from(payments)
+      .innerJoin(invoices, eq(payments.invoiceId, invoices.id))
+      .where(eq(invoices.organizationId, organizationId))
+      .orderBy(desc(payments.createdAt));
+
+    return allPayments.map((p: any) => ({
+      id: p.id,
+      invoiceNumber: `INV-${p.invoiceId.substring(0, 8)}`,
+      amountCents: p.amountCents || 0,
+      method: p.method || "manual",
+      status: p.status || "pending",
+      appliedAt: p.appliedAt ? new Date(p.appliedAt).toISOString() : new Date().toISOString(),
+    }));
   }
   async getClientInvoiceDetails(invoiceId: string, organizationId: string) {
     const { db } = require('@/db');

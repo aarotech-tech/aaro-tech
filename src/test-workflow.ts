@@ -3,7 +3,7 @@ import { organizations, users, deals, proposals, projects, invoices, payments, t
 import { eq } from "drizzle-orm";
 import { actionClient, internalActionClient, tenantActionClient } from "@/lib/safe-action";
 import { createDealAction, addDealLineItemAction } from "@/modules/sales/actions";
-import { createInvoiceAction, recordManualPaymentAction } from "@/actions/finance";
+import { createInvoiceAction, recordManualPaymentAction } from "@/modules/finance/actions";
 import { createProjectAction, createTaskAction } from "@/modules/delivery/actions";
 import { financeService } from "@/modules/finance/services";
 
@@ -77,7 +77,7 @@ async function run() {
 
     // 4. Approve Proposal (Client)
     console.log("4. Client Approving Proposal...");
-    await SalesService.approveProposalClient(proposal.id, "John Doe E2E", "127.0.0.1");
+    await SalesService.approveProposalByToken(proposal.id, "John Doe E2E", "127.0.0.1");
 
     // The event bus should have created a project. Let's wait a moment for async events.
     await new Promise(r => setTimeout(r, 2000));

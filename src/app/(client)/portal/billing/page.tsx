@@ -21,8 +21,8 @@ export default async function ClientBillingPage() {
     financeService.getClientPayments(orgId)
   ]);
 
-  const outstandingInvoices = invoices.filter(i => i.status === "issued");
-  const paidInvoices = invoices.filter(i => i.status === "paid");
+  const outstandingInvoices = invoices.filter((i: any) => ["open", "partially_paid", "overdue"].includes(i.status || ""));
+  const paidInvoices = invoices.filter((i: any) => i.status === "paid");
 
   return (
     <div className="h-full overflow-y-auto flex flex-col">
@@ -52,7 +52,7 @@ export default async function ClientBillingPage() {
               <p className="text-sm text-gray-500 text-center py-6">You have no outstanding invoices.</p>
             ) : (
               <div className="space-y-4">
-                {outstandingInvoices.map(invoice => (
+                {outstandingInvoices.map((invoice: any) => (
                   <div key={invoice.id} className="flex justify-between items-center p-4 border rounded-md">
                     <div>
                       <p className="font-semibold text-gray-900">{invoice.number}</p>
@@ -81,7 +81,7 @@ export default async function ClientBillingPage() {
               <p className="text-sm text-gray-500 text-center py-6">No payment history available.</p>
             ) : (
               <div className="space-y-4">
-                {paidInvoices.map(invoice => (
+                {paidInvoices.map((invoice: any) => (
                   <div key={invoice.id} className="flex justify-between items-center p-4 border border-gray-100 bg-gray-50/30 rounded-md">
                     <div>
                       <p className="font-medium text-gray-900">{invoice.number}</p>

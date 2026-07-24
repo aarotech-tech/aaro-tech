@@ -7,7 +7,7 @@ import { z } from "zod";
 import { useAction } from "next-safe-action/hooks";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
-import { recordPaymentAction } from "@/modules/finance/actions";
+import { recordManualPaymentAction } from "@/modules/finance/actions";
 import { Loader2 } from "lucide-react";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
@@ -30,7 +30,7 @@ export function RecordPaymentButton({ invoiceId }: { invoiceId: string }) {
     },
   });
 
-  const { execute, isExecuting } = useAction(recordPaymentAction, {
+  const { execute, isExecuting } = useAction(recordManualPaymentAction, {
     onSuccess: ({ data }) => {
       if (data?.success) {
         toast.success("Payment recorded and pending verification.");
@@ -44,7 +44,7 @@ export function RecordPaymentButton({ invoiceId }: { invoiceId: string }) {
   });
 
   const onSubmit = (values: z.infer<typeof schema>) => {
-    execute(values);
+    execute({ ...values, method: "bank_transfer", paidAt: new Date() });
   };
 
   if (!isOpen) {

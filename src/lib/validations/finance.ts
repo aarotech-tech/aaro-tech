@@ -5,7 +5,7 @@ export const createInvoiceSchema = z.object({
   organizationId: z.string().uuid("Invalid Organization ID"),
   projectId: z.string().uuid("Invalid Project ID").optional(),
   amount: z.number().positive("Amount must be positive"), // in cents
-  dueDate: z.date(),
+  dueDate: z.union([z.string(), z.date()]).transform(v => new Date(v)),
   notes: z.string().optional(),
 });
 
@@ -18,7 +18,7 @@ export const recordManualPaymentSchema = z.object({
     message: "Invalid payment method",
   }),
   referenceNumber: z.string().min(1, "Reference number is required"),
-  paidAt: z.date(),
+  paidAt: z.union([z.string(), z.date()]).transform(v => new Date(v)),
   notes: z.string().optional(),
 });
 

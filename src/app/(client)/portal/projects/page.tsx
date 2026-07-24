@@ -34,7 +34,7 @@ export default async function ClientProjectsPage() {
       <div className="p-6 pt-0 flex-1 max-w-6xl mx-auto w-full">
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {projects.map(project => (
+        {projects.map((project: any) => (
           <Card key={project.id} className="shadow-sm hover:shadow-md transition-shadow">
             <CardHeader className="pb-3 border-b border-gray-100 bg-gray-50/50">
               <div className="flex justify-between items-start">

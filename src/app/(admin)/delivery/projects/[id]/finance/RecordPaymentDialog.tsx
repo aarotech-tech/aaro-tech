@@ -43,8 +43,6 @@ export function RecordPaymentDialog({
     try {
       const res = await recordManualPaymentAction({
         invoiceId,
-        projectId,
-        organizationId,
         amount: amountInCents,
         method,
         referenceNumber,

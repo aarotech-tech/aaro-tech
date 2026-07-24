@@ -8,6 +8,7 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { PageHeader } from "@/components/ui/page-header";
 import { Badge } from "@/components/ui/badge";
+import { formatCurrency } from "@/lib/formatters";
 
 export default async function ClientProjectWorkspacePage(props: { params: Promise<{ projectId: string }> }) {
   const user = await requireAuthenticatedUser();
@@ -109,7 +110,7 @@ export default async function ClientProjectWorkspacePage(props: { params: Promis
                       </div>
                       <div className="flex items-center gap-4">
                         <span className="font-semibold text-gray-900">
-                          {new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR" }).format(inv.amount / 100)}
+                          {formatCurrency(inv.amount)}
                         </span>
                         <Badge variant={inv.status === 'paid' ? 'default' : 'secondary'} className="capitalize">
                           {inv.status}

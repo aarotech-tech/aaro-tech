@@ -32,7 +32,7 @@ export const updateOrganizationSettings = internalActionClient
       updatedAt: new Date(),
     });
 
-    revalidatePath("/settings");
+    revalidatePath("/(admin)/settings", "page");
     
     return { success: true };
   });

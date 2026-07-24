@@ -35,7 +35,7 @@ export const addDealLineItemAction = internalActionClient
       await tx.update(deals).set({ value: totalValue }).where(eq(deals.id, data.dealId));
     });
 
-    revalidatePath(`/sales/proposals/${data.proposalId}`);
+    revalidatePath(`/(admin)/sales/proposals/${data.proposalId}`, "page");
     return { success: true };
   });
 
@@ -53,7 +53,7 @@ export async function removeDealLineItem(proposalId: string, dealId: string, lin
       await tx.update(deals).set({ value: totalValue }).where(eq(deals.id, dealId));
     });
     
-    revalidatePath(`/crm/proposals/${proposalId}`);
+    revalidatePath(`/(admin)/sales/proposals/${proposalId}`, "page");
     return true;
   });
 }
@@ -79,7 +79,7 @@ export async function saveDraftAction(proposalId: string, documentData: string) 
       .set({ documentData })
       .where(eq(proposals.id, proposalId));
 
-    revalidatePath(`/crm/proposals/${proposalId}`);
+    revalidatePath(`/(admin)/sales/proposals/${proposalId}`, "page");
     return true;
   });
 }
@@ -90,8 +90,8 @@ export async function sendProposalToClientAction(proposalId: string) {
     const { sendProposalToClientService } = await import("@/modules/sales/services");
     const result = await sendProposalToClientService(proposalId);
     
-    revalidatePath(`/crm/proposals/${proposalId}`);
-    revalidatePath(`/crm/proposals`);
+    revalidatePath(`/(admin)/sales/proposals/${proposalId}`, "page");
+    revalidatePath(`/(admin)/sales/proposals`, "page");
     return result;
   });
 }
@@ -103,7 +103,7 @@ export async function generateProposalWithAI(proposalId: string, dealName: strin
     const { generateProposalWithAIService } = await import("@/modules/sales/services");
     await generateProposalWithAIService(proposalId, dealName, orgName);
       
-    revalidatePath(`/crm/proposals/${proposalId}`);
+    revalidatePath(`/(admin)/sales/proposals/${proposalId}`, "page");
     return true;
   });
 }

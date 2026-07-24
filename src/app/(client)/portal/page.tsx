@@ -34,7 +34,7 @@ export default async function ClientDashboardPage() {
     return portalService.getDashboardData(myOrg.id, user.id);
   }, 3600);
 
-  const outstandingInvoices = clientInvoices.filter(i => i.status !== "paid" && i.status !== "void");
+  const outstandingInvoices = clientInvoices.filter(i => ["open", "partially_paid", "overdue"].includes(i.status || ""));
   const overdueInvoices = outstandingInvoices.filter(i => new Date(i.dueDate) < new Date());
   
   // Note: We don't expose internal pipeline, leads, or deals here.

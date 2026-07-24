@@ -4,6 +4,7 @@ import { eq, desc } from "drizzle-orm";
 import { Badge } from "@/components/ui/badge";
 import { notFound } from "next/navigation";
 import { RecordPaymentDialog } from "./RecordPaymentDialog";
+import { formatCurrency } from "@/lib/formatters";
 
 export default async function ProjectFinancePage({ params }: { params: Promise<{ id: string }> }) {
   const resolvedParams = await params;
@@ -61,10 +62,10 @@ export default async function ProjectFinancePage({ params }: { params: Promise<{
                     <td className="px-6 py-4 font-mono text-gray-600 truncate max-w-[120px]">{invoice.id}</td>
                     <td className="px-6 py-4 text-gray-600">{new Date(invoice.dueDate).toLocaleDateString()}</td>
                     <td className="px-6 py-4 font-medium">
-                      {new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR" }).format(invoice.amount / 100)}
+                      {formatCurrency(invoice.amount)}
                     </td>
                     <td className="px-6 py-4 font-medium text-gray-900">
-                      {new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR" }).format(balance / 100)}
+                      {formatCurrency(balance)}
                     </td>
                     <td className="px-6 py-4">
                       <Badge variant={invoice.status === 'paid' ? 'default' : invoice.status === 'open' ? 'secondary' : 'outline'} className="capitalize">

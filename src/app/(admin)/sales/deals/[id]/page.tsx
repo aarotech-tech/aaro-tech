@@ -1,4 +1,5 @@
 import { getDealDetails } from "@/modules/sales/services";
+import { formatCurrency } from "@/lib/formatters";
 import Link from "next/link";
 import { GenerateProposalButton } from "./_components/GenerateProposalButton";
 import { notFound } from "next/navigation";
@@ -19,7 +20,7 @@ export default async function DealDetailsPage({ params }: { params: Promise<{ id
   }
 
   const { deal, proposals } = data;
-  const formattedValue = new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR" }).format(deal.value / 100);
+  const formattedValue = formatCurrency(deal.value);
 
   return (
     <div className="h-full overflow-y-auto flex flex-col">

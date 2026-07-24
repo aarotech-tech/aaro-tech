@@ -18,8 +18,8 @@ export const qualifyLeadAction = internalActionClient
     // ctx.user is the internal user performing the action
     const result = await SalesService.qualifyLead(parsedInput.leadId, ctx.user.id);
     
-    revalidatePath("/sales/leads");
-    revalidatePath("/sales/pipeline");
+    revalidatePath("/(admin)/sales/leads", "page");
+    revalidatePath("/(admin)/sales/pipeline", "page");
     
     return result;
   });
@@ -43,7 +43,7 @@ export const publicApproveProposalAction = actionClient
       parsedInput.ipAddress
     );
 
-    revalidatePath(`/portal/proposals/${parsedInput.proposalId}`);
+    revalidatePath(`/(client)/portal/proposals/${parsedInput.proposalId}`, "page");
     return updated;
   });
 
@@ -63,7 +63,7 @@ export const updateDealStageAction = internalActionClient
       ctx.user.id
     );
 
-    revalidatePath("/sales/pipeline");
+    revalidatePath("/(admin)/sales/pipeline", "page");
     return result;
   });
 
@@ -82,7 +82,7 @@ export const createDealAction = internalActionClient
       ownerId: ctx.user.id,
     });
     
-    revalidatePath("/sales/pipeline");
+    revalidatePath("/(admin)/sales/pipeline", "page");
     return result;
   });
 
@@ -104,8 +104,8 @@ export const updateDealDetailsAction = internalActionClient
       userId: ctx.user.id,
     });
     
-    revalidatePath("/sales/pipeline");
-    revalidatePath(`/sales/deals/${parsedInput.dealId}`);
+    revalidatePath("/(admin)/sales/pipeline", "page");
+    revalidatePath(`/(admin)/sales/deals/${parsedInput.dealId}`, "layout");
     return result;
   });
 
@@ -117,7 +117,7 @@ export const createDraftProposalAction = internalActionClient
   .schema(createDraftProposalSchema)
   .action(async ({ parsedInput }) => {
     const proposal = await SalesService.createDraftProposalService(parsedInput.dealId);
-    revalidatePath(`/sales/deals/${parsedInput.dealId}`);
+    revalidatePath(`/(admin)/sales/deals/${parsedInput.dealId}`, "layout");
     return proposal;
   });
 
@@ -134,7 +134,7 @@ export const addDealLineItemAction = internalActionClient
   .schema(addDealLineItemSchema)
   .action(async ({ parsedInput }) => {
     await SalesService.addDealLineItemService(parsedInput);
-    revalidatePath(`/sales/deals/${parsedInput.dealId}`, 'layout');
+    revalidatePath(`/(admin)/sales/deals/${parsedInput.dealId}`, "layout");
     return true;
   });
 
@@ -147,7 +147,7 @@ export const removeDealLineItemAction = internalActionClient
   .schema(removeDealLineItemSchema)
   .action(async ({ parsedInput }) => {
     await SalesService.removeDealLineItemService(parsedInput.lineItemId, parsedInput.dealId);
-    revalidatePath(`/sales/deals/${parsedInput.dealId}`, 'layout');
+    revalidatePath(`/(admin)/sales/deals/${parsedInput.dealId}`, "layout");
     return true;
   });
 
@@ -166,7 +166,7 @@ export const generateProposalDocumentAction = internalActionClient
       parsedInput.dealName, 
       parsedInput.orgName
     );
-    revalidatePath(`/sales/deals/${parsedInput.dealId}/proposals/${parsedInput.proposalId}`);
+    revalidatePath(`/(admin)/sales/deals/${parsedInput.dealId}/proposals/${parsedInput.proposalId}`, "page");
     return true;
   });
 
@@ -179,7 +179,7 @@ export const sendProposalAction = internalActionClient
   .schema(sendProposalSchema)
   .action(async ({ parsedInput }) => {
     const res = await SalesService.sendProposalToClientService(parsedInput.proposalId);
-    revalidatePath(`/sales/deals/${parsedInput.dealId}`);
-    revalidatePath(`/sales/deals/${parsedInput.dealId}/proposals/${parsedInput.proposalId}`);
+    revalidatePath(`/(admin)/sales/deals/${parsedInput.dealId}`, "layout");
+    revalidatePath(`/(admin)/sales/deals/${parsedInput.dealId}/proposals/${parsedInput.proposalId}`, "page");
     return res;
   });

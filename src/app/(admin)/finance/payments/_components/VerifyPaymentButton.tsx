@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
-import { verifyManualPaymentAction } from "@/modules/finance/actions";
+import { verifyPaymentAction } from "@/modules/finance/actions";
 import { Loader2 } from "lucide-react";
 
 export function VerifyPaymentButton({ paymentId }: { paymentId: string }) {
@@ -17,7 +17,7 @@ export function VerifyPaymentButton({ paymentId }: { paymentId: string }) {
     setIsVerifying(true);
     
     try {
-      const result = await verifyManualPaymentAction({ paymentId });
+      const result = await verifyPaymentAction({ paymentId, status: "verified" });
       
       if (result?.data?.success) {
         toast.success("Payment verified successfully.");

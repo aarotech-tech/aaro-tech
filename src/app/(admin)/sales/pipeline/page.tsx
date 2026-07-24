@@ -9,7 +9,7 @@ import { NewDealModal } from "./_components/NewDealModal";
 
 export default async function PipelinePage() {
   // Fetch deals with their organization and owner names
-  const allDeals = await db
+  const allDealsData = await db
     .select({
       id: deals.id,
       name: deals.name,
@@ -18,14 +18,28 @@ export default async function PipelinePage() {
       expectedCloseDate: deals.expectedCloseDate,
       organizationId: deals.organizationId,
       organizationName: organizations.name,
-      contactName: contacts.name,
       ownerName: sql<string>`concat(${users.firstName}, ' ', ${users.lastName})`,
     })
     .from(deals)
     .leftJoin(organizations, eq(deals.organizationId, organizations.id))
-    .leftJoin(contacts, eq(organizations.id, contacts.organizationId))
     .leftJoin(users, eq(deals.ownerId, users.id))
     .where(isNull(deals.deletedAt));
+
+  const allContacts = await db
+    .select({ organizationId: contacts.organizationId, name: contacts.name })
+    .from(contacts);
+
+  const contactMap = new Map<string, string>();
+  for (const c of allContacts) {
+    if (!contactMap.has(c.organizationId)) {
+      contactMap.set(c.organizationId, c.name);
+    }
+  }
+
+  const allDeals = allDealsData.map(d => ({
+    ...d,
+    contactName: d.organizationId ? contactMap.get(d.organizationId) || null : null,
+  }));
 
   const orgsList = await db
     .select({ id: organizations.id, name: organizations.name })

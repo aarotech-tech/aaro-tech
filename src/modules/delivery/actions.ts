@@ -21,7 +21,7 @@ export const createProjectAction = internalActionClient
       parsedInput.projectName
     );
 
-    revalidatePath("/delivery/projects");
+    revalidatePath("/(admin)/delivery/projects", "page");
     return project;
   });
 
@@ -44,7 +44,7 @@ export const approveDeliverableAction = tenantActionClient
       ctx.orgId
     );
 
-    revalidatePath(`/portal/projects`);
+    revalidatePath(`/(client)/portal/projects`, "page");
     return result;
   });
 
@@ -66,7 +66,7 @@ export const requestRevisionAction = tenantActionClient
       ctx.orgId
     );
 
-    revalidatePath(`/portal/projects`);
+    revalidatePath(`/(client)/portal/projects`, "page");
     return result;
   });
 
@@ -81,7 +81,7 @@ export const planProjectAction = internalActionClient
   .schema(projectLifecycleSchema)
   .action(async ({ parsedInput }) => {
     const result = await DeliveryService.planProject(parsedInput.projectId, parsedInput.organizationId);
-    revalidatePath("/delivery/projects");
+    revalidatePath("/(admin)/delivery/projects", "page");
     return result;
   });
 
@@ -89,7 +89,7 @@ export const activateProjectAction = internalActionClient
   .schema(projectLifecycleSchema)
   .action(async ({ parsedInput }) => {
     const result = await DeliveryService.activateProject(parsedInput.projectId, parsedInput.organizationId);
-    revalidatePath("/delivery/projects");
+    revalidatePath("/(admin)/delivery/projects", "page");
     return result;
   });
 
@@ -101,7 +101,7 @@ export const submitDeliverableForInternalReviewAction = internalActionClient
   .schema(deliverableLifecycleSchema)
   .action(async ({ parsedInput }) => {
     const result = await DeliveryService.submitDeliverableForInternalReview(parsedInput.deliverableId);
-    revalidatePath("/delivery/reviews");
+    revalidatePath("/(admin)/delivery/reviews", "page");
     return result;
   });
 
@@ -109,7 +109,7 @@ export const markDeliverableReadyForClientAction = internalActionClient
   .schema(deliverableLifecycleSchema)
   .action(async ({ parsedInput }) => {
     const result = await DeliveryService.markDeliverableReadyForClient(parsedInput.deliverableId);
-    revalidatePath("/delivery/reviews");
+    revalidatePath("/(admin)/delivery/reviews", "page");
     return result;
   });
 
@@ -117,7 +117,7 @@ export const submitDeliverableForClientReviewAction = internalActionClient
   .schema(deliverableLifecycleSchema)
   .action(async ({ parsedInput }) => {
     const result = await DeliveryService.submitDeliverableForClientReview(parsedInput.deliverableId);
-    revalidatePath("/delivery/reviews");
+    revalidatePath("/(admin)/delivery/reviews", "page");
     return result;
   });
 
@@ -142,7 +142,7 @@ export const createTaskAction = internalActionClient
       userId: ctx.user.id,
     });
     
-    revalidatePath(`/projects/${parsedInput.projectId}/board`);
+    revalidatePath(`/(admin)/delivery/projects/${parsedInput.projectId}/board`, "page");
     return result;
   });
 
@@ -164,7 +164,59 @@ export const updateTaskStatusAction = internalActionClient
       ctx.user.id
     );
 
-    revalidatePath(`/projects/${parsedInput.projectId}/board`);
+    revalidatePath(`/(admin)/delivery/projects/${parsedInput.projectId}/board`, "page");
+    return result;
+  });
+
+const updateTaskDetailsSchema = z.object({
+  taskId: z.string().uuid(),
+  projectId: z.string().uuid(),
+  organizationId: z.string().uuid(),
+  title: z.string().min(1),
+  description: z.string().optional(),
+  priority: z.string().optional(),
+  dueDate: z.string().optional(),
+  assigneeId: z.string().uuid().optional(),
+});
+
+export const updateTaskAction = internalActionClient
+  .schema(updateTaskDetailsSchema)
+  .action(async ({ parsedInput, ctx }) => {
+    const result = await DeliveryService.updateTaskDetailsService(
+      parsedInput.taskId,
+      {
+        title: parsedInput.title,
+        description: parsedInput.description,
+        priority: parsedInput.priority,
+        dueDate: parsedInput.dueDate,
+        assigneeId: parsedInput.assigneeId,
+      },
+      parsedInput.projectId,
+      parsedInput.organizationId,
+      ctx.user.id
+    );
+
+    revalidatePath(`/(admin)/delivery/projects/${parsedInput.projectId}/board`, "page");
+    return result;
+  });
+
+const deleteTaskSchema = z.object({
+  taskId: z.string().uuid(),
+  projectId: z.string().uuid(),
+  organizationId: z.string().uuid(),
+});
+
+export const deleteTaskAction = internalActionClient
+  .schema(deleteTaskSchema)
+  .action(async ({ parsedInput, ctx }) => {
+    const result = await DeliveryService.deleteTaskService(
+      parsedInput.taskId,
+      parsedInput.projectId,
+      parsedInput.organizationId,
+      ctx.user.id
+    );
+
+    revalidatePath(`/(admin)/delivery/projects/${parsedInput.projectId}/board`, "page");
     return result;
   });
 
@@ -184,7 +236,7 @@ export const createMilestoneAction = internalActionClient
       userId: ctx.user.id,
     });
     
-    revalidatePath(`/projects/${parsedInput.projectId}`);
+    revalidatePath(`/(admin)/delivery/projects/${parsedInput.projectId}`, "page");
     return result;
   });
 
@@ -206,6 +258,6 @@ export const updateMilestoneStatusAction = internalActionClient
       ctx.user.id
     );
 
-    revalidatePath(`/projects/${parsedInput.projectId}`);
+    revalidatePath(`/(admin)/delivery/projects/${parsedInput.projectId}`, "page");
     return result;
   });

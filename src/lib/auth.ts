@@ -50,8 +50,8 @@ export async function requireAuthenticatedUser() {
       throw new UnauthorizedError("User database record not found and no email available");
     }
 
-    // Check if this should be an internal user
-    const isInternal = email.endsWith("@aarotech.in") || email === "info.aarotech@gmail.com";
+    // Check if this should be an internal user using Clerk public metadata
+    const isInternal = clerkUser.publicMetadata?.isInternal === true || clerkUser.publicMetadata?.role === 'internal';
 
     try {
       const [newUser] = await db.insert(users).values({

@@ -296,111 +296,86 @@ export async function markDealWon(dealId: string, organizationId: string, tx?: a
 }
 
 export async function getDashboardMetrics() {
-  // In a real implementation, this would execute aggregate queries across
-  // websiteLeads, deals, and proposals via SalesRepo.
-  // We mock the return structure to fulfill the Epic 5 Dashboard requirements.
+  const { db } = require('@/db');
+  const { websiteLeads, deals, proposals } = require('@/db/schema');
+  const { sql, eq, and, gte } = require('drizzle-orm');
+
+  const now = new Date();
+  const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const startOfWeek = new Date(now.getFullYear(), now.getMonth(), now.getDate() - now.getDay());
+  const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+
+  // Leads queries
+  const leadsStats = await db.select({
+    newToday: sql<number>`cast(count(case when ${websiteLeads.createdAt} >= ${startOfDay} then 1 end) as integer)`,
+    newThisWeek: sql<number>`cast(count(case when ${websiteLeads.createdAt} >= ${startOfWeek} then 1 end) as integer)`,
+    awaitingQualification: sql<number>`cast(count(case when ${websiteLeads.status} = 'new' then 1 end) as integer)`,
+    qualifiedThisMonth: sql<number>`cast(count(case when ${websiteLeads.status} = 'qualified' and ${websiteLeads.updatedAt} >= ${startOfMonth} then 1 end) as integer)`,
+  }).from(websiteLeads);
+
+  // Deals queries
+  const dealsStats = await db.select({
+    activeDeals: sql<number>`cast(count(case when ${deals.stage} not in ('won', 'lost') then 1 end) as integer)`,
+    wonThisMonth: sql<number>`cast(count(case when ${deals.stage} = 'won' and ${deals.updatedAt} >= ${startOfMonth} then 1 end) as integer)`,
+    lostThisMonth: sql<number>`cast(count(case when ${deals.stage} = 'lost' and ${deals.updatedAt} >= ${startOfMonth} then 1 end) as integer)`,
+    pipelineValueCents: sql<number>`cast(coalesce(sum(case when ${deals.stage} not in ('won', 'lost') then ${deals.value} else 0 end), 0) as integer)`,
+    discovery: sql<number>`cast(count(case when ${deals.stage} = 'discovery' then 1 end) as integer)`,
+    proposal: sql<number>`cast(count(case when ${deals.stage} = 'proposal' then 1 end) as integer)`,
+    negotiation: sql<number>`cast(count(case when ${deals.stage} = 'negotiation' then 1 end) as integer)`,
+  }).from(deals);
+
+  // Proposals queries
+  const proposalsStats = await db.select({
+    draft: sql<number>`cast(count(case when ${proposals.status} = 'draft' then 1 end) as integer)`,
+    sent: sql<number>`cast(count(case when ${proposals.status} = 'sent' then 1 end) as integer)`,
+    accepted: sql<number>`cast(count(case when ${proposals.status} = 'accepted' then 1 end) as integer)`,
+    rejected: sql<number>`cast(count(case when ${proposals.status} = 'rejected' then 1 end) as integer)`,
+  }).from(proposals);
+
+  const ls = leadsStats[0];
+  const ds = dealsStats[0];
+  const ps = proposalsStats[0];
+
+  const totalWonLost = ds.wonThisMonth + ds.lostThisMonth;
+  const winRatePct = totalWonLost > 0 ? Math.round((ds.wonThisMonth / totalWonLost) * 100) : 0;
+
+  const totalProposals = ps.accepted + ps.rejected;
+  const proposalConversionPct = totalProposals > 0 ? Math.round((ps.accepted / totalProposals) * 100) : 0;
+
   return {
     websiteLeads: {
-      newToday: 5,
-      newThisWeek: 24,
-      awaitingQualification: 12,
-      qualifiedThisMonth: 18,
-      leadToDealConversionPct: 45,
-      avgQualificationTimeHours: 48,
+      newToday: ls.newToday || 0,
+      newThisWeek: ls.newThisWeek || 0,
+      awaitingQualification: ls.awaitingQualification || 0,
+      qualifiedThisMonth: ls.qualifiedThisMonth || 0,
+      leadToDealConversionPct: 45, // Mocked for now (complex historical calc)
+      avgQualificationTimeHours: 48, // Mocked for now
     },
     deals: {
-      activeDeals: 34,
-      wonThisMonth: 8,
-      lostThisMonth: 3,
-      pipelineValueCents: 45000000,
+      activeDeals: ds.activeDeals || 0,
+      wonThisMonth: ds.wonThisMonth || 0,
+      lostThisMonth: ds.lostThisMonth || 0,
+      pipelineValueCents: ds.pipelineValueCents || 0,
       pipelineByStage: {
-        discovery: 15,
-        proposal: 10,
-        negotiation: 9,
+        discovery: ds.discovery || 0,
+        proposal: ds.proposal || 0,
+        negotiation: ds.negotiation || 0,
       },
-      winRatePct: 72,
+      winRatePct,
     },
     proposals: {
-      draft: 4,
-      sent: 8,
-      accepted: 12,
-      rejected: 2,
-      conversionPct: 85,
+      draft: ps.draft || 0,
+      sent: ps.sent || 0,
+      accepted: ps.accepted || 0,
+      rejected: ps.rejected || 0,
+      conversionPct: proposalConversionPct,
     },
   };
 }
 import { db } from "@/db";
-import { proposals, deals, organizations, organizationStatusHistory, clientOnboardings, onboardingSteps, projects, automationLogs } from "@/db/schema";
+import { proposals, deals, organizations } from "@/db/schema";
 import { eq } from "drizzle-orm";
 
-
-export async function approveProposalClient(proposalId: string, signatureText: string, ipAddress: string) {
-  const { db } = require('@/db');
-  const { proposals, deals, projects, organizations, onboardingSteps, clientOnboardings, automationLogs } = require('@/db/schema');
-  const { eq } = require('drizzle-orm');
-
-  const proposalData = await db.select().from(proposals).where(eq(proposals.id, proposalId)).limit(1);
-  if (proposalData.length === 0) throw new Error("Proposal not found");
-  const proposal = proposalData[0];
-
-  if (proposal.status !== "sent") {
-    throw new Error("Proposal is not in a state to be approved.");
-  }
-
-  await db.update(proposals)
-    .set({ 
-      status: "accepted", 
-      approvedAt: new Date(),
-      signatureText,
-      // signatureIp: ipAddress, (add to schema if needed later)
-    })
-    .where(eq(proposals.id, proposalId));
-
-  const dealData = await db.select().from(deals).where(eq(deals.id, proposal.dealId)).limit(1);
-  const deal = dealData[0];
-
-  if (deal.stage !== 'won') {
-    await db.update(deals).set({ stage: 'won' }).where(eq(deals.id, deal.id));
-
-    const orgData = await db.select().from(organizations).where(eq(organizations.id, deal.organizationId)).limit(1);
-    const org = orgData[0];
-    
-    if (org && org.type === 'lead') {
-      await db.update(organizations).set({ type: 'client', status: 'client' }).where(eq(organizations.id, org.id));
-
-      const [onboarding] = await db.insert(clientOnboardings).values({
-        organizationId: org.id,
-        status: "pending",
-      }).returning();
-
-      if (onboarding) {
-        await db.insert(onboardingSteps).values([
-          { onboardingId: onboarding.id, title: "Initial Deposit Paid", status: "pending" },
-          { onboardingId: onboarding.id, title: "Brand Assets Collected", status: "pending" },
-          { onboardingId: onboarding.id, title: "Kickoff Call Scheduled", status: "pending" },
-          { onboardingId: onboarding.id, title: "Project Brief Signed", status: "pending" },
-        ]);
-      }
-    }
-
-    await db.insert(projects).values({
-      organizationId: deal.organizationId,
-      dealId: deal.id,
-      name: "Fulfillment",
-      status: "active",
-      health: "green",
-    });
-
-    await db.insert(automationLogs).values({
-      jobName: "deal-won-alert",
-      status: "queued",
-      payload: JSON.stringify({ dealId: deal.id, clientName: deal.name }),
-      completedAt: null,
-    });
-  }
-  
-  return true;
-}
 export async function getClientProposalView(proposalId: string) {
   return await db
     .select({
@@ -413,6 +388,7 @@ export async function getClientProposalView(proposalId: string) {
       organizationName: organizations.name,
       approvedAt: proposals.approvedAt,
       signatureText: proposals.signatureText,
+      createdAt: proposals.createdAt,
     })
     .from(proposals)
     .innerJoin(deals, eq(proposals.dealId, deals.id))
@@ -481,7 +457,11 @@ export async function sendProposalToClientService(proposalId: string) {
     .where(eq(contacts.organizationId, proposal.organizationId))
     .limit(1);
 
-  const portalLink = `${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'}/proposals/${proposal.id}`;
+  const crypto = require("crypto");
+  const expires = Date.now() + 30 * 24 * 60 * 60 * 1000; // 30 days
+  const secret = process.env.PROPOSAL_SECRET || process.env.JWT_SECRET || "default_insecure_secret_for_dev";
+  const sig = crypto.createHmac("sha256", secret).update(`${proposal.id}:${expires}`).digest("hex");
+  const portalLink = `${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'}/proposals/${proposal.id}?expires=${expires}&sig=${sig}`;
 
   const sendToEmail = member.length > 0 ? member[0].email : "info@aarotech.in";
   const sendToName = member.length > 0 ? member[0].firstName : proposal.organizationName;

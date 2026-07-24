@@ -5,7 +5,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useAction } from "next-safe-action/hooks";
-import { recordManualPaymentAction } from "@/actions/finance";
+import { recordManualPaymentAction } from "@/modules/finance/actions";
 import { recordManualPaymentSchema } from "@/lib/validations/finance";
 import { CheckCircleIcon, Loader2Icon, UploadIcon } from "lucide-react";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
@@ -17,7 +17,7 @@ export default function PayInvoiceButton({ invoiceId }: { invoiceId: string }) {
   const [isOpen, setIsOpen] = useState(false);
   const [success, setSuccess] = useState(false);
 
-  const form = useForm<z.infer<typeof recordManualPaymentSchema>>({
+  const form = useForm<z.input<typeof recordManualPaymentSchema>>({
     resolver: zodResolver(recordManualPaymentSchema),
     defaultValues: {
       invoiceId: invoiceId,
@@ -40,7 +40,7 @@ export default function PayInvoiceButton({ invoiceId }: { invoiceId: string }) {
     }
   });
 
-  const onSubmit = (values: z.infer<typeof recordManualPaymentSchema>) => {
+  const onSubmit = (values: z.input<typeof recordManualPaymentSchema>) => {
     execute(values);
   };
 

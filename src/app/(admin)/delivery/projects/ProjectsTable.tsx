@@ -5,6 +5,7 @@ import { DataTable } from "@/components/ui/data-table";
 import { DataTableColumnHeader } from "@/components/ui/data-table-column-header";
 import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
+import { formatCurrency } from "@/lib/formatters";
 
 export function ProjectsTable({ projects }: { projects: any[] }) {
   const columns: ColumnDef<any>[] = [
@@ -46,7 +47,7 @@ export function ProjectsTable({ projects }: { projects: any[] }) {
       header: ({ column }) => <DataTableColumnHeader column={column} title="Value" />,
       cell: ({ row }) => (
         <div className="text-right">
-          {new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR" }).format((row.original.value || 0) / 100)}
+          {formatCurrency(row.original.value || 0)}
         </div>
       ),
     },

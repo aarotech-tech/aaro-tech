@@ -21,12 +21,12 @@ export const approveProposalAction = actionClient
 
       await rateLimit.check(`proposal_approval_${ip}`, { points: 5, durationInSeconds: 3600 });
 
-      const { approveProposalClient } = await import("@/modules/sales/services");
-      await approveProposalClient(proposalId, signature, ip);
+      const { approveProposalByToken } = await import("@/modules/sales/services");
+      await approveProposalByToken(proposalId, signature, ip);
 
-      revalidatePath(`/portal/proposals/${proposalId}`);
-      revalidatePath(`/sales/proposals/${proposalId}`);
-      revalidatePath("/sales");
+      revalidatePath(`/(client)/portal/proposals/${proposalId}`, "page");
+      revalidatePath(`/(admin)/sales/proposals/${proposalId}`, "page");
+      revalidatePath("/(admin)/sales", "layout");
       
       return { success: true };
     });

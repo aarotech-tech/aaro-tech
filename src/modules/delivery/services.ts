@@ -165,8 +165,24 @@ export async function approveDeliverable(deliverableId: string, commentText: str
   const deliverable = await DeliveryRepo.getDeliverableById(deliverableId);
   if (!deliverable) throw new Error("Deliverable not found");
   
-  const project = await DeliveryRepo.getProjectById(deliverable.projectId!);
-  if (project?.organizationId !== org.id) {
+  let organizationId: string | null = null;
+  if (deliverable.projectId) {
+    const project = await DeliveryRepo.getProjectById(deliverable.projectId);
+    organizationId = project?.organizationId || null;
+  } else if (deliverable.retainerPeriodId) {
+    const { db } = require('@/db');
+    const { retainerPeriods, retainers } = require('@/db/schema');
+    const { eq } = require('drizzle-orm');
+    const result = await db
+      .select({ organizationId: retainers.organizationId })
+      .from(retainerPeriods)
+      .innerJoin(retainers, eq(retainerPeriods.retainerId, retainers.id))
+      .where(eq(retainerPeriods.id, deliverable.retainerPeriodId))
+      .limit(1);
+    organizationId = result[0]?.organizationId || null;
+  }
+
+  if (organizationId !== org.id) {
     throw new Error("Unauthorized to approve this deliverable");
   }
 
@@ -192,7 +208,7 @@ export async function approveDeliverable(deliverableId: string, commentText: str
     type: "DeliverableApproved",
     payload: {
       deliverableId,
-      projectId: project.id,
+      projectId: deliverable.projectId || "",
       organizationId: org.id,
       userId,
     }
@@ -211,8 +227,24 @@ export async function requestDeliverableRevision(deliverableId: string, commentT
   const deliverable = await DeliveryRepo.getDeliverableById(deliverableId);
   if (!deliverable) throw new Error("Deliverable not found");
   
-  const project = await DeliveryRepo.getProjectById(deliverable.projectId!);
-  if (project?.organizationId !== org.id) {
+  let organizationId: string | null = null;
+  if (deliverable.projectId) {
+    const project = await DeliveryRepo.getProjectById(deliverable.projectId);
+    organizationId = project?.organizationId || null;
+  } else if (deliverable.retainerPeriodId) {
+    const { db } = require('@/db');
+    const { retainerPeriods, retainers } = require('@/db/schema');
+    const { eq } = require('drizzle-orm');
+    const result = await db
+      .select({ organizationId: retainers.organizationId })
+      .from(retainerPeriods)
+      .innerJoin(retainers, eq(retainerPeriods.retainerId, retainers.id))
+      .where(eq(retainerPeriods.id, deliverable.retainerPeriodId))
+      .limit(1);
+    organizationId = result[0]?.organizationId || null;
+  }
+
+  if (organizationId !== org.id) {
     throw new Error("Unauthorized to access this deliverable");
   }
 
@@ -236,7 +268,7 @@ export async function requestDeliverableRevision(deliverableId: string, commentT
     type: "DeliverableRejected",
     payload: {
       deliverableId,
-      projectId: project.id,
+      projectId: deliverable.projectId || "",
       organizationId: org.id,
       userId,
     }
@@ -246,43 +278,94 @@ export async function requestDeliverableRevision(deliverableId: string, commentT
 }
 
 export async function getDashboardMetrics() {
-  // Mocked for Epic 5. Real implementation will query DB.
+  const { db } = require('@/db');
+  const { projects, tasks, deliverables } = require('@/db/schema');
+  const { sql, eq } = require('drizzle-orm');
+
+  const now = new Date();
+  const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+  const endOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59, 999);
+
+  // Projects stats
+  const projectsStats = await db.select({
+    activeProjects: sql<number>`cast(count(case when ${projects.status} = 'active' then 1 end) as integer)`,
+    projectsAtRisk: sql<number>`cast(count(case when ${projects.health} in ('red', 'yellow') then 1 end) as integer)`,
+    projectsCompletedThisMonth: sql<number>`cast(count(case when ${projects.status} = 'completed' and ${projects.updatedAt} >= ${startOfMonth} then 1 end) as integer)`,
+  }).from(projects);
+
+  // Tasks stats
+  const tasksStats = await db.select({
+    tasksDueToday: sql<number>`cast(count(case when ${tasks.dueDate} <= ${endOfDay} and ${tasks.dueDate} >= current_date and ${tasks.status} != 'done' then 1 end) as integer)`,
+    overdueTasks: sql<number>`cast(count(case when ${tasks.dueDate} < current_date and ${tasks.status} != 'done' then 1 end) as integer)`,
+  }).from(tasks);
+
+  // Deliverables stats
+  const deliverablesStats = await db.select({
+    deliverablesAwaitingReview: sql<number>`cast(count(case when ${deliverables.status} = 'client_review' then 1 end) as integer)`,
+  }).from(deliverables);
+
+  const ps = projectsStats[0] || {};
+  const ts = tasksStats[0] || {};
+  const ds = deliverablesStats[0] || {};
+
   return {
-    activeProjects: 14,
-    projectsAtRisk: 2,
-    tasksDueToday: 8,
-    overdueTasks: 3,
-    deliverablesAwaitingReview: 5,
-    projectsCompletedThisMonth: 4,
+    activeProjects: ps.activeProjects || 0,
+    projectsAtRisk: ps.projectsAtRisk || 0,
+    tasksDueToday: ts.tasksDueToday || 0,
+    overdueTasks: ts.overdueTasks || 0,
+    deliverablesAwaitingReview: ds.deliverablesAwaitingReview || 0,
+    projectsCompletedThisMonth: ps.projectsCompletedThisMonth || 0,
   };
 }
 
 // --- CLIENT PORTAL READ MODELS (BFF Layer) --- //
 
 export async function getClientProjects(organizationId: string) {
-  // Mocked for Epic 6 UI scaffolding
-  return [
-    { id: "proj_1", name: "Acme Corp Web Redesign", status: "active", health: "green", progress: 65, nextMilestone: "Design Approval" },
-    { id: "proj_2", name: "Acme Corp Mobile App", status: "planned", health: "yellow", progress: 10, nextMilestone: "Kickoff" },
-  ];
+  const { db } = require('@/db');
+  const { projects } = require('@/db/schema');
+  const { eq } = require('drizzle-orm');
+
+  const allProjects = await db.select().from(projects).where(eq(projects.organizationId, organizationId));
+  
+  return allProjects.map((p: any) => ({
+    id: p.id,
+    name: p.name,
+    status: p.status,
+    health: p.health || "green",
+    progress: p.completionPercentage || 0,
+    nextMilestone: "Ongoing",
+  }));
 }
 
 export async function getClientProjectDetails(projectId: string, organizationId: string) {
-  // Strict tenant validation would happen here
+  const { db } = require('@/db');
+  const { projects, deliverables, tasks } = require('@/db/schema');
+  const { eq, and } = require('drizzle-orm');
+
+  const project = await db.query.projects.findFirst({
+    where: and(eq(projects.id, projectId), eq(projects.organizationId, organizationId)),
+    with: {
+      deliverables: true,
+      tasks: true,
+    }
+  });
+
+  if (!project) return null;
+
   return {
-    id: projectId,
-    name: "Acme Corp Web Redesign",
-    status: "active",
-    overview: "A complete overhaul of the Acme Corp digital presence.",
-    deliverables: [
-      { id: "del_1", name: "Wireframes", status: "approved" },
-      { id: "del_2", name: "Design System", status: "client_review" }
-    ],
-    timeline: [
-      { phase: "Discovery", status: "completed" },
-      { phase: "Design", status: "active" },
-      { phase: "Development", status: "pending" }
-    ]
+    id: project.id,
+    name: project.name,
+    status: project.status,
+    overview: project.description || "Project overview",
+    deliverables: project.deliverables.map((d: any) => ({
+      id: d.id,
+      name: d.name,
+      status: d.status || "draft",
+    })),
+    timeline: project.tasks.map((t: any) => ({
+      phase: t.title,
+      status: t.status === "done" ? "completed" : (t.status === "in_progress" ? "active" : "pending"),
+    }))
   };
 }
 
@@ -472,6 +555,11 @@ export async function createTaskService(data: {
   assigneeId?: string;
   userId: string;
 }) {
+  const project = await db.query.projects.findFirst({ where: eq(projects.id, data.projectId) });
+  if (!project || project.organizationId !== data.organizationId) {
+    throw new Error("Unauthorized: Project does not belong to the specified organization.");
+  }
+
   const [task] = await db.insert(tasks).values({
     projectId: data.projectId,
     title: data.title,
@@ -495,6 +583,11 @@ export async function updateTaskStatusService(
   organizationId: string,
   userId: string
 ) {
+  const project = await db.query.projects.findFirst({ where: eq(projects.id, projectId) });
+  if (!project || project.organizationId !== organizationId) {
+    throw new Error("Unauthorized: Project does not belong to the specified organization.");
+  }
+
   const [task] = await db.update(tasks)
     .set({ status, updatedAt: new Date() })
     .where(eq(tasks.id, taskId))
@@ -513,6 +606,11 @@ export async function createMilestoneService(data: {
   dueDate?: string;
   userId: string;
 }) {
+  const project = await db.query.projects.findFirst({ where: eq(projects.id, data.projectId) });
+  if (!project || project.organizationId !== data.organizationId) {
+    throw new Error("Unauthorized: Project does not belong to the specified organization.");
+  }
+
   const [milestone] = await db.insert(milestones).values({
     projectId: data.projectId,
     name: data.name,
@@ -531,6 +629,11 @@ export async function updateMilestoneStatusService(
   organizationId: string,
   userId: string
 ) {
+  const project = await db.query.projects.findFirst({ where: eq(projects.id, projectId) });
+  if (!project || project.organizationId !== organizationId) {
+    throw new Error("Unauthorized: Project does not belong to the specified organization.");
+  }
+
   const [milestone] = await db.update(milestones)
     .set({ 
       status, 
@@ -545,4 +648,55 @@ export async function updateMilestoneStatusService(
   }
 
   return milestone;
+}
+
+export async function updateTaskDetailsService(
+  taskId: string,
+  data: { title: string; description?: string; priority?: string; dueDate?: string; assigneeId?: string },
+  projectId: string,
+  organizationId: string,
+  userId: string
+) {
+  const project = await db.query.projects.findFirst({ where: eq(projects.id, projectId) });
+  if (!project || project.organizationId !== organizationId) {
+    throw new Error("Unauthorized: Project does not belong to the specified organization.");
+  }
+
+  const [task] = await db.update(tasks)
+    .set({
+      title: data.title,
+      description: data.description,
+      priority: data.priority,
+      dueDate: data.dueDate ? new Date(data.dueDate) : null,
+      assigneeId: data.assigneeId,
+      updatedAt: new Date()
+    })
+    .where(eq(tasks.id, taskId))
+    .returning();
+
+  await logProjectActivity(organizationId, projectId, "task.updated", userId, { taskId: task.id, title: task.title });
+  
+  return task;
+}
+
+export async function deleteTaskService(
+  taskId: string,
+  projectId: string,
+  organizationId: string,
+  userId: string
+) {
+  const project = await db.query.projects.findFirst({ where: eq(projects.id, projectId) });
+  if (!project || project.organizationId !== organizationId) {
+    throw new Error("Unauthorized: Project does not belong to the specified organization.");
+  }
+
+  const [task] = await db.delete(tasks)
+    .where(eq(tasks.id, taskId))
+    .returning();
+
+  if (task) {
+    await logProjectActivity(organizationId, projectId, "task.deleted", userId, { taskId: task.id, title: task.title });
+  }
+  
+  return task;
 }
