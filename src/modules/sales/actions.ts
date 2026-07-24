@@ -4,6 +4,7 @@ import { z } from "zod";
 import { internalActionClient, actionClient } from "@/lib/safe-action";
 import * as SalesService from "./services";
 import { revalidatePath } from "next/cache";
+import { contactFormSchema } from "@/lib/validations/contact";
 
 /**
  * Qualifies a lead. Requires internal agency access.
@@ -186,4 +187,9 @@ export const sendProposalAction = internalActionClient
     return res;
   });
 
-export const submitContactForm = async (data: any) => { return { success: true }; };
+export const submitContactForm = actionClient
+  .schema(contactFormSchema)
+  .action(async ({ parsedInput }) => {
+    // Note: can connect to lead creation service here later
+    return { success: true };
+  });
