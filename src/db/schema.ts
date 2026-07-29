@@ -13,6 +13,18 @@ import {
 } from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm";
 
+export const outboxEvents = pgTable("outbox_events", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  type: varchar("type", { length: 255 }).notNull(),
+  payload: jsonb("payload").notNull(),
+  status: varchar("status", { length: 50 }).notNull().default("pending"), // pending, processing, processed, failed
+  retryCount: integer("retry_count").notNull().default(0),
+  error: text("error"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow().$onUpdate(() => new Date()),
+  processedAt: timestamp("processed_at"),
+});
+
 export const organizations = pgTable("organizations", {
   id: uuid("id").primaryKey().defaultRandom(),
   clerkOrgId: varchar("clerk_org_id", { length: 255 }).unique().notNull(),

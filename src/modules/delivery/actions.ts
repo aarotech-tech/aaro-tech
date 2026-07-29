@@ -221,6 +221,24 @@ export const deleteTaskAction = internalActionClient
   });
 
 // Milestone Actions
+const getTaskDetailsSchema = z.object({
+  taskId: z.string().uuid(),
+  projectId: z.string().uuid(),
+  organizationId: z.string().uuid(),
+});
+
+export const getTaskDetailsAction = internalActionClient
+  .schema(getTaskDetailsSchema)
+  .action(async ({ parsedInput }) => {
+    const result = await DeliveryService.getTaskDetailsService(
+      parsedInput.taskId,
+      parsedInput.projectId,
+      parsedInput.organizationId
+    );
+    return result;
+  });
+
+// Milestone Actions
 const createMilestoneSchema = z.object({
   projectId: z.string().uuid(),
   organizationId: z.string().uuid(),

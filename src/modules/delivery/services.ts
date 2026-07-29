@@ -5,6 +5,7 @@ import { db } from "@/db";
 import { projects, tasks, milestones, activityLogs, files, retainerPeriods, retainers, deliverables, deliverableVersions, comments, auditLogs, projectMembers, taskComments } from "@/db/schema";
 import { eq, and, desc, asc, sql, ilike, or } from "drizzle-orm";
 import { sendDeliverableClientResponseEmail } from "@/lib/email";
+import { DomainStateTransitionError } from "../core/errors";
 
 export type ProjectStatus = "pending" | "planned" | "active" | "on_hold" | "completed" | "archived";
 export type DeliverableStatus = "draft" | "internal_review" | "ready_for_client" | "client_review" | "approved" | "archived";
@@ -23,7 +24,7 @@ function validateProjectTransition(current: string, next: ProjectStatus) {
   
   const allowed = validTransitions[current] || [];
   if (!allowed.includes(next)) {
-    throw new Error(`Invalid project state transition from ${current} to ${next}`);
+    throw new DomainStateTransitionError(`Invalid project state transition from ${current} to ${next}`);
   }
 }
 
@@ -41,7 +42,7 @@ function validateDeliverableTransition(current: string, next: DeliverableStatus)
   
   const allowed = validTransitions[current] || [];
   if (!allowed.includes(next)) {
-    throw new Error(`Invalid deliverable state transition from ${current} to ${next}`);
+    throw new DomainStateTransitionError(`Invalid deliverable state transition from ${current} to ${next}`);
   }
 }
 
@@ -707,6 +708,35 @@ export async function deleteTaskService(
 }
 
 // Dummy functions to fix build errors for unimplemented server actions
+export async function getTaskDetailsService(
+  taskId: string,
+  projectId: string,
+  organizationId: string,
+) {
+  const project = await db.query.projects.findFirst({ where: eq(projects.id, projectId) });
+  if (!project || project.organizationId !== organizationId) {
+    throw new Error("Unauthorized: Project does not belong to the specified organization.");
+  }
+
+  const task = await db.query.tasks.findFirst({
+    where: eq(tasks.id, taskId),
+    with: {
+      assignee: {
+        columns: {
+          firstName: true,
+          lastName: true,
+        }
+      }
+    }
+  });
+
+  if (!task || task.projectId !== projectId) {
+    throw new Error("Task not found.");
+  }
+
+  return task;
+}
+
 export async function createProjectService(data: any) { throw new Error('Not implemented'); }
 export async function updateProjectService(data: any) { throw new Error('Not implemented'); }
 export async function archiveProjectService(id: string) { throw new Error('Not implemented'); }

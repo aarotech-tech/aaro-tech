@@ -7,8 +7,7 @@ import { revalidatePath } from "next/cache";
 export async function markAsRead(notificationId: string) {
   const user = await requireAuthenticatedUser();
   await notificationService.markAsRead(user.id, notificationId);
-  revalidatePath("/(admin)/inbox", "page");
-  revalidatePath("/(admin)/dashboard", "page");
+  revalidatePath("/(admin)", "layout");
   revalidatePath("/(client)/portal/notifications", "page");
   revalidatePath("/(client)/portal/home", "page");
 }
@@ -16,8 +15,7 @@ export async function markAsRead(notificationId: string) {
 export async function markAllAsRead() {
   const user = await requireAuthenticatedUser();
   await notificationService.markAllAsRead(user.id);
-  revalidatePath("/(admin)/inbox", "page");
-  revalidatePath("/(admin)/dashboard", "page");
+  revalidatePath("/(admin)", "layout");
   revalidatePath("/(client)/portal/notifications", "page");
   revalidatePath("/(client)/portal/home", "page");
 }
@@ -25,8 +23,7 @@ export async function markAllAsRead() {
 export async function archiveNotification(notificationId: string) {
   const user = await requireAuthenticatedUser();
   await notificationService.archive(user.id, notificationId);
-  revalidatePath("/(admin)/inbox", "page");
-  revalidatePath("/(admin)/dashboard", "page");
+  revalidatePath("/(admin)", "layout");
   revalidatePath("/(client)/portal/notifications", "page");
   revalidatePath("/(client)/portal/home", "page");
 }

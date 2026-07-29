@@ -38,7 +38,7 @@ export const updateInvoiceAction = internalActionClient
   .schema(updateInvoiceSchema)
   .action(async ({ parsedInput, ctx }) => {
     const { invoiceId, organizationId, ...data } = parsedInput;
-    const result = await FinanceService.updateInvoiceService(invoiceId, organizationId, data, ctx.user.id);
+    const result = await FinanceService.financeService.updateInvoice(invoiceId, organizationId, data, ctx.user.id);
     revalidatePath("/(admin)/finance", "layout");
     return { success: true, result };
   });
@@ -50,7 +50,7 @@ const voidInvoiceSchema = z.object({
 export const voidInvoiceAction = internalActionClient
   .schema(voidInvoiceSchema)
   .action(async ({ parsedInput, ctx }) => {
-    const result = await FinanceService.voidInvoiceService(parsedInput.invoiceId, parsedInput.organizationId, ctx.user.id);
+    const result = await FinanceService.financeService.voidInvoice(parsedInput.invoiceId, parsedInput.organizationId, ctx.user.id);
     revalidatePath("/(admin)/finance", "layout");
     return { success: true, result };
   });
@@ -62,7 +62,7 @@ const cancelInvoiceSchema = z.object({
 export const cancelInvoiceAction = internalActionClient
   .schema(cancelInvoiceSchema)
   .action(async ({ parsedInput, ctx }) => {
-    const result = await FinanceService.cancelInvoiceService(parsedInput.invoiceId, parsedInput.organizationId, ctx.user.id);
+    const result = await FinanceService.financeService.cancelInvoice(parsedInput.invoiceId, parsedInput.organizationId, ctx.user.id);
     revalidatePath("/(admin)/finance", "layout");
     return { success: true, result };
   });
@@ -91,7 +91,7 @@ export const recordManualPaymentAction = tenantActionClient
       orgId = parsedInput.organizationId;
     }
 
-    const result = await FinanceService.recordManualPaymentService({
+    const result = await FinanceService.financeService.recordManualPayment({
       ...parsedInput,
       organizationId: orgId,
       userId: (ctx as any).userId || (ctx as any).user?.id,
@@ -111,7 +111,7 @@ export const verifyPaymentAction = internalActionClient
   .action(async ({ parsedInput, ctx }) => {
     const orgId = parsedInput.organizationId || (ctx as any).orgId || "";
     // Note: The previous signature accepted "status: 'verified'"
-    const result = await FinanceService.verifyManualPaymentService(parsedInput.paymentId, orgId, ctx.user.id);
+    const result = await FinanceService.financeService.verifyManualPayment(parsedInput.paymentId, orgId, ctx.user.id);
     revalidatePath("/(admin)/finance", "layout");
     return { success: true, result };
   });
@@ -124,7 +124,7 @@ export const rejectPaymentAction = internalActionClient
   .schema(rejectPaymentSchema)
   .action(async ({ parsedInput, ctx }) => {
     const orgId = parsedInput.organizationId || (ctx as any).orgId || "";
-    const result = await FinanceService.rejectManualPaymentService(parsedInput.paymentId, orgId, ctx.user.id);
+    const result = await FinanceService.financeService.rejectManualPayment(parsedInput.paymentId, orgId, ctx.user.id);
     revalidatePath("/(admin)/finance", "layout");
     return { success: true, result };
   });

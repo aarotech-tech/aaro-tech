@@ -11,12 +11,17 @@ import { WorkspaceConfig, WORKSPACE_LIST } from "@/lib/constants/navigation";
 interface AdminShellProps {
   children: ReactNode;
   sidebar?: ReactNode;
-  configId?: string;
+  unreadCount?: number;
 }
 
-export function AdminShell({ children, sidebar, configId }: AdminShellProps) {
+export function AdminShell({ children, sidebar, unreadCount = 0 }: AdminShellProps) {
   const pathname = usePathname();
-  const config = configId ? WORKSPACE_LIST.find(w => w.id === configId) : undefined;
+  
+  // Deterministic config resolution based on root segment
+  const activeWorkspaceId = pathname.split("/")[1];
+  const config = activeWorkspaceId 
+    ? WORKSPACE_LIST.find(w => w.id === activeWorkspaceId) 
+    : undefined;
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
@@ -59,7 +64,11 @@ export function AdminShell({ children, sidebar, configId }: AdminShellProps) {
           
           <Link href="/inbox" className="text-gray-500 hover:text-gray-700 relative">
             <Bell className="h-5 w-5" />
-            <span className="absolute top-0 right-0 block h-2 w-2 rounded-full bg-red-500 ring-2 ring-white" />
+            {unreadCount > 0 && (
+              <span className="absolute -top-1 -right-1 block h-4 w-4 rounded-full bg-red-500 text-white text-[10px] font-bold flex items-center justify-center">
+                {unreadCount > 99 ? '99+' : unreadCount}
+              </span>
+            )}
           </Link>
 
           <div className="h-8 w-8 rounded-full bg-gray-200 flex items-center justify-center overflow-hidden border border-gray-300">

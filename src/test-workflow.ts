@@ -5,7 +5,7 @@ import { actionClient, internalActionClient, tenantActionClient } from "@/lib/sa
 import { createDealAction, addDealLineItemAction } from "@/modules/sales/actions";
 import { createInvoiceAction, recordManualPaymentAction } from "@/modules/finance/actions";
 import { createProjectAction, createTaskAction } from "@/modules/delivery/actions";
-import { financeService, recordManualPaymentService } from "@/modules/finance/services";
+import { financeService } from "@/modules/finance/services";
 import * as SalesService from "@/modules/sales/services";
 import * as DeliveryService from "@/modules/delivery/services";
 
@@ -112,7 +112,7 @@ async function run() {
 
     // 8. Record Payment
     console.log("8. Recording Payment...");
-    const payment = await recordManualPaymentService({
+    const payment = await financeService.recordManualPayment({
       invoiceId: invoice.id,
       amount: invoice.amount,
       method: "bank_transfer",

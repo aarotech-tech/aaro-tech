@@ -6,6 +6,8 @@ import { projects, organizations } from "@/db/schema";
 import { eq } from "drizzle-orm";
 import { notFound } from "next/navigation";
 
+import { ProjectTabs } from "./ProjectTabs";
+
 export default async function ProjectLayout({ 
   children, 
   params 
@@ -57,17 +59,7 @@ export default async function ProjectLayout({
           }
         />
         
-        <div className="flex space-x-4 border-b border-gray-200 mt-6">
-          {tabs.map((tab) => (
-            <Link 
-              key={tab.name}
-              href={tab.href}
-              className="px-4 py-2 text-sm font-medium text-gray-500 hover:text-gray-900 border-b-2 border-transparent hover:border-gray-300 transition-colors"
-            >
-              {tab.name}
-            </Link>
-          ))}
-        </div>
+        <ProjectTabs tabs={tabs} />
       </div>
       
       <div className="flex-1 p-6">

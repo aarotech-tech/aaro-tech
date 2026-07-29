@@ -114,77 +114,7 @@ export class FinanceService {
     return updated;
   }
 
-  async recordPayment(invoiceId: string, amountDollars: number, referenceNumber: string) {
-    const invoice = await this.repo.findInvoiceById(invoiceId);
-    if (!invoice) throw new Error("Invoice not found");
 
-    // Integrity Rule: Cannot add payment to a voided/archived invoice
-    if (["cancelled", "paid"].includes(invoice.status || "")) {
-      throw new Error(`Cannot record payment against an invoice in status: ${invoice.status}`);
-    }
-
-    // Ensure payment doesn't exceed invoice total (assuming amount is total expected).
-    // In a real system, we'd sum existing payments.
-    const amountCents = amountDollars * 100;
-
-    const payment = await this.repo.createPayment({
-      invoiceId,
-      amount: amountCents,
-      status: "pending",
-      provider: "manual",
-      referenceNumber,
-    });
-    
-    return payment;
-  }
-
-  async verifyManualPayment(paymentId: string, internalUserId: string) {
-    const payment = await this.repo.findPaymentById(paymentId);
-    if (!payment) throw new Error("Payment not found");
-    
-    validatePaymentTransition(payment.status as PaymentStatusType, "verified");
-
-    await this.repo.updatePayment(paymentId, {
-      status: "verified",
-      verifiedAt: new Date(),
-      verifiedBy: internalUserId
-    });
-
-    // Auto-apply logic
-    validatePaymentTransition("verified", "applied");
-    await this.repo.updatePayment(paymentId, {
-      status: "applied",
-      paidAt: new Date()
-    });
-
-    const invoice = await this.repo.findInvoiceById(payment.invoiceId);
-    if (invoice) {
-      // Transition invoice based on payment application (simplified to full 'paid' here)
-      validateInvoiceTransition(invoice.status as InvoiceStatusType, "paid");
-      await this.repo.updateInvoice(invoice.id, { status: "paid" });
-
-      emitDomainEvent({
-        type: "PaymentVerified",
-        payload: {
-          organizationId: invoice.organizationId,
-          paymentId: payment.id,
-          amount: payment.amount,
-        }
-      });
-
-      emitDomainEvent({
-        type: "InvoicePaid",
-        payload: {
-          organizationId: invoice.organizationId,
-          invoiceId: invoice.id,
-          amount: payment.amount,
-          provider: payment.provider || "manual",
-        }
-      });
-    }
-
-    return true;
-  }
 
   async getInvoiceById(invoiceId: string) {
     return this.repo.findInvoiceById(invoiceId);
@@ -338,234 +268,259 @@ export class FinanceService {
     return { invoice, project, period, payments: invoicePayments };
   }
 
-}
-export const financeService = new FinanceService();
+  async updateInvoice(invoiceId: string, organizationId: string, data: { subTotal: number, gstAmount: number, discountAmount: number, dueDate: string, notes?: string }, userId: string) {
+    const invoice = await this.repo.findInvoiceById(invoiceId);
+    if (!invoice || invoice.organizationId !== organizationId) throw new Error("Invoice not found");
 
-export async function updateInvoiceService(invoiceId: string, organizationId: string, data: { subTotal: number, gstAmount: number, discountAmount: number, dueDate: string, notes?: string }, userId: string) {
-  const invoice = await db.query.invoices.findFirst({ where: and(eq(invoices.id, invoiceId), eq(invoices.organizationId, organizationId)) });
-  if (!invoice) throw new Error("Invoice not found");
-
-  const totalAmount = data.subTotal + data.gstAmount - data.discountAmount;
-  
-  const [updated] = await db.update(invoices).set({
-    subTotal: data.subTotal,
-    gstAmount: data.gstAmount,
-    discountAmount: data.discountAmount,
-    amount: totalAmount,
-    dueDate: new Date(data.dueDate),
-    notes: data.notes,
-    updatedAt: new Date(),
-    updatedBy: userId
-  }).where(eq(invoices.id, invoiceId)).returning();
-
-  return updated;
-}
-
-export async function voidInvoiceService(invoiceId: string, organizationId: string, userId: string) {
-  const invoice = await db.query.invoices.findFirst({ where: and(eq(invoices.id, invoiceId), eq(invoices.organizationId, organizationId)) });
-  if (!invoice) throw new Error("Invoice not found");
-
-  if (invoice.status === "paid" || invoice.status === "voided") throw new Error("Cannot void a paid or already voided invoice.");
-
-  const [updated] = await db.update(invoices).set({
-    status: "voided",
-    updatedAt: new Date(),
-    updatedBy: userId
-  }).where(eq(invoices.id, invoiceId)).returning();
-
-  return updated;
-}
-
-export async function cancelInvoiceService(invoiceId: string, organizationId: string, userId: string) {
-  const invoice = await db.query.invoices.findFirst({ where: and(eq(invoices.id, invoiceId), eq(invoices.organizationId, organizationId)) });
-  if (!invoice) throw new Error("Invoice not found");
-
-  if (invoice.status === "paid" || invoice.status === "cancelled") throw new Error("Cannot cancel a paid or already cancelled invoice.");
-
-  const [updated] = await db.update(invoices).set({
-    status: "cancelled",
-    updatedAt: new Date(),
-    updatedBy: userId
-  }).where(eq(invoices.id, invoiceId)).returning();
-
-  return updated;
-}export async function recordManualPaymentService(data: {
-  invoiceId: string;
-  amount: number;
-  method: string;
-  referenceNumber?: string;
-  notes?: string;
-  paidAt: string;
-  userId: string;
-  organizationId: string;
-  attachments?: any;
-}) {
-  const invoice = await db.query.invoices.findFirst({
-    where: and(eq(invoices.id, data.invoiceId), eq(invoices.organizationId, data.organizationId)),
-    with: { payments: true }
-  });
-
-  if (!invoice) throw new Error("Invoice not found or unauthorized.");
-
-  // Use the Manual Payment Provider
-  const { providerPaymentId } = await manualPaymentProvider.createPaymentIntent(invoice, data.amount);
-
-  const [payment] = await db.insert(payments).values({
-    invoiceId: data.invoiceId,
-    amount: data.amount,
-    provider: manualPaymentProvider.name,
-    providerPaymentId,
-    status: "pending", // Record as pending until verified
-    method: data.method,
-    referenceNumber: data.referenceNumber,
-    notes: data.notes,
-    attachments: data.attachments || null,
-    paidAt: new Date(data.paidAt),
-    createdBy: data.userId,
-  }).returning();
-
-  return payment;
-}
-
-export async function verifyManualPaymentService(paymentId: string, organizationId: string, userId: string) {
-  const payment = await db.query.payments.findFirst({
-    where: eq(payments.id, paymentId),
-    with: { invoice: true }
-  });
-  
-  if (!payment || !payment.invoice || payment.invoice.organizationId !== organizationId) {
-    throw new Error("Payment not found");
-  }
-
-  const isValid = await manualPaymentProvider.verifyPayment(payment.providerPaymentId!, null);
-  if (!isValid) throw new Error("Verification failed by provider");
-
-  const [updatedPayment] = await db.update(payments).set({
-    status: "succeeded",
-    verifiedAt: new Date(),
-    verifiedBy: userId,
-    updatedAt: new Date(),
-    updatedBy: userId
-  }).where(eq(payments.id, paymentId)).returning();
-
-  // Recalculate invoice status
-  const allPayments = await db.query.payments.findMany({ where: eq(payments.invoiceId, payment.invoiceId) });
-  const totalPaid = allPayments.filter(p => p.status === "succeeded").reduce((acc, p) => acc + p.amount, 0);
-
-  let newStatus = payment.invoice.status;
-  if (totalPaid >= payment.invoice.amount) {
-    newStatus = "paid";
-  } else if (totalPaid > 0) {
-    newStatus = "partially_paid";
-  }
-
-  if (newStatus !== payment.invoice.status) {
-    await db.update(invoices).set({ status: newStatus }).where(eq(invoices.id, payment.invoiceId));
-  }
-
-  return updatedPayment;
-}
-
-export async function rejectManualPaymentService(paymentId: string, organizationId: string, userId: string) {
-  const payment = await db.query.payments.findFirst({
-    where: eq(payments.id, paymentId),
-    with: { invoice: true }
-  });
-  
-  if (!payment || !payment.invoice || payment.invoice.organizationId !== organizationId) {
-    throw new Error("Payment not found");
-  }
-
-  const [updatedPayment] = await db.update(payments).set({
-    status: "failed",
-    updatedAt: new Date(),
-    updatedBy: userId
-  }).where(eq(payments.id, paymentId)).returning();
-
-  return updatedPayment;
-}
-
-export async function getFinanceDashboardMetricsService(organizationId: string) {
-
-  const now = new Date();
-  const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
-
-  const allInvoices = await db.query.invoices.findMany({
-    where: eq(invoices.organizationId, organizationId),
-    with: { payments: true }
-  });
-
-  let revenueThisMonthCents = 0;
-  let outstandingRevenueCents = 0;
-  let collectionAmountThisMonth = 0;
-  
-  // Payment methods breakdown
-  const methodMap: Record<string, number> = {};
-
-  for (const inv of allInvoices) {
-    const isPaid = inv.status === 'paid';
-    if (isPaid && inv.updatedAt && new Date(inv.updatedAt) >= startOfMonth) {
-      revenueThisMonthCents += inv.amount || 0;
-    }
+    const totalAmount = data.subTotal + data.gstAmount - data.discountAmount;
     
-    if (['open', 'partially_paid', 'overdue'].includes(inv.status || '')) {
-      const paidSoFar = inv.payments.filter((p: any) => p.status === "succeeded").reduce((acc: number, p: any) => acc + p.amount, 0);
-      outstandingRevenueCents += (inv.amount - paidSoFar);
-    }
+    const [updated] = await this.repo.updateInvoice(invoiceId, {
+      subTotal: data.subTotal,
+      gstAmount: data.gstAmount,
+      discountAmount: data.discountAmount,
+      amount: totalAmount,
+      dueDate: new Date(data.dueDate),
+      notes: data.notes,
+      updatedAt: new Date(),
+      updatedBy: userId
+    });
 
-    // Collections based on successful payments in month
-    for (const p of inv.payments) {
-      if (p.status === "succeeded" && p.verifiedAt && new Date(p.verifiedAt) >= startOfMonth) {
-        collectionAmountThisMonth += p.amount;
-      }
-      if (p.status === "succeeded") {
-        methodMap[p.method || 'unknown'] = (methodMap[p.method || 'unknown'] || 0) + p.amount;
-      }
-    }
+    return updated;
   }
 
-  // Monthly Revenue Data (real aggregation)
-  const monthlyRevenue = [];
-  for (let i = 5; i >= 0; i--) {
-    const monthStart = new Date(now.getFullYear(), now.getMonth() - i, 1);
-    const monthEnd = new Date(now.getFullYear(), now.getMonth() - i + 1, 0, 23, 59, 59, 999);
+  async voidInvoice(invoiceId: string, organizationId: string, userId: string) {
+    const invoice = await this.repo.findInvoiceById(invoiceId);
+    if (!invoice || invoice.organizationId !== organizationId) throw new Error("Invoice not found");
+
+    if (invoice.status === "paid" || invoice.status === "voided") throw new Error("Cannot void a paid or already voided invoice.");
+
+    const [updated] = await this.repo.updateInvoice(invoiceId, {
+      status: "voided",
+      updatedAt: new Date(),
+      updatedBy: userId
+    });
+
+    return updated;
+  }
+
+  async cancelInvoice(invoiceId: string, organizationId: string, userId: string) {
+    const invoice = await this.repo.findInvoiceById(invoiceId);
+    if (!invoice || invoice.organizationId !== organizationId) throw new Error("Invoice not found");
+
+    if (invoice.status === "paid" || invoice.status === "cancelled") throw new Error("Cannot cancel a paid or already cancelled invoice.");
+
+    const [updated] = await this.repo.updateInvoice(invoiceId, {
+      status: "cancelled",
+      updatedAt: new Date(),
+      updatedBy: userId
+    });
+
+    return updated;
+  }
+
+  async recordManualPayment(data: {
+    invoiceId: string;
+    amount: number;
+    method: string;
+    referenceNumber?: string;
+    notes?: string;
+    paidAt: string;
+    userId: string;
+    organizationId: string;
+    attachments?: any;
+  }) {
+    const invoice = await db.query.invoices.findFirst({
+      where: and(eq(invoices.id, data.invoiceId), eq(invoices.organizationId, data.organizationId)),
+      with: { payments: true }
+    });
+
+    if (!invoice) throw new Error("Invoice not found or unauthorized.");
+
+    const { providerPaymentId } = await manualPaymentProvider.createPaymentIntent(invoice, data.amount);
+
+    const payment = await this.repo.createPayment({
+      invoiceId: data.invoiceId,
+      amount: data.amount,
+      provider: manualPaymentProvider.name,
+      providerPaymentId,
+      status: "pending",
+      method: data.method,
+      referenceNumber: data.referenceNumber,
+      notes: data.notes,
+      attachments: data.attachments || null,
+      paidAt: new Date(data.paidAt),
+      createdBy: data.userId,
+    });
+
+    return payment;
+  }
+
+  async verifyManualPayment(paymentId: string, organizationId: string, userId: string) {
+    const payment = await db.query.payments.findFirst({
+      where: eq(payments.id, paymentId),
+      with: { invoice: true }
+    });
     
-    let monthRevenue = 0;
-    for (const inv of allInvoices) {
-      for (const p of inv.payments) {
-        if (p.status === "succeeded" && p.verifiedAt) {
-          const paidDate = new Date(p.verifiedAt);
-          if (paidDate >= monthStart && paidDate <= monthEnd) {
-            monthRevenue += p.amount;
+    if (!payment || !payment.invoice || payment.invoice.organizationId !== organizationId) {
+      throw new Error("Payment not found");
+    }
+
+    if (payment.status !== "pending") {
+      throw new Error("Only pending payments can be verified.");
+    }
+
+    const isValid = await manualPaymentProvider.verifyPayment(payment.providerPaymentId!, null);
+    if (!isValid) throw new Error("Verification failed by provider");
+
+    const updatedPayment = await db.transaction(async (tx) => {
+      const [updated] = await this.repo.updatePayment(paymentId, {
+        status: "succeeded",
+        verifiedAt: new Date(),
+        verifiedBy: userId,
+        updatedAt: new Date(),
+        updatedBy: userId
+      }, tx);
+
+      const allPayments = await tx.query.payments.findMany({ where: eq(payments.invoiceId, payment.invoiceId) });
+      const totalPaid = allPayments.filter((p: any) => p.status === "succeeded").reduce((acc: number, p: any) => acc + p.amount, 0);
+
+      let newStatus = payment.invoice.status;
+      if (totalPaid >= payment.invoice.amount) {
+        newStatus = "paid";
+      } else if (totalPaid > 0) {
+        newStatus = "partially_paid";
+      }
+
+      if (newStatus !== payment.invoice.status) {
+        await this.repo.updateInvoice(payment.invoiceId, { status: newStatus as any }, tx);
+      }
+
+      await emitDomainEvent({
+        type: "PaymentVerified",
+        payload: {
+          organizationId: payment.invoice.organizationId,
+          paymentId: payment.id,
+          amount: payment.amount,
+          userId,
+        }
+      }, tx);
+
+      if (newStatus === "paid" && payment.invoice.status !== "paid") {
+        await emitDomainEvent({
+          type: "InvoicePaid",
+          payload: {
+            organizationId: payment.invoice.organizationId,
+            invoiceId: payment.invoice.id,
+            amount: payment.invoice.amount,
+            provider: payment.provider || "manual",
+            userId,
           }
+        }, tx);
+      }
+
+      return updated;
+    });
+
+    return updatedPayment;
+  }
+
+  async rejectManualPayment(paymentId: string, organizationId: string, userId: string) {
+    const payment = await db.query.payments.findFirst({
+      where: eq(payments.id, paymentId),
+      with: { invoice: true }
+    });
+    
+    if (!payment || !payment.invoice || payment.invoice.organizationId !== organizationId) {
+      throw new Error("Payment not found");
+    }
+
+    const [updatedPayment] = await this.repo.updatePayment(paymentId, {
+      status: "failed",
+      updatedAt: new Date(),
+      updatedBy: userId
+    });
+
+    return updatedPayment;
+  }
+
+  async getFinanceDashboardMetrics(organizationId: string) {
+    const now = new Date();
+    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+
+    const allInvoices = await db.query.invoices.findMany({
+      where: eq(invoices.organizationId, organizationId),
+      with: { payments: true }
+    });
+
+    let revenueThisMonthCents = 0;
+    let outstandingRevenueCents = 0;
+    let collectionAmountThisMonth = 0;
+    const methodMap: Record<string, number> = {};
+
+    for (const inv of allInvoices) {
+      const isPaid = inv.status === 'paid';
+      if (isPaid && inv.updatedAt && new Date(inv.updatedAt) >= startOfMonth) {
+        revenueThisMonthCents += inv.amount || 0;
+      }
+      
+      if (['open', 'partially_paid', 'overdue'].includes(inv.status || '')) {
+        const paidSoFar = inv.payments.filter((p: any) => p.status === "succeeded").reduce((acc: number, p: any) => acc + p.amount, 0);
+        outstandingRevenueCents += (inv.amount - paidSoFar);
+      }
+
+      for (const p of inv.payments) {
+        if (p.status === "succeeded" && p.verifiedAt && new Date(p.verifiedAt) >= startOfMonth) {
+          collectionAmountThisMonth += p.amount;
+        }
+        if (p.status === "succeeded") {
+          methodMap[p.method || 'unknown'] = (methodMap[p.method || 'unknown'] || 0) + p.amount;
         }
       }
     }
 
-    monthlyRevenue.push({
-      month: monthStart.toLocaleString('default', { month: 'short' }),
-      revenue: Math.floor(monthRevenue / 100)
-    });
+    const monthlyRevenue = [];
+    for (let i = 5; i >= 0; i--) {
+      const monthStart = new Date(now.getFullYear(), now.getMonth() - i, 1);
+      const monthEnd = new Date(now.getFullYear(), now.getMonth() - i + 1, 0, 23, 59, 59, 999);
+      
+      let monthRevenue = 0;
+      for (const inv of allInvoices) {
+        for (const p of inv.payments) {
+          if (p.status === "succeeded" && p.verifiedAt) {
+            const paidDate = new Date(p.verifiedAt);
+            if (paidDate >= monthStart && paidDate <= monthEnd) {
+              monthRevenue += p.amount;
+            }
+          }
+        }
+      }
+
+      monthlyRevenue.push({
+        month: monthStart.toLocaleString('default', { month: 'short' }),
+        revenue: Math.floor(monthRevenue / 100)
+      });
+    }
+
+    const agingReport = {
+      "0-30": 0,
+      "31-60": 0,
+      "61-90": 0,
+      "90+": 0
+    };
+
+    const gstSummary = allInvoices.reduce((acc: number, inv: any) => acc + (inv.gstAmount || 0), 0);
+
+    return {
+      revenueThisMonthCents,
+      outstandingRevenueCents,
+      collectionAmountThisMonth,
+      monthlyRevenue,
+      agingReport,
+      gstSummary,
+      paymentMethods: Object.entries(methodMap).map(([method, amount]) => ({ method, amount }))
+    };
   }
-
-  // Aging Report
-  const agingReport = {
-    "0-30": 0,
-    "31-60": 0,
-    "61-90": 0,
-    "90+": 0
-  };
-
-  const gstSummary = allInvoices.reduce((acc: number, inv: any) => acc + (inv.gstAmount || 0), 0);
-
-  return {
-    revenueThisMonthCents,
-    outstandingRevenueCents,
-    collectionAmountThisMonth,
-    monthlyRevenue,
-    agingReport,
-    gstSummary,
-    paymentMethods: Object.entries(methodMap).map(([method, amount]) => ({ method, amount }))
-  };
 }
+
+export const financeService = new FinanceService();
 

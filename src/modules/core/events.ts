@@ -28,26 +28,35 @@ export type DomainEvent =
 
 import { inngest } from "@/inngest/client";
 
+import { db } from "@/db";
+import { outboxEvents } from "@/db/schema";
+
 /**
  * emitDomainEvent acts as the central event router.
- * It immediately pushes the event to the Inngest background processor.
+ * It strictly persists the event to the outbox_events table.
+ * A dedicated publisher worker will process the outbox asynchronously.
  */
-export async function emitDomainEvent(event: DomainEvent) {
+export async function emitDomainEvent(event: DomainEvent, tx?: any) {
+  const dbClient = tx || db;
+
   try {
-    // Send event to Inngest to be processed asynchronously
-    await inngest.send({
-      name: `Domain/${event.type}` as any, // prefixing with Domain/ to group them
-      data: event.payload,
+    await dbClient.insert(outboxEvents).values({
+      type: `Domain/${event.type}`,
+      payload: event.payload,
+      status: "pending",
     });
-    console.log(`[Event Bus] Dispatched ${event.type} to Inngest`);
+    console.log(`[Event Bus] Persisted ${event.type} to Outbox`);
   } catch (e) {
-    console.error(`Failed to dispatch event ${event.type} to Inngest:`, e);
+    console.error(`[Event Bus] Failed to persist event ${event.type} to Outbox:`, e);
+    throw e; // Strict failure: never silently drop an event
   }
   
   // Local Development Fallback: If Inngest is not running, process it locally
+  // [DEV-ONLY] This is retained strictly for local developer convenience. 
+  // It must never mask the requirement for proper Inngest handlers in production.
   if (process.env.NODE_ENV === 'development' || !process.env.INNGEST_EVENT_KEY) {
     if (event.type === 'ProposalAccepted') {
-      console.log(`[Event Bus Fallback] Processing ${event.type} locally...`);
+      console.log(`[Event Bus Fallback] [DEV-ONLY] Processing ${event.type} locally without Inngest...`);
       await conversionEngine.handleProposalAccepted(event.payload.dealId, event.payload.organizationId);
     }
   }
