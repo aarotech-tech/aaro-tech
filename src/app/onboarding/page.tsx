@@ -10,6 +10,10 @@ export default async function OnboardingPage(props: { searchParams: Promise<{ in
 
   const membershipData = await portalService.getClientMembership(user.id);
 
+  if (user.userType === 'internal') {
+    redirect("/dashboard");
+  }
+
   if (membershipData && membershipData.membership) {
     redirect("/portal/home");
   }

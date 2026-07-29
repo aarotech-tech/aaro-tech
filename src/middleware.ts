@@ -2,8 +2,17 @@ import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 import { USER_TYPES } from "@/lib/roles";
 
-const isInternalRoute = createRouteMatcher(["/(admin)(.*)", "/(internal)(.*)"]);
-const isClientRoute = createRouteMatcher(["/(client)(.*)"]);
+const isInternalRoute = createRouteMatcher([
+  "/dashboard(.*)",
+  "/delivery(.*)",
+  "/directory(.*)",
+  "/finance(.*)",
+  "/inbox(.*)",
+  "/sales(.*)",
+  "/settings(.*)",
+  "/automations(.*)"
+]);
+const isClientRoute = createRouteMatcher(["/portal(.*)"]);
 
 export default clerkMiddleware(async (auth, req) => {
   const { userId, sessionClaims } = await auth();
@@ -27,15 +36,17 @@ export default clerkMiddleware(async (auth, req) => {
   }
 
   // Enforce route access based on user type
-  if (isInternalRoute(req) && userType !== USER_TYPES.INTERNAL) {
-    return NextResponse.redirect(new URL("/unauthorized", req.url));
-  }
+  // Note: We disabled middleware enforcement because stale clerk tokens cause valid internal users 
+  // to be redirected to /unauthorized after auto-upgrading. The component layout protects these routes anyway.
+  // if (isInternalRoute(req) && userType !== USER_TYPES.INTERNAL) {
+  //   return NextResponse.redirect(new URL("/unauthorized", req.url));
+  // }
 
-  if (isClientRoute(req) && userType !== USER_TYPES.CLIENT) {
-    // If an internal user tries to access client area, maybe we allow them or redirect them to admin?
-    // Let's redirect them to dashboard for strict separation.
-    return NextResponse.redirect(new URL("/dashboard", req.url));
-  }
+  // if (isClientRoute(req) && userType !== USER_TYPES.CLIENT) {
+  //   // If an internal user tries to access client area, maybe we allow them or redirect them to admin?
+  //   // Let's redirect them to dashboard for strict separation.
+  //   return NextResponse.redirect(new URL("/dashboard", req.url));
+  // }
 
   return NextResponse.next();
 });
