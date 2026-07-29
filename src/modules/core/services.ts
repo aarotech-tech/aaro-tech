@@ -24,9 +24,16 @@ export const CoreService = {
   },
 
   syncUser: async (data: { clerkId: string, email: string, firstName: string, lastName: string, avatarUrl: string }) => {
-    await db.insert(users).values(data).onConflictDoUpdate({
+    const isInternal = data.email.endsWith('@aarotech.in');
+    const dbData = {
+      ...data,
+      userType: isInternal ? 'internal' : 'client',
+      role: isInternal ? 'superadmin' : 'client',
+      globalRole: isInternal ? 'owner' : null,
+    };
+    await db.insert(users).values(dbData).onConflictDoUpdate({
       target: users.clerkId,
-      set: data
+      set: dbData
     });
   },
 
