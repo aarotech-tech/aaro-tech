@@ -76,11 +76,11 @@ export default async function ServicePage({ params }: { params: Promise<{ slug: 
             <p className="text-xl md:text-2xl text-slate-600 leading-relaxed max-w-4xl mb-10 text-justify md:text-center">
               {service.intro || service.description}
             </p>
-            <div className="flex flex-col sm:flex-row gap-4">
+            <div className="flex flex-col sm:flex-row gap-4 w-full justify-center">
               <ContactPopup>
-                <button className={buttonVariants({ size: "lg", className: "h-14 px-8 text-lg font-bold shadow-lg" })}>
-                  {service.cta || "Get My Free Growth Plan"}
-                  <ArrowRight className="ml-2 h-5 w-5" />
+                <button className={buttonVariants({ size: "lg", className: "h-auto py-4 px-6 w-full sm:w-auto text-base md:text-lg font-bold shadow-lg whitespace-normal" })}>
+                  <span>{service.cta || "Get My Free Growth Plan"}</span>
+                  <ArrowRight className="ml-2 h-5 w-5 shrink-0 inline-block" />
                 </button>
               </ContactPopup>
             </div>

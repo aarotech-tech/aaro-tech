@@ -133,8 +133,19 @@ export function Work() {
         </div>
         <AnimateOnScroll delay="0.6s">
           <div className="mt-16 text-center max-w-2xl mx-auto pt-4">
-            <Link href="/work" className="inline-flex items-center text-sm font-bold text-white hover:bg-slate-800 transition-colors bg-slate-900 rounded-full px-8 py-4 shadow-md hover:shadow-lg cursor-pointer">
-              View All Work <ArrowRight className="ml-2 w-4 h-4" />
+            <Link href="/work" className="group relative inline-flex items-center justify-center rounded-full p-[2px] shadow-sm hover:shadow-md hover:-translate-y-1 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary overflow-hidden">
+              {/* Default static border */}
+              <div className="absolute inset-0 bg-primary/20 rounded-full transition-opacity duration-300 group-hover:opacity-0"></div>
+              
+              {/* Rotating gradient border */}
+              <div className="absolute left-1/2 top-1/2 aspect-square w-[300%] -translate-x-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity duration-500">
+                <div className="h-full w-full animate-[spin_3s_linear_infinite] bg-[conic-gradient(from_0deg_at_50%_50%,#FA0201_0%,#0f172a_50%,#FA0201_100%)]"></div>
+              </div>
+
+              <div className="relative flex h-full w-full items-center justify-center rounded-full bg-white px-8 py-4 text-sm font-bold text-primary transition-all">
+                View All Work
+                <ArrowRight className="ml-2 w-4 h-4 transition-transform group-hover:translate-x-1" />
+              </div>
             </Link>
           </div>
         </AnimateOnScroll>

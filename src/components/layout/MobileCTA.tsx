@@ -14,7 +14,7 @@ export function MobileCTA() {
       }`}
     >
       <ContactPopup onOpenChange={setPopupOpen}>
-        <button className={buttonVariants({ size: "lg", className: "w-full text-base shadow-lg" })}>
+        <button className={buttonVariants({ size: "lg", className: "w-full text-base shadow-lg h-auto py-3 whitespace-normal" })}>
           Get My Free Growth Plan
         </button>
       </ContactPopup>

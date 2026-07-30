@@ -84,10 +84,11 @@ export default async function IndustryPage({ params }: { params: Promise<{ slug:
             <p className="text-xl text-slate-600 mb-10 max-w-3xl mx-auto leading-relaxed">
               {industry.heroDescription}
             </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <div className="flex flex-col sm:flex-row gap-4 w-full justify-center">
               <ContactPopup>
-                <button className={buttonVariants({ size: "lg", className: "h-14 px-8 text-lg font-bold shadow-lg" })}>
-                  Get a Free Strategy Audit
+                <button className={buttonVariants({ size: "lg", className: "h-auto py-4 px-6 w-full sm:w-auto text-base md:text-lg font-bold shadow-lg whitespace-normal" })}>
+                  <span>Get My Free Growth Plan</span>
+                  <ArrowRight className="ml-2 h-5 w-5 shrink-0 inline-block" />
                 </button>
               </ContactPopup>
             </div>

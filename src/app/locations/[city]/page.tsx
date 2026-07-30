@@ -84,12 +84,14 @@ export default async function LocationPage({ params }: { params: Promise<{ city:
              <p className="text-xl text-slate-300 mb-10 max-w-2xl mx-auto">
                {data.heroDescription}
              </p>
-             <ContactPopup>
-               <button className={buttonVariants({ size: "lg", className: "bg-primary text-white hover:bg-primary/90 h-14 px-8 text-lg shadow-xl" })}>
-                 Get Your Free {cityName} Growth Plan
-                 <ArrowRight className="ml-2 w-5 h-5" />
-               </button>
-             </ContactPopup>
+             <div className="flex flex-col sm:flex-row gap-4 w-full max-w-sm mx-auto">
+               <ContactPopup>
+                 <button className={buttonVariants({ size: "lg", className: "h-auto py-4 px-6 w-full sm:w-auto text-base md:text-lg bg-primary text-white hover:bg-primary/90 shadow-xl whitespace-normal" })}>
+                   <span>Get My Free {cityName} Growth Plan</span>
+                   <ArrowRight className="ml-2 h-5 w-5 shrink-0 inline-block" />
+                 </button>
+               </ContactPopup>
+             </div>
            </div>
         </section>
         

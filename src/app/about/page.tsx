@@ -27,7 +27,7 @@ export default function AboutPage() {
         {/* <WorkInProgress /> */}
         <StoryCTA />
       </main>
-      <Footer />
+      <Footer hideCTA={true} />
     </>
   );
 }

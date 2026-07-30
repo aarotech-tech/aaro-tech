@@ -147,7 +147,13 @@
   width: max-content;
 }
 
-.animate-marquee:hover {
+.animate-marquee-slow {
+  animation: marquee 50s linear infinite;
+  display: flex;
+  width: max-content;
+}
+
+.animate-marquee:hover, .animate-marquee-slow:hover {
   animation-play-state: paused;
 }
 

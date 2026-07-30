@@ -28,7 +28,7 @@ export default function Home() {
         />
         <Hero />
         <ClientLogos />
-        <Services />
+        <Services showViewAllButton={true} />
         <div className="mb-16">
           <TechStackMarquee />
         </div>

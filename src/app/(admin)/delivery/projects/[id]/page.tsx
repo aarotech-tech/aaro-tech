@@ -8,6 +8,8 @@ import { Badge } from "@/components/ui/badge";
 import { PageHeader } from "@/components/ui/page-header";
 import { notFound } from "next/navigation";
 
+export const dynamic = "force-dynamic";
+
 export default async function ProjectOverviewPage({ params }: { params: Promise<{ id: string }> }) {
   const resolvedParams = await params;
   

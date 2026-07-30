@@ -6,7 +6,11 @@ import { AnimateOnScroll } from "@/components/ui/animate-on-scroll";
 import { TextReveal } from "@/components/ui/text-reveal";
 import { Tilt } from "@/components/ui/tilt";
 
-export function Services() {
+interface ServicesProps {
+  showViewAllButton?: boolean;
+}
+
+export function Services({ showViewAllButton = false }: ServicesProps) {
   return (
     <section id="services" className="relative py-24 bg-gradient-to-br from-slate-50 via-white to-slate-100/50">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
@@ -48,6 +52,27 @@ export function Services() {
             </AnimateOnScroll>
           ))}
         </div>
+        
+        {showViewAllButton && (
+          <div className="mt-16 text-center">
+            <AnimateOnScroll delay="0.4s">
+              <Link href="/services" className="group relative inline-flex h-14 items-center justify-center rounded-full p-[2px] shadow-sm hover:-translate-y-1 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary overflow-hidden">
+                {/* Default static border */}
+                <div className="absolute inset-0 bg-primary/20 rounded-full transition-opacity duration-300 group-hover:opacity-0"></div>
+                
+                {/* Rotating gradient border */}
+                <div className="absolute left-1/2 top-1/2 aspect-square w-[300%] -translate-x-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity duration-500">
+                  <div className="h-full w-full animate-[spin_3s_linear_infinite] bg-[conic-gradient(from_0deg_at_50%_50%,#FA0201_0%,#0f172a_50%,#FA0201_100%)]"></div>
+                </div>
+
+                <div className="relative flex h-full w-full items-center justify-center rounded-full bg-white px-8 text-base font-bold text-primary transition-all">
+                  View All Services
+                  <ArrowRight className="ml-2 w-5 h-5 transition-transform group-hover:translate-x-1" />
+                </div>
+              </Link>
+            </AnimateOnScroll>
+          </div>
+        )}
       </div>
     </section>
   );

@@ -72,9 +72,19 @@ export function ResourceLayout({ resource }: { resource: Resource }) {
              
              <div className="mt-16 text-center">
                <ContactPopup>
-                  <button className={buttonVariants({ size: "lg", variant: "outline", className: "h-auto py-4 px-6 md:h-14 md:px-8 text-base md:text-lg whitespace-normal font-bold border-2 text-left sm:text-center" })}>
-                    <Download className="w-5 h-5 mr-2 shrink-0 inline-block" />
-                    <span>Get the PDF Version for Your Team</span>
+                  <button className="group relative inline-flex w-full sm:w-auto h-auto min-h-[56px] items-center justify-center rounded-full p-[2px] shadow-sm hover:-translate-y-1 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary text-left sm:text-center overflow-hidden">
+                    {/* Default static border */}
+                    <div className="absolute inset-0 bg-slate-200 rounded-full transition-opacity duration-300 group-hover:opacity-0"></div>
+                    
+                    {/* Rotating gradient border */}
+                    <div className="absolute left-1/2 top-1/2 aspect-square w-[300%] -translate-x-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity duration-500">
+                      <div className="h-full w-full animate-[spin_3s_linear_infinite] bg-[conic-gradient(from_0deg_at_50%_50%,#FA0201_0%,#0f172a_50%,#FA0201_100%)]"></div>
+                    </div>
+
+                    <div className="relative flex h-full w-full items-center justify-center rounded-full bg-white py-4 px-6 md:px-8 text-base md:text-lg whitespace-normal font-bold text-slate-700 group-hover:text-slate-900 transition-all">
+                      <Download className="w-5 h-5 mr-2 shrink-0 inline-block text-primary transition-transform group-hover:-translate-y-1" />
+                      <span>Get the PDF Version for Your Team</span>
+                    </div>
                   </button>
                </ContactPopup>
              </div>
