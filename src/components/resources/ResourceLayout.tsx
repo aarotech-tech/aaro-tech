@@ -72,10 +72,10 @@ export function ResourceLayout({ resource }: { resource: Resource }) {
              
              <div className="mt-16 text-center">
                <ContactPopup>
-                 <button className={buttonVariants({ size: "lg", variant: "outline", className: "h-14 px-8 text-lg font-bold border-2" })}>
-                   <Download className="w-5 h-5 mr-2" />
-                   Get the PDF Version for Your Team
-                 </button>
+                  <button className={buttonVariants({ size: "lg", variant: "outline", className: "h-auto py-4 px-6 md:h-14 md:px-8 text-base md:text-lg whitespace-normal font-bold border-2 text-left sm:text-center" })}>
+                    <Download className="w-5 h-5 mr-2 shrink-0 inline-block" />
+                    <span>Get the PDF Version for Your Team</span>
+                  </button>
                </ContactPopup>
              </div>
           </div>

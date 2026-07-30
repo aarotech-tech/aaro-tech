@@ -89,9 +89,9 @@ export function WhyWorkWithUs() {
         <div className="mt-16 text-center">
           <AnimateOnScroll delay="0.4s">
             <ContactPopup>
-              <button className={buttonVariants({ size: "lg", className: "h-14 px-8 text-base shadow-xl hover:-translate-y-1 transition-all group" })}>
+              <button className={buttonVariants({ size: "lg", className: "h-auto py-4 px-6 md:h-14 md:px-8 text-sm md:text-base whitespace-normal shadow-xl hover:-translate-y-1 transition-all group" })}>
                 Sound like a better fit? Get Your Free Growth Plan
-                <ArrowRight className="ml-2 h-5 w-5 transition-transform group-hover:translate-x-1" />
+                <ArrowRight className="ml-2 h-5 w-5 shrink-0 transition-transform group-hover:translate-x-1" />
               </button>
             </ContactPopup>
           </AnimateOnScroll>

@@ -4,6 +4,7 @@ import { Hero } from "@/components/sections/Hero";
 import { ClientLogos } from "@/components/sections/ClientLogos";
 import { FreeAudit } from "@/components/sections/FreeAudit";
 import { Services } from "@/components/sections/Services";
+import { TechStackMarquee } from "@/components/sections/TechStackMarquee";
 import { Industries } from "@/components/sections/Industries";
 import { HowWeWork } from "@/components/sections/HowWeWork";
 import { Work } from "@/components/sections/Work";
@@ -28,6 +29,9 @@ export default function Home() {
         <Hero />
         <ClientLogos />
         <Services />
+        <div className="mb-16">
+          <TechStackMarquee />
+        </div>
         <Industries />
         <HowWeWork />
         <Work />
