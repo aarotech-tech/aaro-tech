@@ -11,7 +11,7 @@ import { StoryCTA } from "@/components/sections/about/StoryCTA";
 
 export const metadata: Metadata = {
   title: "About Us | Aarotech",
-  description: "Aarotech is a young team building a serious company. We're early in our journey, but we've already started doing real work for real businesses.",
+  description: "Meet the Aarotech team — a founder-led digital marketing agency based in Trichy, helping businesses across Tamil Nadu grow with SEO, web development, and performance marketing.",
 };
 
 export default function AboutPage() {

@@ -23,7 +23,7 @@ export function Hero() {
               </span>
               Accepting new clients
             </div>
-            <h1 className="sr-only">Trusted Digital Marketing Agency in Trichy, Tamil Nadu</h1>
+
             <TextReveal 
               text="Grow Your Business with Trichy's Most Trusted Digital Marketing Agency" 
               className="text-4xl md:text-5xl lg:text-6xl font-extrabold tracking-tighter leading-[1.1] max-w-3xl mb-4 [text-shadow:_0_4px_16px_rgb(0_0_0_/_30%)]" 

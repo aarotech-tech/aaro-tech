@@ -12,6 +12,7 @@ export function FreeAudit() {
         loop 
         muted 
         playsInline 
+        preload="none"
         className="absolute inset-0 w-full h-full object-cover opacity-40 mix-blend-screen pointer-events-none will-change-transform"
       />
       <div className="absolute inset-0 bg-slate-950/60 pointer-events-none"></div>

@@ -3,6 +3,7 @@ import { Services } from "@/components/sections/Services";
 import { FreeAudit } from "@/components/sections/FreeAudit";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
+import { TechStackMarquee } from "@/components/sections/TechStackMarquee";
 
 export const metadata: Metadata = {
   title: "Our Digital Marketing Services | Aarotech Trichy",
@@ -25,6 +26,10 @@ export default function ServicesPage() {
         
         {/* Reusing the Services section component from the homepage */}
         <Services />
+
+        <div className="mt-8 mb-16">
+          <TechStackMarquee />
+        </div>
 
         {/* Adding a CTA at the bottom */}
         <div className="mt-20">

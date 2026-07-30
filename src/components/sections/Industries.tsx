@@ -11,7 +11,7 @@ export function Industries() {
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center max-w-3xl mx-auto mb-16 md:mb-20">
           <AnimateOnScroll delay="0s">
-            <TextReveal text="Who We Partner With" className="text-3xl md:text-4xl lg:text-5xl font-bold tracking-tight mb-6 justify-center text-center" />
+            <TextReveal text="Industries We Serve" className="text-3xl md:text-4xl lg:text-5xl font-bold tracking-tight mb-6 justify-center text-center" />
           </AnimateOnScroll>
           <AnimateOnScroll delay="0.1s">
             <p className="text-lg md:text-xl text-slate-500 leading-relaxed">

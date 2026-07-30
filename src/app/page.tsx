@@ -2,7 +2,6 @@ import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import { Hero } from "@/components/sections/Hero";
 import { ClientLogos } from "@/components/sections/ClientLogos";
-import { Trust } from "@/components/sections/Trust";
 import { FreeAudit } from "@/components/sections/FreeAudit";
 import { Services } from "@/components/sections/Services";
 import { Industries } from "@/components/sections/Industries";
@@ -28,14 +27,13 @@ export default function Home() {
         />
         <Hero />
         <ClientLogos />
-        <Trust />
-        <FreeAudit />
         <Services />
         <Industries />
         <HowWeWork />
-        <Testimonials />
         <Work />
+        <Testimonials />
         <WhyWorkWithUs />
+        <FreeAudit />
         <FAQ />
         <Contact />
       </main>

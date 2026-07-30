@@ -17,7 +17,7 @@ export function Footer() {
             </button>
           </ContactPopup>
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-5 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-6 gap-8">
           <div className="col-span-1 md:col-span-1">
             <Link href="/" className="flex items-center space-x-2 mb-4">
               <Image
@@ -32,6 +32,14 @@ export function Footer() {
             <p className="text-sm text-slate-400">
               A Trichy-based digital marketing and technology agency helping businesses across Tamil Nadu grow online.
             </p>
+          </div>
+          <div>
+            <h3 className="font-semibold text-white mb-4">Company</h3>
+            <ul className="space-y-2 text-sm text-slate-400">
+              <li><Link href="/about" className="hover:text-primary transition-colors focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none rounded-sm">About Us</Link></li>
+              <li><Link href="/work" className="hover:text-primary transition-colors focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none rounded-sm">Case Studies</Link></li>
+              <li><Link href="/#contact" className="hover:text-primary transition-colors focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none rounded-sm">Contact</Link></li>
+            </ul>
           </div>
           <div>
             <h3 className="font-semibold text-white mb-4">Services</h3>

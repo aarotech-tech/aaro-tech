@@ -46,7 +46,7 @@ export function HowWeWork() {
               loop 
               muted 
               playsInline 
-              preload="auto"
+              preload="none"
               className="w-full h-full lg:max-w-none lg:w-[130%] object-cover lg:object-contain pointer-events-none mix-blend-screen will-change-transform"
             />
           </div>

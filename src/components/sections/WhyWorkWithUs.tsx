@@ -1,4 +1,6 @@
-import { CheckCircle, XCircle } from "lucide-react";
+import { CheckCircle, XCircle, ArrowRight } from "lucide-react";
+import { buttonVariants } from "@/components/ui/button";
+import { ContactPopup } from "@/components/shared/ContactPopup";
 import { FallbackImage as Image } from "@/components/ui/fallback-image";
 import { AnimateOnScroll } from "@/components/ui/animate-on-scroll";
 import { TextReveal } from "@/components/ui/text-reveal";
@@ -82,6 +84,16 @@ export function WhyWorkWithUs() {
               {/* Decorative elements */}
               <div className="absolute -bottom-6 -right-6 w-32 h-32 bg-primary/10 rounded-full blur-2xl"></div>
             </div>
+          </AnimateOnScroll>
+        </div>
+        <div className="mt-16 text-center">
+          <AnimateOnScroll delay="0.4s">
+            <ContactPopup>
+              <button className={buttonVariants({ size: "lg", className: "h-14 px-8 text-base shadow-xl hover:-translate-y-1 transition-all group" })}>
+                Sound like a better fit? Get Your Free Growth Plan
+                <ArrowRight className="ml-2 h-5 w-5 transition-transform group-hover:translate-x-1" />
+              </button>
+            </ContactPopup>
           </AnimateOnScroll>
         </div>
       </div>

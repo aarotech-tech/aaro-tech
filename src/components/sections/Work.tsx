@@ -86,11 +86,27 @@ export function Work() {
                     
                     <div className="space-y-4 flex-1">
                       <div>
-                        <h4 className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">Key Outcomes</h4>
+                        <h4 className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-3">Key Outcomes</h4>
+                        
+                        {study.outcome.filter(o => o.isQuantitative).slice(0, 1).map((out, idx) => (
+                          <div key={`quant-${idx}`} className="mb-4 bg-green-50/50 border border-green-500/20 rounded-xl p-4 flex flex-col gap-1">
+                            {out.label && (
+                              <span className="text-[10px] font-bold text-green-600 uppercase tracking-widest">
+                                {out.label}
+                              </span>
+                            )}
+                            <span className="text-sm font-bold text-green-800 leading-snug flex items-start">
+                              <span className="text-green-500 mr-2 shrink-0">✓</span>
+                              {out.value}
+                            </span>
+                          </div>
+                        ))}
+
                         <ul className="space-y-1.5">
-                          {study.outcome.map((out, idx) => (
-                            <li key={idx} className="text-sm font-medium text-slate-700 flex items-center">
-                              <span className="text-primary mr-2">✓</span> {out.value}
+                          {study.outcome.filter(o => !o.isQuantitative || study.outcome.filter(qo => qo.isQuantitative).indexOf(o) > 0).map((out, idx) => (
+                            <li key={idx} className="text-sm font-medium text-slate-700 flex items-start">
+                              <span className="text-primary mr-2 shrink-0 mt-0.5">✓</span>
+                              <span className="line-clamp-2 leading-snug">{out.value}</span>
                             </li>
                           ))}
                         </ul>

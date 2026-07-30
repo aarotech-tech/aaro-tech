@@ -105,6 +105,16 @@ const nextConfig: NextConfig = {
         source: '/crm',
         destination: '/sales/pipeline',
         permanent: true,
+      },
+      {
+        source: '/portfolio/:path*',
+        destination: '/work/:path*',
+        permanent: true,
+      },
+      {
+        source: '/portfolio',
+        destination: '/work',
+        permanent: true,
       }
     ];
   },
