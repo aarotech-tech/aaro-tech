@@ -46,10 +46,11 @@ export function TechStackMarquee() {
                 return (
                   <div 
                     key={`${tech.name}-${index}`} 
-                    className="flex items-center justify-center shrink-0 hover:scale-110 transition-transform duration-300 group/icon"
+                    className="flex flex-col items-center justify-center shrink-0 hover:scale-110 transition-transform duration-300 group/icon gap-2 md:gap-3"
                     title={tech.name}
                   >
-                    <Icon className={`w-10 h-10 sm:w-14 sm:h-14 transition-all duration-300 opacity-90 hover:opacity-100 ${tech.color}`} />
+                    <Icon className={`w-10 h-10 sm:w-12 sm:h-12 transition-all duration-300 opacity-90 hover:opacity-100 ${tech.color}`} />
+                    <span className="text-xs sm:text-sm font-semibold text-slate-600 group-hover/icon:text-slate-900 transition-colors whitespace-nowrap">{tech.name}</span>
                   </div>
                 );
               })}

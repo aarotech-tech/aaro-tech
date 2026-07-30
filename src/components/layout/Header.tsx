@@ -67,17 +67,31 @@ export function Header() {
             />
           </Link>
         </div>
-        <nav className="hidden lg:flex items-center gap-6 xl:gap-8 text-base font-bold h-full">
-          <div className="relative group h-full flex items-center">
+        <nav className="hidden lg:flex flex-1 justify-center items-center gap-4 xl:gap-8 text-base font-bold h-full relative mx-4 lg:mx-8">
+          <div className="group h-full flex items-center">
             <Link href="/#services" onClick={handleScroll} className="whitespace-nowrap transition-colors hover:text-primary text-slate-300 focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none rounded-sm py-4">Services</Link>
-            <div className="absolute top-full left-1/2 -translate-x-1/2 w-64 pt-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 translate-y-2 group-hover:translate-y-0 z-50">
-              <div className="bg-slate-900 border border-slate-800 rounded-xl shadow-[0_20px_50px_-12px_rgba(0,0,0,0.5)] p-2 flex flex-col relative before:absolute before:-top-2 before:left-1/2 before:-translate-x-1/2 before:w-4 before:h-4 before:bg-slate-900 before:border-l before:border-t before:border-slate-800 before:rotate-45 before:rounded-tl-sm">
-                <Link href="/services/website-development" className="px-4 py-3 text-sm font-medium text-slate-300 hover:text-white hover:bg-slate-800 rounded-lg transition-colors relative z-10">Website Development</Link>
-                <Link href="/services/seo" className="px-4 py-3 text-sm font-medium text-slate-300 hover:text-white hover:bg-slate-800 rounded-lg transition-colors relative z-10">SEO</Link>
-                <Link href="/services/digital-advertising" className="px-4 py-3 text-sm font-medium text-slate-300 hover:text-white hover:bg-slate-800 rounded-lg transition-colors relative z-10">Google & Meta Ads</Link>
-                <Link href="/services/social-media" className="px-4 py-3 text-sm font-medium text-slate-300 hover:text-white hover:bg-slate-800 rounded-lg transition-colors relative z-10">Social Media</Link>
-                <div className="h-px bg-slate-800 my-1"></div>
-                <Link href="/services" className="px-4 py-3 text-sm font-bold text-primary hover:text-primary/80 hover:bg-slate-800 rounded-lg transition-colors relative z-10 flex items-center justify-between group/link">
+            <div className="absolute top-full left-0 w-full pt-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 translate-y-2 group-hover:translate-y-0 z-50">
+              <div className="bg-slate-900 border border-slate-800 rounded-xl shadow-[0_20px_50px_-12px_rgba(0,0,0,0.5)] p-4 flex flex-col relative">
+                <div className="grid grid-cols-4 gap-4 mb-2">
+                  <Link href="/services/website-development" className="px-4 py-3 text-sm font-medium text-slate-300 hover:text-white hover:bg-slate-800 rounded-lg transition-colors relative z-10 flex flex-col gap-1">
+                    <span className="text-white font-semibold">Website Development</span>
+                    <span className="text-xs text-slate-500 font-normal">Custom sites & web apps</span>
+                  </Link>
+                  <Link href="/services/seo" className="px-4 py-3 text-sm font-medium text-slate-300 hover:text-white hover:bg-slate-800 rounded-lg transition-colors relative z-10 flex flex-col gap-1">
+                    <span className="text-white font-semibold">SEO</span>
+                    <span className="text-xs text-slate-500 font-normal">Rank higher on Google</span>
+                  </Link>
+                  <Link href="/services/digital-advertising" className="px-4 py-3 text-sm font-medium text-slate-300 hover:text-white hover:bg-slate-800 rounded-lg transition-colors relative z-10 flex flex-col gap-1">
+                    <span className="text-white font-semibold">Google & Meta Ads</span>
+                    <span className="text-xs text-slate-500 font-normal">Performance marketing</span>
+                  </Link>
+                  <Link href="/services/social-media" className="px-4 py-3 text-sm font-medium text-slate-300 hover:text-white hover:bg-slate-800 rounded-lg transition-colors relative z-10 flex flex-col gap-1">
+                    <span className="text-white font-semibold">Social Media</span>
+                    <span className="text-xs text-slate-500 font-normal">Brand awareness & growth</span>
+                  </Link>
+                </div>
+                <div className="h-px bg-slate-800 my-2"></div>
+                <Link href="/services" className="px-4 py-3 text-sm font-bold text-primary hover:text-primary/80 hover:bg-slate-800 rounded-lg transition-colors relative z-10 flex items-center justify-center gap-2 group/link">
                   View All Services
                   <ArrowRight className="w-4 h-4 transition-transform group-hover/link:translate-x-1" />
                 </Link>
@@ -88,14 +102,28 @@ export function Header() {
           <Link href="/work" className="whitespace-nowrap transition-colors hover:text-primary text-slate-300 focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none rounded-sm py-4">Case Studies</Link>
           <Link href="/about" className="whitespace-nowrap transition-colors hover:text-primary text-slate-300 focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none rounded-sm py-4">About</Link>
           
-          <div className="relative group h-full flex items-center">
+          <div className="group h-full flex items-center">
             <Link href="/resources" className="whitespace-nowrap transition-colors hover:text-primary text-slate-300 focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none rounded-sm py-4">Insights & Resources</Link>
-            <div className="absolute top-full left-1/2 -translate-x-1/2 w-64 pt-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 translate-y-2 group-hover:translate-y-0 z-50">
-              <div className="bg-slate-900 border border-slate-800 rounded-xl shadow-[0_20px_50px_-12px_rgba(0,0,0,0.5)] p-2 flex flex-col relative before:absolute before:-top-2 before:left-1/2 before:-translate-x-1/2 before:w-4 before:h-4 before:bg-slate-900 before:border-l before:border-t before:border-slate-800 before:rotate-45 before:rounded-tl-sm">
-                <Link href="/blog" className="px-4 py-3 text-sm font-medium text-slate-300 hover:text-white hover:bg-slate-800 rounded-lg transition-colors relative z-10">Growth Blog</Link>
-                <Link href="/resources" className="px-4 py-3 text-sm font-medium text-slate-300 hover:text-white hover:bg-slate-800 rounded-lg transition-colors relative z-10">Free Checklists</Link>
-                <Link href="/compare/seo-vs-google-ads" className="px-4 py-3 text-sm font-medium text-slate-300 hover:text-white hover:bg-slate-800 rounded-lg transition-colors relative z-10">Compare Strategies</Link>
-                <Link href="/industries/healthcare-hospitals" className="px-4 py-3 text-sm font-medium text-slate-300 hover:text-white hover:bg-slate-800 rounded-lg transition-colors relative z-10">Healthcare Marketing</Link>
+            <div className="absolute top-full left-0 w-full pt-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 translate-y-2 group-hover:translate-y-0 z-50">
+              <div className="bg-slate-900 border border-slate-800 rounded-xl shadow-[0_20px_50px_-12px_rgba(0,0,0,0.5)] p-4 flex flex-col relative">
+                <div className="grid grid-cols-4 gap-4">
+                  <Link href="/blog" className="px-4 py-3 text-sm font-medium text-slate-300 hover:text-white hover:bg-slate-800 rounded-lg transition-colors relative z-10 flex flex-col gap-1">
+                    <span className="text-white font-semibold">Growth Blog</span>
+                    <span className="text-xs text-slate-500 font-normal">Marketing tips & strategies</span>
+                  </Link>
+                  <Link href="/resources" className="px-4 py-3 text-sm font-medium text-slate-300 hover:text-white hover:bg-slate-800 rounded-lg transition-colors relative z-10 flex flex-col gap-1">
+                    <span className="text-white font-semibold">Free Checklists</span>
+                    <span className="text-xs text-slate-500 font-normal">Downloadable resources</span>
+                  </Link>
+                  <Link href="/compare/seo-vs-google-ads" className="px-4 py-3 text-sm font-medium text-slate-300 hover:text-white hover:bg-slate-800 rounded-lg transition-colors relative z-10 flex flex-col gap-1">
+                    <span className="text-white font-semibold">Compare Strategies</span>
+                    <span className="text-xs text-slate-500 font-normal">SEO vs Ads breakdown</span>
+                  </Link>
+                  <Link href="/industries/healthcare" className="px-4 py-3 text-sm font-medium text-slate-300 hover:text-white hover:bg-slate-800 rounded-lg transition-colors relative z-10 flex flex-col gap-1">
+                    <span className="text-white font-semibold">Healthcare Marketing</span>
+                    <span className="text-xs text-slate-500 font-normal">Industry specific guides</span>
+                  </Link>
+                </div>
               </div>
             </div>
           </div>
@@ -158,7 +186,7 @@ export function Header() {
                   <Link href="/blog" onClick={() => setIsMobileMenuOpen(false)} className="py-2 text-sm text-slate-400 hover:text-white transition-colors">Growth Blog</Link>
                   <Link href="/resources" onClick={() => setIsMobileMenuOpen(false)} className="py-2 text-sm text-slate-400 hover:text-white transition-colors">Free Checklists</Link>
                   <Link href="/compare/seo-vs-google-ads" onClick={() => setIsMobileMenuOpen(false)} className="py-2 text-sm text-slate-400 hover:text-white transition-colors">Compare Strategies</Link>
-                  <Link href="/industries/healthcare-hospitals" onClick={() => setIsMobileMenuOpen(false)} className="py-2 text-sm text-slate-400 hover:text-white transition-colors">Healthcare Marketing</Link>
+                  <Link href="/industries/healthcare" onClick={() => setIsMobileMenuOpen(false)} className="py-2 text-sm text-slate-400 hover:text-white transition-colors">Healthcare Marketing</Link>
                 </div>
               </div>
             </div>

@@ -10,7 +10,7 @@ import { TheBuilders } from "@/components/sections/about/TheBuilders";
 import { StoryCTA } from "@/components/sections/about/StoryCTA";
 
 export const metadata: Metadata = {
-  title: "About Us | Aarotech",
+  title: "About Aarotech | Top Digital Marketing Agency in Trichy",
   description: "Meet the Aarotech team — a founder-led digital marketing agency based in Trichy, helping businesses across Tamil Nadu grow with SEO, web development, and performance marketing.",
 };
 

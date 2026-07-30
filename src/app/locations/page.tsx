@@ -6,11 +6,11 @@ import { ArrowRight, MapPin } from "lucide-react";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Service Areas & Locations | Aarotech",
+  title: "Service Areas & Locations | Aarotech Digital Marketing Trichy",
   description: "Aarotech provides expert digital marketing, SEO, and web development services to businesses across major cities in Tamil Nadu, including Chennai, Coimbatore, Madurai, and Trichy.",
   keywords: ["Tamil Nadu digital marketing", "SEO agency Chennai", "Coimbatore marketing", "Madurai web design", "Trichy SEO"],
   openGraph: {
-    title: "Service Areas & Locations | Aarotech",
+    title: "Service Areas & Locations | Aarotech Digital Marketing Trichy",
     description: "Aarotech provides expert digital marketing, SEO, and web development services to businesses across major cities in Tamil Nadu.",
     type: "website",
   }

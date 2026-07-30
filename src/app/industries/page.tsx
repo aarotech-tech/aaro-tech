@@ -10,11 +10,11 @@ import Link from "next/link";
 import { Breadcrumbs } from "@/components/shared/Breadcrumbs";
 
 export const metadata: Metadata = {
-  title: "Industries We Serve | Aarotech Digital Marketing",
-  description: "Aarotech provides specialized, high-ROI digital marketing strategies for Healthcare, Education, and Local Service Businesses.",
+  title: "Industries We Serve | Aarotech Digital Marketing Trichy",
+  description: "Aarotech provides specialized, high-ROI digital marketing strategies for Healthcare, Education, and Local Service Businesses in Trichy and beyond.",
   openGraph: {
-    title: "Industries We Serve | Aarotech Digital Marketing",
-    description: "Specialized digital marketing strategies for Healthcare, Education, and Local Service Businesses.",
+    title: "Industries We Serve | Aarotech Digital Marketing Trichy",
+    description: "Specialized digital marketing strategies for Healthcare, Education, and Local Service Businesses in Trichy and beyond.",
     type: "website",
   }
 };

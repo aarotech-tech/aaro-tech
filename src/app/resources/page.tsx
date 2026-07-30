@@ -9,8 +9,8 @@ import { ResourceHubList } from "@/components/resources/ResourceHubList";
 import { blogPosts } from "@/data/blog";
 
 export const metadata: Metadata = {
-  title: "Insights & Resources Hub | Aarotech",
-  description: "Download free digital marketing checklists, SEO guides, and read our latest growth insights crafted by Aarotech's expert strategy team.",
+  title: "Insights & Resources Hub | Aarotech Trichy",
+  description: "Download free digital marketing checklists, SEO guides, and read our latest growth insights crafted by Aarotech's expert strategy team in Trichy.",
 };
 
 export default function ResourcesIndexPage() {

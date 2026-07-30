@@ -20,7 +20,7 @@ export function TheBuilders() {
           </AnimateOnScroll>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8 max-w-7xl">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-8 max-w-7xl">
           {founders.map((founder, index) => (
             <AnimateOnScroll key={index} delay={`${index * 0.1 + 0.2}s`} className="h-full">
               <div className="group bg-slate-900 rounded-[2rem] border border-white/10 overflow-hidden flex flex-col h-full hover:border-primary/50 transition-all duration-500 hover:shadow-[0_0_40px_rgba(250,2,1,0.1)] hover:-translate-y-2">

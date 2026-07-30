@@ -248,11 +248,20 @@ export const founders = [
   {
     name: "Suriyanarayanan",
     fullName: "Suriyanarayanan",
-    role: "Full Stack Developer & Data Analyst",
-    bio: "Architecting high-performance websites and turning raw data into actionable insights. From clean code to conversion-optimised dashboards, I ensure every digital asset we build is fast, measurable, and built to grow.",
-    quote: "Data tells you what's happening. Good engineering makes sure it never stops happening.",
+    role: "Data Analyst",
+    bio: "Turning raw data into actionable insights. I ensure every campaign and digital asset we build is measurable, data-driven, and built to grow.",
+    quote: "Data tells you what's happening. Good analysis makes sure you know why.",
     linkedin: "https://www.linkedin.com/in/suriyanarayanan-g/",
     photo: "/images/crew/suriyanarayanan.jpeg",
+  },
+  {
+    name: "Joe",
+    fullName: "Joe Kennadi",
+    role: "AI Full stack developer",
+    bio: "Architecting high-performance websites and integrating AI-driven solutions. From clean code to smart, automated workflows, I build scalable web applications that perform at the highest level.",
+    quote: "Good engineering makes sure it never stops working. AI makes sure it keeps getting smarter.",
+    linkedin: "",
+    photo: "/images/crew/joe.jpeg",
   },
   {
     name: "Susinthiran",

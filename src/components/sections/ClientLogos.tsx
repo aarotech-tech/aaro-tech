@@ -6,6 +6,7 @@ const clients = [
   { id: "c3", name: "Shine Academy", logo: "/images/client-logos/shine-academy.jpeg" },
   { id: "c4", name: "Stepzy", logo: "/images/client-logos/stepzy.jpeg" },
   { id: "c5", name: "Tosh", logo: "/images/client-logos/tosh.jpeg" },
+  { id: "c6", name: "Interfreight", logo: "/images/client-logos/interfreight.jpeg" },
 ];
 import { AnimateOnScroll } from "@/components/ui/animate-on-scroll";
 

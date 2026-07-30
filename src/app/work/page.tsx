@@ -3,8 +3,8 @@ import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 
 export const metadata: Metadata = {
-  title: "Our Work | Aarotech",
-  description: "Explore our portfolio of strategic design, marketing, and engineering projects.",
+  title: "Our Work & Portfolio | Aarotech Digital Marketing Trichy",
+  description: "Explore our portfolio of strategic design, marketing, and engineering projects for businesses in Trichy and beyond.",
 };
 
 export default function WorkPage() {
