@@ -13,11 +13,11 @@ export const LampContainer = ({
   return (
     <div
       className={cn(
-        "relative flex min-h-screen flex-col items-center justify-center overflow-hidden bg-slate-950 w-full rounded-md z-0",
+        "relative flex min-h-[80vh] md:min-h-screen flex-col items-center justify-center overflow-hidden bg-slate-950 w-full rounded-md z-0",
         className
       )}
     >
-      <div className="absolute top-0 left-0 w-full h-[30rem] pointer-events-none z-0 mt-24">
+      <div className="relative w-full h-[18rem] sm:h-[24rem] pointer-events-none z-0 flex-shrink-0">
         
         {/* Left Cone */}
         <motion.div 
@@ -72,7 +72,7 @@ export const LampContainer = ({
       </div>
 
       {/* Children content area */}
-      <div className="relative z-50 flex flex-col items-center px-5 mt-20">
+      <div className="relative z-50 flex flex-col items-center px-5 -mt-[14rem] sm:-mt-[20rem] pb-16">
         {children}
       </div>
     </div>
