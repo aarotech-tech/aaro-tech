@@ -16,9 +16,9 @@ export const createAutomationAction = internalActionClient
   .action(async ({ parsedInput }) => {
     await db.insert(systemAutomations).values({
       name: parsedInput.name,
-      triggerEvent: parsedInput.triggerEvent,
+      triggerType: parsedInput.triggerEvent,
       actionType: parsedInput.actionType,
-      status: "active",
+      isActive: true,
     });
 
     revalidatePath("/settings/automations");
@@ -33,10 +33,10 @@ export const createWebhookAction = internalActionClient
   }))
   .action(async ({ parsedInput }) => {
     await db.insert(webhooks).values({
-      name: parsedInput.name,
+      description: parsedInput.name,
       url: parsedInput.url,
       events: parsedInput.events,
-      status: "active",
+      isActive: true,
     });
 
     revalidatePath("/settings/automations");

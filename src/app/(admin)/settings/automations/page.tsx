@@ -69,8 +69,8 @@ export default async function AutomationsSettingsPage() {
                     <div key={auto.id} className="flex items-center justify-between group">
                       <div className="text-sm font-medium">{auto.name}</div>
                       <div className="flex items-center gap-2">
-                        <div className={`text-xs px-2 py-1 rounded-full ${auto.status === 'active' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}`}>
-                          {auto.status === 'active' ? 'Active' : 'Inactive'}
+                        <div className={`text-xs px-2 py-1 rounded-full ${auto.isActive ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}`}>
+                          {auto.isActive ? 'Active' : 'Inactive'}
                         </div>
                         <div className="opacity-0 group-hover:opacity-100 transition-opacity">
                           <DeleteAutomationButton id={auto.id} />
@@ -99,10 +99,10 @@ export default async function AutomationsSettingsPage() {
                 ) : (
                   webhooks.map(webhook => (
                     <div key={webhook.id} className="flex items-center justify-between group">
-                      <div className="text-sm font-medium">{webhook.name}</div>
+                      <div className="text-sm font-medium">{webhook.description || webhook.url}</div>
                       <div className="flex items-center gap-2">
-                        <div className={`text-xs px-2 py-1 rounded-full ${webhook.status === 'active' ? 'bg-green-100 text-green-800' : webhook.status === 'failing' ? 'bg-yellow-100 text-yellow-800' : 'bg-gray-100 text-gray-800'}`}>
-                          {webhook.status === 'active' ? 'Active' : webhook.status === 'failing' ? 'Failing' : 'Inactive'}
+                        <div className={`text-xs px-2 py-1 rounded-full ${webhook.isActive ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}`}>
+                          {webhook.isActive ? 'Active' : 'Inactive'}
                         </div>
                         <div className="opacity-0 group-hover:opacity-100 transition-opacity">
                           <DeleteWebhookButton id={webhook.id} />

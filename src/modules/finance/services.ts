@@ -545,9 +545,7 @@ export class FinanceService {
       organizationId: data.organizationId,
       name: data.name,
       amount: toPaise(data.amount),
-      billingDay: data.billingDay,
       startDate: data.startDate,
-      endDate: data.endDate,
       status: "active"
     }).returning();
     
@@ -599,14 +597,11 @@ export class FinanceService {
     let generatedCount = 0;
 
     for (const retainer of activeRetainers) {
-      if (retainer.endDate && new Date(retainer.endDate) < today) {
-        // Expired, mark as paused/cancelled
-        await database.update(retainers).set({ status: 'paused' }).where(eq(retainers.id, retainer.id));
-        continue;
-      }
+
       
       // If billing day is in the future for this month, skip
-      if (retainer.billingDay > currentDay) continue;
+      const billingDay = new Date(retainer.startDate).getDate();
+      if (billingDay > currentDay) continue;
 
       // Check if period for this month already exists
       const periodName = `${today.toLocaleString('default', { month: 'long' })} ${currentYear}`;
@@ -620,8 +615,8 @@ export class FinanceService {
 
       if (!existingPeriod) {
         // Create period
-        const startDate = new Date(currentYear, currentMonth, retainer.billingDay);
-        const endDate = new Date(currentYear, currentMonth + 1, retainer.billingDay - 1);
+        const startDate = new Date(currentYear, currentMonth, billingDay);
+        const endDate = new Date(currentYear, currentMonth + 1, billingDay - 1);
         
         const [period] = await database.insert(retainerPeriods).values({
           retainerId: retainer.id,
