@@ -30,7 +30,23 @@ export function PipelineBoard({ initialColumns }: { initialColumns: KanbanColumn
 
     try {
       const res = await updateDealStageAction({ dealId, stage: destColId, organizationId: deal.organizationId });
-      if (!res?.data) {
+      if (res?.data) {
+        toast.success(`Deal moved to ${destColId}`, {
+          action: res.data.actionLogId ? {
+            label: "Undo",
+            onClick: async () => {
+              const { revertAction } = await import("@/modules/core/undo");
+              const undoRes = await revertAction(res.data.actionLogId!);
+              if (undoRes.data?.success) {
+                toast.success("Deal stage reverted");
+                // In a robust implementation, trigger a router.refresh() or pass a callback
+              } else {
+                toast.error(undoRes.serverError || "Failed to undo");
+              }
+            }
+          } : undefined
+        });
+      } else {
         throw new Error("Failed to update");
       }
     } catch (err) {

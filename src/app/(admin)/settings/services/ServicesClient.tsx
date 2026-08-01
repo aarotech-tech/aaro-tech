@@ -1,6 +1,9 @@
 "use client";
 
 import { DataTable } from "@/components/ui/data-table";
+import { ServiceDialog } from "./_components/ServiceDialog";
+import { Button } from "@/components/ui/button";
+import { Edit2 } from "lucide-react";
 
 export function ServicesClient({ data }: { data: any[] }) {
   const columns = [
@@ -26,6 +29,21 @@ export function ServicesClient({ data }: { data: any[] }) {
         <span className={`px-2 py-1 text-xs font-semibold rounded-full ${row.original.isActive ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}`}>
           {row.original.isActive ? "Active" : "Inactive"}
         </span>
+      ),
+    },
+    {
+      id: "actions",
+      cell: ({ row }: any) => (
+        <div className="flex justify-end">
+          <ServiceDialog 
+            service={row.original} 
+            trigger={
+              <Button variant="ghost" size="icon">
+                <Edit2 className="w-4 h-4 text-gray-500" />
+              </Button>
+            } 
+          />
+        </div>
       ),
     }
   ];

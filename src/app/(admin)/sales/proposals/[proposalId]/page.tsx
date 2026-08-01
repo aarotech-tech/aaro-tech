@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
+import DOMPurify from "isomorphic-dompurify";
 import { generateProposalWithAI } from "./actions";
 import { EyeIcon, CheckCircleIcon } from "lucide-react";
 import LineItemsEditor from "./_components/LineItemsEditor";
@@ -46,7 +47,7 @@ export default async function ProposalEditorPage({ params }: { params: Promise<{
               await generateAction();
             }}>
               <Button type="submit" variant="outline" className="border-purple-200 text-purple-700 hover:bg-purple-50 shadow-sm transition-colors">
-                ✨ Auto-Generate with AI
+                ✨ Generate Draft
               </Button>
             </form>
           }
@@ -57,7 +58,7 @@ export default async function ProposalEditorPage({ params }: { params: Promise<{
         {/* For MVP, we'll just render the HTML data. In reality, this would be a TipTap or Slate.js editor */}
         <div 
           className="prose max-w-none text-gray-800"
-          dangerouslySetInnerHTML={{ __html: proposal.documentData || "<p class='text-gray-400 italic'>No content generated yet. Add line items and click Auto-Generate.</p>" }}
+          dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(proposal.documentData || "<p class='text-gray-400 italic'>No content generated yet. Add line items and click Auto-Generate.</p>") }}
         />
         
         {/* Deal Line Items Editor */}

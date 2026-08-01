@@ -5,26 +5,46 @@ import { ColumnDef } from "@tanstack/react-table";
 import { DataTable } from "@/components/ui/data-table";
 import { DataTableColumnHeader } from "@/components/ui/data-table-column-header";
 import { Button } from "@/components/ui/button";
-import { qualifyLeadAction } from "@/modules/sales/actions";
-import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
+import { QualifyLeadDialog } from "./_components/QualifyLeadDialog";
+import { ArchiveLeadDialog } from "./_components/ArchiveLeadDialog";
+import { updateLeadStatusAction } from "@/modules/sales/actions";
+import { toast } from "sonner";
+import { MoreHorizontal, Sparkles, CheckCircle, Archive } from "lucide-react";
+import { useRouter } from "next/navigation";
 
 export function LeadsTable({ leads }: { leads: any[] }) {
-  const [loadingId, setLoadingId] = useState<string | null>(null);
+  const [isUpdating, setIsUpdating] = useState<string | null>(null);
+  const router = useRouter();
 
-  const handleQualify = async (id: string) => {
-    setLoadingId(id);
+  const handleMarkContacted = async (id: string) => {
+    setIsUpdating(id);
     try {
-      const res = await qualifyLeadAction({ leadId: id });
+      const res = await updateLeadStatusAction({ leadId: id, status: "contacted" });
       if (res?.data) {
-        toast.success("Lead successfully qualified and added to Organizations.");
+        toast.success("Lead marked as contacted", {
+          action: res.data.actionLogId ? {
+            label: "Undo",
+            onClick: async () => {
+              const { revertAction } = await import("@/modules/core/undo");
+              const undoRes = await revertAction(res.data.actionLogId!);
+              if (undoRes.data?.success) {
+                toast.success("Lead status reverted");
+                router.refresh();
+              } else {
+                toast.error(undoRes.serverError || "Failed to undo");
+              }
+            }
+          } : undefined
+        });
+        router.refresh();
       } else {
-        toast.error(res?.serverError || "Failed to qualify lead");
+        toast.error(res?.serverError || "Failed to update lead");
       }
     } catch (err) {
-      toast.error("Failed to qualify lead");
+      toast.error("Failed to update lead");
     } finally {
-      setLoadingId(null);
+      setIsUpdating(null);
     }
   };
 
@@ -50,6 +70,33 @@ export function LeadsTable({ leads }: { leads: any[] }) {
       ),
     },
     {
+      accessorKey: "challenge",
+      header: ({ column }) => <DataTableColumnHeader column={column} title="Challenge" />,
+      cell: ({ row }) => (
+        <div className="text-sm max-w-[300px] whitespace-normal">
+          {row.original.challenge || <span className="text-gray-400">-</span>}
+        </div>
+      ),
+    },
+    {
+      accessorKey: "websiteUrl",
+      header: ({ column }) => <DataTableColumnHeader column={column} title="Website" />,
+      cell: ({ row }) => (
+        <div className="text-sm">
+          {row.original.websiteUrl ? (
+            <a 
+              href={row.original.websiteUrl.startsWith('http') ? row.original.websiteUrl : `https://${row.original.websiteUrl}`} 
+              target="_blank" 
+              rel="noopener noreferrer" 
+              className="text-blue-600 hover:underline inline-block break-all"
+            >
+              {row.original.websiteUrl.replace(/^https?:\/\//, '')}
+            </a>
+          ) : <span className="text-gray-400">-</span>}
+        </div>
+      ),
+    },
+    {
       accessorKey: "status",
       header: ({ column }) => <DataTableColumnHeader column={column} title="Status" />,
       cell: ({ row }) => (
@@ -69,20 +116,14 @@ export function LeadsTable({ leads }: { leads: any[] }) {
     },
     {
       id: "actions",
-      cell: ({ row }) => (
-        <div className="text-right">
-          {row.original.status === 'new' && (
-            <Button 
-              variant="outline" 
-              size="sm"
-              onClick={() => handleQualify(row.original.id)}
-              disabled={loadingId === row.original.id}
-            >
-              {loadingId === row.original.id ? "Qualifying..." : "Qualify Lead"}
-            </Button>
-          )}
-        </div>
-      ),
+      cell: ({ row }) => {
+        const isNewOrContacted = row.original.status === 'new' || row.original.status === 'contacted';
+        const isNew = row.original.status === 'new';
+        
+        // Use a local functional component or just use state in the main table?
+        // Wait, React hooks can't be called conditionally or inside map. We should extract to a real component.
+        return <LeadActionsCell row={row} isUpdating={isUpdating} handleMarkContacted={handleMarkContacted} />;
+      },
     },
   ];
 
@@ -96,5 +137,63 @@ export function LeadsTable({ leads }: { leads: any[] }) {
       exportFilename="website-leads"
       emptyMessage="You don't have any website leads pending qualification."
     />
+  );
+}
+
+function LeadActionsCell({ row, isUpdating, handleMarkContacted }: { row: any, isUpdating: string | null, handleMarkContacted: (id: string) => void }) {
+  const [showQualify, setShowQualify] = useState(false);
+  const [showArchive, setShowArchive] = useState(false);
+  const isNewOrContacted = row.original.status === 'new' || row.original.status === 'contacted';
+  const isNew = row.original.status === 'new';
+
+  return (
+    <div className="flex justify-end items-center gap-2">
+      {isNewOrContacted && (
+        <Button 
+          variant="outline" 
+          size="sm" 
+          onClick={() => setShowQualify(true)}
+          className="h-8 text-indigo-600 hover:text-indigo-700 border-indigo-200 hover:bg-indigo-50"
+        >
+          <Sparkles className="mr-1.5 h-3.5 w-3.5" />
+          Qualify
+        </Button>
+      )}
+      {isNew && (
+        <Button 
+          variant="outline" 
+          size="sm" 
+          onClick={() => handleMarkContacted(row.original.id)}
+          disabled={isUpdating === row.original.id}
+          className="h-8"
+        >
+          <CheckCircle className="mr-1.5 h-3.5 w-3.5" />
+          Contacted
+        </Button>
+      )}
+      <Button 
+        variant="ghost" 
+        size="sm" 
+        onClick={() => setShowArchive(true)} 
+        className="h-8 w-8 p-0 text-red-500 hover:text-red-700 hover:bg-red-50"
+      >
+        <Archive className="h-4 w-4" />
+        <span className="sr-only">Archive</span>
+      </Button>
+
+      <QualifyLeadDialog 
+        open={showQualify}
+        onOpenChange={setShowQualify}
+        leadId={row.original.id} 
+        leadName={row.original.name} 
+        businessName={row.original.businessName}
+      />
+      <ArchiveLeadDialog 
+        open={showArchive}
+        onOpenChange={setShowArchive}
+        leadId={row.original.id} 
+        leadName={row.original.name}
+      />
+    </div>
   );
 }

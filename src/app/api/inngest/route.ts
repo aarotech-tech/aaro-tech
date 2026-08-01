@@ -1,8 +1,9 @@
 import { serve } from "inngest/next";
 import { inngest } from "../../../inngest/client";
 import { handleDealWon, handleProposalAccepted, handleInvoicePaid } from "../../../inngest/functions/orchestration";
-import { handleStandardNotifications } from "../../../inngest/functions/notifications";
+import { handleStandardNotifications, handleSecondaryNotifications } from "../../../inngest/functions/notifications";
 import { processOutbox } from "../../../inngest/functions/outbox";
+import { checkOverdueInvoices } from "../../../inngest/functions/finance";
 
 // Export the API route for Inngest
 export const { GET, POST, PUT } = serve({
@@ -12,6 +13,8 @@ export const { GET, POST, PUT } = serve({
     handleProposalAccepted,
     handleInvoicePaid,
     handleStandardNotifications,
-    processOutbox
+    handleSecondaryNotifications,
+    processOutbox,
+    checkOverdueInvoices
   ],
 });

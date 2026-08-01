@@ -49,26 +49,19 @@ export default async function ClientSettingsPage() {
         </div>
 
         <div className="md:col-span-3 space-y-6">
-          <Card className="shadow-sm">
-            <CardHeader>
-              <CardTitle className="text-lg">Personal Information</CardTitle>
+          <Card className="shadow-sm border-0 bg-transparent">
+            <CardHeader className="px-0">
+              <CardTitle className="text-lg text-gray-900">Personal Information</CardTitle>
             </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-1">
-                  <label className="text-sm font-medium text-gray-700">First Name</label>
-                  <input type="text" defaultValue={user.firstName || ""} className="w-full p-2 border rounded-md" disabled />
-                </div>
-                <div className="space-y-1">
-                  <label className="text-sm font-medium text-gray-700">Last Name</label>
-                  <input type="text" defaultValue={user.lastName || ""} className="w-full p-2 border rounded-md" disabled />
-                </div>
-              </div>
-              <div className="space-y-1">
-                <label className="text-sm font-medium text-gray-700">Email Address</label>
-                <input type="email" defaultValue={user.email} className="w-full p-2 border rounded-md" disabled />
-              </div>
-              <Button>Save Changes</Button>
+            <CardContent className="px-0">
+              <UserProfile 
+                appearance={{
+                  elements: {
+                    rootBox: "w-full shadow-sm rounded-xl border border-gray-200",
+                    card: "shadow-none border-0 w-full max-w-full",
+                  }
+                }}
+              />
             </CardContent>
           </Card>
 

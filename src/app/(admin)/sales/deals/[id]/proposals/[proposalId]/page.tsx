@@ -2,6 +2,9 @@ import { getAdminProposalDetails } from "@/modules/sales/services";
 import { notFound } from "next/navigation";
 import { PageHeader } from "@/components/ui/page-header";
 import { ProposalEditorClient } from "./_components/ProposalEditorClient";
+import { ProposalComments } from "@/app/proposals/[proposalId]/_components/ProposalComments";
+import { getProposalComments } from "@/modules/sales/services";
+import { currentUser } from "@clerk/nextjs/server";
 
 export default async function ProposalEditorPage({ 
   params 
@@ -16,6 +19,8 @@ export default async function ProposalEditorPage({
   }
 
   const { proposal, currentLineItems } = data;
+  const comments = await getProposalComments(resolvedParams.proposalId);
+  const user = await currentUser();
 
   return (
     <div className="h-full overflow-y-auto flex flex-col">
@@ -38,6 +43,14 @@ export default async function ProposalEditorPage({
           currentLineItems={currentLineItems}
           dealId={resolvedParams.id}
         />
+        
+        <div className="mt-8 max-w-4xl mx-auto">
+          <ProposalComments 
+            proposalId={proposal.id} 
+            comments={comments} 
+            currentUser={user ? { id: user.id, name: `${user.firstName || ''} ${user.lastName || ''}`.trim() || 'Staff' } : undefined}
+          />
+        </div>
       </div>
     </div>
   );

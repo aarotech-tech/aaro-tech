@@ -1,6 +1,8 @@
 "use client";
 
 import { useState } from "react";
+import DOMPurify from "isomorphic-dompurify";
+import { toPaise } from "@/lib/currency";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -76,7 +78,7 @@ export function ProposalEditorClient({ proposal, currentLineItems, dealId }: { p
       title,
       description,
       quantity: Number(quantity) || 1,
-      unitPrice: (Number(unitPrice) || 0) * 100, // to cents
+      unitPrice: toPaise(Number(unitPrice) || 0), // to cents
       isRecurring: false,
     });
   };
@@ -214,7 +216,7 @@ export function ProposalEditorClient({ proposal, currentLineItems, dealId }: { p
             ) : (
               <div className="h-full overflow-y-auto p-8 lg:p-12">
                 <div className="max-w-3xl mx-auto bg-white p-8 lg:p-12 rounded-lg shadow-sm min-h-[800px]" 
-                  dangerouslySetInnerHTML={{ __html: proposal.documentData }}
+                  dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(proposal.documentData) }}
                 />
               </div>
             )}

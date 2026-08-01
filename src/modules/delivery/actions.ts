@@ -25,6 +25,51 @@ export const createProjectAction = internalActionClient
     return project;
   });
 
+const createManualProjectSchema = z.object({
+  organizationId: z.string().uuid("Invalid Organization ID"),
+  name: z.string().min(1, "Project name is required"),
+  value: z.number().nonnegative("Value must be non-negative").optional(),
+  expectedDeliveryDate: z.string().optional(),
+});
+
+/**
+ * Internal-only action to manually create a project.
+ */
+export const createManualProjectAction = internalActionClient
+  .schema(createManualProjectSchema)
+  .action(async ({ parsedInput, ctx }) => {
+    const { organizationId, ...data } = parsedInput;
+    const project = await DeliveryService.createManualProject(
+      organizationId,
+      data,
+      ctx.user.id
+    );
+
+    revalidatePath("/(admin)/delivery/projects", "page");
+    return project;
+  });
+
+const completeProjectSchema = z.object({
+  projectId: z.string().uuid("Invalid Project ID"),
+  organizationId: z.string().uuid("Invalid Organization ID"),
+});
+
+/**
+ * Internal action to complete a project.
+ */
+export const completeProjectAction = internalActionClient
+  .schema(completeProjectSchema)
+  .action(async ({ parsedInput }) => {
+    const result = await DeliveryService.completeProject(
+      parsedInput.projectId,
+      parsedInput.organizationId
+    );
+
+    revalidatePath("/(admin)/delivery/projects/[id]", "layout");
+    revalidatePath("/(admin)/delivery/projects", "page");
+    return result;
+  });
+
 const reviewDeliverableSchema = z.object({
   deliverableId: z.string().uuid("Invalid Deliverable ID"),
   commentText: z.string().optional().default(""),
@@ -121,7 +166,22 @@ export const submitDeliverableForClientReviewAction = internalActionClient
     return result;
   });
 
+const createDeliverableSchema = z.object({
+  projectId: z.string().uuid("Invalid Project ID"),
+  name: z.string().min(1, "Name is required"),
+});
 
+export const createDeliverableAction = internalActionClient
+  .schema(createDeliverableSchema)
+  .action(async ({ parsedInput, ctx }) => {
+    const result = await DeliveryService.createDeliverableService({
+      projectId: parsedInput.projectId,
+      name: parsedInput.name,
+      userId: ctx.user.id
+    });
+    revalidatePath("/(admin)/delivery/projects/[id]", "page");
+    return result;
+  });
 
 // Task Actions
 const createTaskSchema = z.object({
@@ -278,4 +338,59 @@ export const updateMilestoneStatusAction = internalActionClient
 
     revalidatePath(`/(admin)/delivery/projects/${parsedInput.projectId}`, "page");
     return result;
+  });
+const projectMemberSchema = z.object({
+  projectId: z.string().uuid(),
+  userId: z.string().uuid(),
+  role: z.string().default("member"),
+});
+
+export const assignProjectMemberAction = internalActionClient
+  .schema(projectMemberSchema)
+  .action(async ({ parsedInput, ctx }) => {
+    const member = await DeliveryService.assignProjectMember(
+      parsedInput.projectId,
+      parsedInput.userId,
+      parsedInput.role,
+      ctx.user.id
+    );
+    revalidatePath(`/(admin)/delivery/projects/${parsedInput.projectId}/team`, "page");
+    return member;
+  });
+
+const removeProjectMemberSchema = z.object({
+  projectId: z.string().uuid(),
+  userId: z.string().uuid(),
+});
+
+export const removeProjectMemberAction = internalActionClient
+  .schema(removeProjectMemberSchema)
+  .action(async ({ parsedInput, ctx }) => {
+    const success = await DeliveryService.removeProjectMember(
+      parsedInput.projectId,
+      parsedInput.userId,
+      ctx.user.id
+    );
+    revalidatePath(`/(admin)/delivery/projects/${parsedInput.projectId}/team`, "page");
+    return success;
+  });
+const bulkUpdateTaskStatusSchema = z.object({
+  taskIds: z.array(z.string().uuid()).min(1),
+  status: z.string(),
+  projectId: z.string().uuid(),
+  organizationId: z.string().uuid(),
+});
+
+export const bulkUpdateTaskStatusAction = internalActionClient
+  .schema(bulkUpdateTaskStatusSchema)
+  .action(async ({ parsedInput }) => {
+    const res = await DeliveryService.bulkUpdateTaskStatusService(
+      parsedInput.taskIds,
+      parsedInput.status,
+      parsedInput.projectId,
+      parsedInput.organizationId
+    );
+    revalidatePath(`/delivery/projects/${parsedInput.projectId}/board`, "page");
+    revalidatePath(`/(admin)/delivery/projects/${parsedInput.projectId}/board`, "page");
+    return { success: res };
   });

@@ -6,6 +6,7 @@ import { DbTx } from "@/db/types";
 import { emitDomainEvent } from "@/modules/core/events";
 import { validateInvoiceTransition, validatePaymentTransition, InvoiceStatusType, PaymentStatusType } from "./validators";
 import { manualPaymentProvider } from "./providers/manual";
+import { toPaise } from "@/lib/currency";
 
 export class FinanceService {
   constructor(private repo: FinanceRepository = financeRepository) {}
@@ -43,7 +44,7 @@ export class FinanceService {
       organizationId: data.organizationId,
       projectId: data.projectId,
       retainerPeriodId: data.retainerPeriodId,
-      amount: data.amount * 100, // convert to cents
+      amount: toPaise(data.amount), // convert to cents
       dueDate: data.dueDate,
       status: "draft"
     }, tx);
@@ -264,6 +265,15 @@ export class FinanceService {
       where: eq(payments.invoiceId, invoiceId),
       orderBy: [desc(payments.createdAt)]
     });
+
+    // Fire and forget event
+    emitDomainEvent({
+      type: "InvoiceViewed",
+      payload: {
+        organizationId: invoice.organizationId,
+        invoiceId: invoice.id,
+      }
+    }).catch(console.error);
 
     return { invoice, project, period, payments: invoicePayments };
   }
@@ -520,7 +530,144 @@ export class FinanceService {
       paymentMethods: Object.entries(methodMap).map(([method, amount]) => ({ method, amount }))
     };
   }
+
+  // ------------- RETAINERS ------------- //
+
+  async createRetainer(data: {
+    organizationId: string;
+    name: string;
+    amount: number;
+    billingDay: number;
+    startDate: Date;
+    endDate?: Date;
+  }, userId: string) {
+    const [retainer] = await database.insert(retainers).values({
+      organizationId: data.organizationId,
+      name: data.name,
+      amount: toPaise(data.amount),
+      billingDay: data.billingDay,
+      startDate: data.startDate,
+      endDate: data.endDate,
+      status: "active"
+    }).returning();
+    
+    return retainer;
+  }
+
+  async updateRetainerStatus(retainerId: string, status: string, userId: string) {
+    const [retainer] = await database.update(retainers)
+      .set({ status })
+      .where(eq(retainers.id, retainerId))
+      .returning();
+    return retainer;
+  }
+
+  async getRetainerDetails(retainerId: string) {
+    const retainer = await database.query.retainers.findFirst({
+      where: eq(retainers.id, retainerId),
+      with: {
+        organization: true,
+      }
+    });
+
+    if (!retainer) return null;
+
+    const periods = await database.query.retainerPeriods.findMany({
+      where: eq(retainerPeriods.retainerId, retainerId),
+      orderBy: [desc(retainerPeriods.startDate)]
+    });
+
+    const periodIds = periods.map(p => p.id);
+    const relatedInvoices = periodIds.length > 0 ? await database.query.invoices.findMany({
+      where: (i, { inArray }) => inArray(i.retainerPeriodId, periodIds)
+    }) : [];
+
+    return { retainer, periods, invoices: relatedInvoices };
+  }
+
+  async processRetainerBilling() {
+    const today = new Date();
+    const currentDay = today.getDate();
+    const currentMonth = today.getMonth(); // 0-11
+    const currentYear = today.getFullYear();
+    
+    // Find active retainers where billing day is today or past, and no period created for this month
+    const activeRetainers = await database.query.retainers.findMany({
+      where: eq(retainers.status, "active")
+    });
+    
+    let generatedCount = 0;
+
+    for (const retainer of activeRetainers) {
+      if (retainer.endDate && new Date(retainer.endDate) < today) {
+        // Expired, mark as paused/cancelled
+        await database.update(retainers).set({ status: 'paused' }).where(eq(retainers.id, retainer.id));
+        continue;
+      }
+      
+      // If billing day is in the future for this month, skip
+      if (retainer.billingDay > currentDay) continue;
+
+      // Check if period for this month already exists
+      const periodName = `${today.toLocaleString('default', { month: 'long' })} ${currentYear}`;
+      
+      const existingPeriod = await database.query.retainerPeriods.findFirst({
+        where: and(
+          eq(retainerPeriods.retainerId, retainer.id),
+          eq(retainerPeriods.periodName, periodName)
+        )
+      });
+
+      if (!existingPeriod) {
+        // Create period
+        const startDate = new Date(currentYear, currentMonth, retainer.billingDay);
+        const endDate = new Date(currentYear, currentMonth + 1, retainer.billingDay - 1);
+        
+        const [period] = await database.insert(retainerPeriods).values({
+          retainerId: retainer.id,
+          periodName,
+          startDate,
+          endDate,
+          status: 'active'
+        }).returning();
+
+        // Create invoice
+        const dueDate = new Date(startDate);
+        dueDate.setDate(dueDate.getDate() + 15); // Net 15
+        
+        await this.issueInvoice({
+          organizationId: retainer.organizationId,
+          retainerPeriodId: period.id,
+          amount: retainer.amount / 100, // issueInvoice converts to paise
+          dueDate
+        });
+        
+        generatedCount++;
+      }
+    }
+    
+    return { success: true, generated: generatedCount };
+  }
 }
 
 export const financeService = new FinanceService();
 
+export async function getInvoiceDetails(invoiceId: string) {
+  const data = await database
+    .select({
+      id: invoices.id,
+      invoiceNumber: invoices.invoiceNumber,
+      amount: invoices.amount,
+      status: invoices.status,
+      createdAt: invoices.createdAt,
+      dueDate: invoices.dueDate,
+      organizationName: organizations.name,
+    })
+    .from(invoices)
+    .leftJoin(organizations, eq(invoices.organizationId, organizations.id))
+    .where(eq(invoices.id, invoiceId))
+    .limit(1);
+
+  if (data.length === 0) return null;
+  return { ...data[0], lineItems: [] as { title: string; description?: string; amount: number }[] };
+}

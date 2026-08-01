@@ -1,10 +1,11 @@
 import { logActivity } from "./activity";
 import { notificationService } from "./notifications";
 import { conversionEngine } from "@/modules/orchestration/conversion-engine";
+import { eq } from "drizzle-orm";
 
 // Domain Events Definitions
 export type DomainEvent =
-  | { type: "WebsiteLeadCreated"; payload: { organizationId: string; name: string; email: string } }
+  | { type: "WebsiteLeadCreated"; payload: { organizationId: string; name: string; email: string; phone?: string | null; businessName?: string | null; websiteUrl?: string | null; challenge?: string | null } }
   | { type: "LeadQualified"; payload: { organizationId: string; leadId: string; dealId: string; userId?: string } }
   | { type: "DealCreated"; payload: { organizationId: string; dealId: string; dealName: string; userId?: string } }
   | { type: "DealStageChanged"; payload: { organizationId: string; dealId: string; stage: string; userId?: string } }
@@ -14,6 +15,7 @@ export type DomainEvent =
   | { type: "ProposalAccepted"; payload: { organizationId: string; proposalId: string; dealId: string; userId?: string } }
   | { type: "ProjectCreated"; payload: { organizationId: string; projectId: string; projectName: string; userId?: string } }
   | { type: "ProjectActivated"; payload: { organizationId: string; projectId: string; userId?: string } }
+  | { type: "ProjectCompleted"; payload: { organizationId: string; projectId: string; userId?: string } }
   | { type: "TaskAssigned"; payload: { organizationId: string; projectId: string; taskId: string; assigneeId: string; userId?: string } }
   | { type: "DeliverableSubmitted"; payload: { organizationId: string; projectId: string; deliverableId: string; userId?: string } }
   | { type: "DeliverableApproved"; payload: { organizationId: string; projectId: string; deliverableId: string; userId?: string } }
@@ -51,10 +53,25 @@ export async function emitDomainEvent(event: DomainEvent, tx?: any) {
     throw e; // Strict failure: never silently drop an event
   }
   
-  // Local Development Fallback: If Inngest is not running, process it locally
+  // Local Development Fallback: If Inngest is not running or we want instant feedback, process it locally
   // [DEV-ONLY] This is retained strictly for local developer convenience. 
   // It must never mask the requirement for proper Inngest handlers in production.
   if (process.env.NODE_ENV === 'development' || !process.env.INNGEST_EVENT_KEY) {
+    console.log(`[Event Bus Fallback] [DEV-ONLY] Instantly dispatching ${event.type} to Inngest...`);
+    try {
+      await inngest.send({
+        name: `Domain/${event.type}` as any,
+        data: event.payload,
+      });
+      
+      // Mark as processed in local dev so it doesn't pile up
+      await dbClient.update(outboxEvents)
+        .set({ status: 'processed', processedAt: new Date() })
+        .where(eq(outboxEvents.type, `Domain/${event.type}`));
+    } catch (err) {
+      console.error(`[Event Bus Fallback] Failed to dispatch ${event.type}:`, err);
+    }
+
     if (event.type === 'ProposalAccepted') {
       console.log(`[Event Bus Fallback] [DEV-ONLY] Processing ${event.type} locally without Inngest...`);
       await conversionEngine.handleProposalAccepted(event.payload.dealId, event.payload.organizationId);

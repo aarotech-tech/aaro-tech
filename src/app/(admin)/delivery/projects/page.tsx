@@ -3,6 +3,9 @@ import { projects, organizations } from "@/db/schema";
 import { eq, isNull } from "drizzle-orm";
 import { ProjectsTable } from "./ProjectsTable";
 import { PageHeader } from "@/components/ui/page-header";
+import { CreateProjectModal } from "./_components/CreateProjectModal";
+import { Button } from "@/components/ui/button";
+import { Plus } from "lucide-react";
 
 export default async function ProjectsPage() {
   const activeProjects = await db
@@ -19,6 +22,8 @@ export default async function ProjectsPage() {
     .leftJoin(organizations, eq(projects.organizationId, organizations.id))
     .where(isNull(projects.deletedAt));
 
+  const orgsList = await db.select({ id: organizations.id, name: organizations.name }).from(organizations);
+
   return (
     <div className="h-full overflow-y-auto flex flex-col">
       <div className="p-6 pb-0">
@@ -30,6 +35,13 @@ export default async function ProjectsPage() {
             { label: "Delivery" },
             { label: "Projects" }
           ]}
+          primaryAction={
+            <CreateProjectModal organizations={orgsList}>
+              <Button>
+                <Plus className="w-4 h-4 mr-2" /> New Project
+              </Button>
+            </CreateProjectModal>
+          }
         />
       </div>
       

@@ -33,8 +33,10 @@ import {
   DropdownMenuTrigger,
   DropdownMenuItem,
 } from "@/components/ui/dropdown-menu";
-import { ChevronDown, Download, Search, SlidersHorizontal, Loader2 } from "lucide-react";
+import { ChevronDown, Download, Search, SlidersHorizontal } from "lucide-react";
 import * as XLSX from "xlsx";
+import { LoadingState } from "@/components/ui/LoadingState";
+import { EmptyState } from "@/components/ui/EmptyState";
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
@@ -43,6 +45,7 @@ interface DataTableProps<TData, TValue> {
   searchPlaceholder?: string;
   isLoading?: boolean;
   emptyMessage?: string;
+  emptyState?: React.ReactNode;
   
   // Server-side support
   manualPagination?: boolean;
@@ -70,6 +73,7 @@ export function DataTable<TData, TValue>({
   searchPlaceholder = "Search...",
   isLoading = false,
   emptyMessage = "No results found.",
+  emptyState,
   manualPagination = false,
   pageCount,
   pagination,
@@ -122,7 +126,7 @@ export function DataTable<TData, TValue>({
     getPaginationRowModel: manualPagination ? undefined : getPaginationRowModel(),
     getSortedRowModel: manualSorting ? undefined : getSortedRowModel(),
     getFacetedRowModel: getFacetedRowModel(),
-    getFacetedUniqueValues: getFacetedUniqueValues(),
+    // getFacetedUniqueValues: getFacetedUniqueValues(),
     manualPagination,
     manualSorting,
     manualFiltering,
@@ -232,8 +236,8 @@ export function DataTable<TData, TValue>({
             <TableBody>
               {isLoading ? (
                 <TableRow>
-                  <TableCell colSpan={columns.length} className="h-24 text-center">
-                    <Loader2 className="h-6 w-6 animate-spin mx-auto text-indigo-600" />
+                  <TableCell colSpan={columns.length} className="h-48">
+                    <LoadingState title="Loading data..." description="" />
                   </TableCell>
                 </TableRow>
               ) : table.getRowModel().rows?.length ? (
@@ -252,8 +256,14 @@ export function DataTable<TData, TValue>({
                 ))
               ) : (
                 <TableRow>
-                  <TableCell colSpan={columns.length} className="h-24 text-center text-gray-500">
-                    {emptyMessage}
+                  <TableCell colSpan={columns.length} className="h-48">
+                    {emptyState || (
+                      <EmptyState 
+                        icon={Search} 
+                        title="No results" 
+                        description={emptyMessage}
+                      />
+                    )}
                   </TableCell>
                 </TableRow>
               )}

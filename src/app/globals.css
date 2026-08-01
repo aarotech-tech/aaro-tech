@@ -134,6 +134,21 @@
   ::selection {
     @apply bg-primary/20 text-foreground;
   }
+  button, 
+  [role="button"], 
+  [role="menuitem"], 
+  [role="option"], 
+  [role="tab"],
+  a {
+    cursor: pointer !important;
+  }
+  button:disabled,
+  [role="button"][aria-disabled="true"],
+  [role="menuitem"][aria-disabled="true"],
+  [role="option"][aria-disabled="true"],
+  [data-disabled] {
+    cursor: not-allowed !important;
+  }
 }
 
 @keyframes marquee {

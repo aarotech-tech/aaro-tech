@@ -5,19 +5,28 @@ const fromEmail = process.env.EMAIL_FROM || 'Aarotech <notifications@aarotech.in
 
 export async function sendEmail({ to, subject, html }: { to: string, subject: string, html: string }) {
   if (!resend) {
+    console.error("EMAIL FAILED: RESEND_API_KEY is not configured.");
     throw new Error("RESEND_API_KEY is not configured. Email delivery failed.");
   }
 
   try {
-    const data = await resend.emails.send({
+    console.log(`Attempting to send email to ${to} from ${fromEmail}...`);
+    const response = await resend.emails.send({
       from: fromEmail,
       to,
       subject,
       html,
     });
-    return { success: true, data };
+    
+    if (response.error) {
+      console.error('RESEND API REJECTED THE EMAIL:', response.error);
+      return { success: false, error: response.error };
+    }
+    
+    console.log('EMAIL SENT SUCCESSFULLY:', response.data);
+    return { success: true, data: response.data };
   } catch (error) {
-    console.error('Error sending email via Resend:', error);
+    console.error('CRITICAL ERROR sending email via Resend:', error);
     return { success: false, error };
   }
 }
@@ -62,6 +71,23 @@ export async function sendDeliverableClientResponseEmail(to: string, deliverable
       <p>The client has reviewed <strong>${deliverableName}</strong>.</p>
       <p>Status: <strong>${status}</strong></p>
       <p>Log in to the CRM to view the details.</p>
+    `
+  });
+}
+
+export async function sendPaymentReceiptEmail(to: string, orgName: string, paymentId: string, amountCents: number) {
+  const amountStr = (amountCents / 100).toLocaleString(undefined, { minimumFractionDigits: 2 });
+  return sendEmail({
+    to,
+    subject: `Payment Receipt from Aarotech - ₹${amountStr}`,
+    html: `
+      <h2>Payment Receipt</h2>
+      <p>Hello ${orgName},</p>
+      <p>We have successfully verified and applied your payment of <strong>₹${amountStr}</strong>.</p>
+      <p>Payment ID: ${paymentId.substring(0, 8).toUpperCase()}</p>
+      <p>Thank you for your business!</p>
+      <br/>
+      <p>Aarotech Team</p>
     `
   });
 }

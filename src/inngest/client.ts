@@ -5,5 +5,6 @@ import { sentryMiddleware } from "@inngest/middleware-sentry";
 export const inngest = new Inngest({
   id: "aarotech",
   name: "Aarotech Automation Center",
+  eventKey: process.env.INNGEST_EVENT_KEY || "local",
   middleware: [sentryMiddleware()],
 });

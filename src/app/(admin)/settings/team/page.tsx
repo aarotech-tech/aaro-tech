@@ -11,12 +11,12 @@ export default async function TeamSettingsPage() {
   await requireInternalUser();
   const team = await db.select().from(users);
   
-  // Format to match TeamTable props, if needed. TeamTable expects {id, name, email, role}
   const formattedTeam = team.map(u => ({
     id: u.id,
     name: `${u.firstName || ''} ${u.lastName || ''}`.trim() || 'Unknown',
     email: u.email,
-    role: u.globalRole || u.role || 'Member',
+    globalRole: u.globalRole || 'staff',
+    status: u.status || 'active',
   }));
 
   return (

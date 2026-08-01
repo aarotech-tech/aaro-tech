@@ -2,6 +2,22 @@ import { notFound } from "next/navigation";
 import { Building2, Mail, Phone, MapPin, Target, Briefcase, FileText, CreditCard } from "lucide-react";
 import { PageHeader } from "@/components/ui/page-header";
 import { CoreService } from "@/modules/core/services";
+import { EmptyState } from "@/components/ui/EmptyState";
+import { requireInternalUser } from "@/lib/auth";
+import { EditOrganizationDialog } from "../_components/EditOrganizationDialog";
+import { ArchiveOrganizationDialog } from "../_components/ArchiveOrganizationDialog";
+import { AddContactDialog } from "../_components/AddContactDialog";
+import { EditContactDialog } from "../_components/EditContactDialog";
+import { ArchiveContactDialog } from "../_components/ArchiveContactDialog";
+import { InviteClientDialog } from "../_components/InviteClientDialog";
+import { Button } from "@/components/ui/button";
+import { Edit, Trash2, Plus, Archive, Send, MoreHorizontal } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 export default async function OrganizationDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -30,6 +46,25 @@ export default async function OrganizationDetailPage({ params }: { params: Promi
               <span className="capitalize px-2 py-0.5 bg-gray-100 rounded-md font-medium text-gray-700 text-sm">{org.type}</span>
               <span className="capitalize px-2 py-0.5 bg-green-100 rounded-md font-medium text-green-700 text-sm">{org.status}</span>
             </div>
+          }
+          secondaryActions={
+            <>
+              <InviteClientDialog organizationId={org.id}>
+                <Button variant="outline" size="sm">
+                  <Send className="h-4 w-4 mr-2" /> Invite Client
+                </Button>
+              </InviteClientDialog>
+              <EditOrganizationDialog organizationId={org.id} initialName={org.name}>
+                <Button variant="outline" size="sm">
+                  <Edit className="h-4 w-4 mr-2" /> Edit
+                </Button>
+              </EditOrganizationDialog>
+              <ArchiveOrganizationDialog organizationId={org.id} organizationName={org.name}>
+                <Button variant="outline" size="sm" className="text-red-600 hover:text-red-700 hover:bg-red-50">
+                  <Archive className="h-4 w-4 mr-2" /> Archive
+                </Button>
+              </ArchiveOrganizationDialog>
+            </>
           }
         />
       </div>
@@ -65,13 +100,44 @@ export default async function OrganizationDetailPage({ params }: { params: Promi
 
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-5">
             <h3 className="text-lg font-semibold text-gray-900 mb-4 border-b pb-2 flex items-center justify-between">
-              Contacts
-              <span className="bg-blue-100 text-blue-700 py-0.5 px-2 rounded-full text-xs">{orgContacts.length}</span>
+              <div>
+                Contacts
+                <span className="ml-2 bg-blue-100 text-blue-700 py-0.5 px-2 rounded-full text-xs">{orgContacts.length}</span>
+              </div>
+              <AddContactDialog>
+                <Button variant="ghost" size="sm" className="h-8 px-2 text-blue-600">
+                  <Plus className="h-4 w-4" />
+                </Button>
+              </AddContactDialog>
             </h3>
             <div className="space-y-4">
               {orgContacts.map(contact => (
-                <div key={contact.id} className="flex flex-col border border-gray-100 p-3 rounded-md">
-                  <span className="font-medium text-gray-900">{contact.name}</span>
+                <div key={contact.id} className="flex flex-col border border-gray-100 p-3 rounded-md relative group">
+                  <div className="flex justify-between items-start">
+                    <span className="font-medium text-gray-900">{contact.name}</span>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" size="sm" className="h-6 w-6 p-0 opacity-0 group-hover:opacity-100 transition-opacity">
+                          <span className="sr-only">Open menu</span>
+                          <MoreHorizontal className="h-4 w-4" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        <EditContactDialog contact={contact}>
+                          <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
+                            <Edit className="mr-2 h-4 w-4" />
+                            <span>Edit</span>
+                          </DropdownMenuItem>
+                        </EditContactDialog>
+                        <ArchiveContactDialog contactId={contact.id} contactName={contact.name}>
+                          <DropdownMenuItem onSelect={(e) => e.preventDefault()} className="text-red-600">
+                            <Trash2 className="mr-2 h-4 w-4" />
+                            <span>Archive</span>
+                          </DropdownMenuItem>
+                        </ArchiveContactDialog>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </div>
                   <div className="flex items-center text-sm text-gray-500 mt-1">
                     <Mail className="h-3.5 w-3.5 mr-1" />
                     <a href={`mailto:${contact.email}`} className="hover:text-blue-600 transition-colors">{contact.email}</a>
@@ -108,7 +174,11 @@ export default async function OrganizationDetailPage({ params }: { params: Promi
                   </div>
                 </div>
               ))}
-              {orgDeals.length === 0 && <p className="text-sm text-gray-500 col-span-2">No deals found.</p>}
+              {orgDeals.length === 0 && (
+                <div className="col-span-1 sm:col-span-2">
+                  <EmptyState icon={Target} title="No deals" description="No deals found." className="py-6" />
+                </div>
+              )}
             </div>
           </div>
 
@@ -126,7 +196,11 @@ export default async function OrganizationDetailPage({ params }: { params: Promi
                   </div>
                 </div>
               ))}
-              {orgProjects.length === 0 && <p className="text-sm text-gray-500 col-span-2">No active projects.</p>}
+              {orgProjects.length === 0 && (
+                <div className="col-span-1 sm:col-span-2">
+                  <EmptyState icon={Briefcase} title="No projects" description="No active projects." className="py-6" />
+                </div>
+              )}
             </div>
           </div>
 
@@ -149,7 +223,11 @@ export default async function OrganizationDetailPage({ params }: { params: Promi
                   </div>
                 </div>
               ))}
-              {orgInvoices.length === 0 && <p className="text-sm text-gray-500 col-span-2">No invoices found.</p>}
+              {orgInvoices.length === 0 && (
+                <div className="col-span-1 sm:col-span-2">
+                  <EmptyState icon={CreditCard} title="No invoices" description="No invoices found." className="py-6" />
+                </div>
+              )}
             </div>
           </div>
         </div>

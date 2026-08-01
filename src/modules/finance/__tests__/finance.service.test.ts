@@ -59,7 +59,7 @@ describe('FinanceService', () => {
 
   describe('verifyManualPayment', () => {
     it('should reject if payment is not found', async () => {
-      vi.mocked(db.query.payments.findFirst).mockResolvedValueOnce(null);
+      vi.mocked(db.query.payments.findFirst).mockResolvedValueOnce(undefined);
 
       await expect(financeService.verifyManualPayment('invalid-id', 'org-1', 'user-1'))
         .rejects.toThrow("Payment not found");

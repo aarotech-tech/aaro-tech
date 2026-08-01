@@ -9,6 +9,7 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { PageHeader } from "@/components/ui/page-header";
 import { Badge } from "@/components/ui/badge";
+import { formatPaiseToINR } from "@/lib/currency";
 
 export default async function DashboardPage() {
   const user = await requireAuthenticatedUser();
@@ -31,16 +32,16 @@ export default async function DashboardPage() {
             { label: "Dashboard" }
           ]}
           primaryAction={
-            <Button render={<Link href="/finance/invoices/new" />}>
+            <Button render={<Link href="/finance" />} nativeButton={false}>
               <PlusCircle className="w-4 h-4 mr-2" /> New Invoice
             </Button>
           }
           secondaryActions={
             <>
-              <Button variant="outline" render={<Link href="/sales/deals/new" />}>
+              <Button variant="outline" render={<Link href="/sales/pipeline" />} nativeButton={false}>
                 <PlusCircle className="w-4 h-4 mr-2" /> New Deal
               </Button>
-              <Button variant="outline" render={<Link href="/delivery/projects/new" />}>
+              <Button variant="outline" render={<Link href="/delivery/projects" />} nativeButton={false}>
                 <PlusCircle className="w-4 h-4 mr-2" /> New Project
               </Button>
             </>
@@ -58,7 +59,7 @@ export default async function DashboardPage() {
             <Target className="h-4 w-4 text-blue-500" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">₹{(salesMetrics.deals.pipelineValueCents / 100).toLocaleString()}</div>
+            <div className="text-2xl font-bold">{formatPaiseToINR(salesMetrics.deals.pipelineValueCents)}</div>
             <p className="text-xs text-muted-foreground mt-1">
               {salesMetrics.websiteLeads.newToday} New Leads Today
             </p>
@@ -90,7 +91,7 @@ export default async function DashboardPage() {
             <DollarSign className="h-4 w-4 text-amber-500" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">₹{(financeMetrics.outstandingRevenueCents / 100).toLocaleString()}</div>
+            <div className="text-2xl font-bold">{formatPaiseToINR(financeMetrics.outstandingRevenueCents)}</div>
             <p className="text-xs text-muted-foreground mt-1">
               {financeMetrics.collectionRate * 100}% Collection Rate
             </p>
@@ -147,7 +148,7 @@ export default async function DashboardPage() {
                 </div>
               </CardContent>
               <div className="p-4 border-t bg-gray-50/50 mt-auto">
-                <Button variant="outline" size="sm" className="w-full" render={<Link href="/sales/leads" />}>
+                <Button variant="outline" size="sm" className="w-full" render={<Link href="/sales/leads" />} nativeButton={false}>
                   Review Pipeline →
                 </Button>
               </div>
@@ -189,7 +190,7 @@ export default async function DashboardPage() {
                 </div>
               </CardContent>
               <div className="p-4 border-t bg-gray-50/50 mt-auto">
-                <Button variant="outline" size="sm" className="w-full" render={<Link href="/delivery/projects" />}>
+                <Button variant="outline" size="sm" className="w-full" render={<Link href="/delivery/projects" />} nativeButton={false}>
                   Review Projects →
                 </Button>
               </div>
@@ -207,10 +208,10 @@ export default async function DashboardPage() {
                     <AlertTriangle className="h-5 w-5 text-red-600" />
                     <div>
                       <p className="text-sm font-semibold">Overdue Payments</p>
-                      <p className="text-xs text-red-700">₹{(financeMetrics.overdueAmountCents / 100).toLocaleString()} across {financeMetrics.overdueInvoicesCount} invoices</p>
+                      <p className="text-xs text-red-700">{formatPaiseToINR(financeMetrics.overdueAmountCents)} across {financeMetrics.overdueInvoicesCount} invoices</p>
                     </div>
                   </div>
-                  <Button variant="destructive" size="sm" render={<Link href="/finance/invoices?status=overdue" />}>
+                  <Button variant="destructive" size="sm" render={<Link href="/finance/invoices?status=overdue" />} nativeButton={false}>
                     Chase Payments
                   </Button>
                 </div>
@@ -292,7 +293,7 @@ export default async function DashboardPage() {
               </div>
             </CardContent>
             <div className="p-4 border-t bg-white mt-auto">
-              <Button variant="outline" size="sm" className="w-full text-indigo-600" render={<Link href="/inbox" />}>
+              <Button variant="outline" size="sm" className="w-full text-indigo-600" render={<Link href="/inbox" />} nativeButton={false}>
                 Go to Inbox →
               </Button>
             </div>

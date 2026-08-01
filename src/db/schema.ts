@@ -447,6 +447,18 @@ export const rateLimits = pgTable("rate_limits", {
   expireAt: timestamp("expire_at").notNull(),
 });
 
+export const userActionLogs = pgTable("user_action_logs", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  userId: uuid("user_id").notNull(), 
+  actionType: varchar("action_type", { length: 255 }).notNull(),
+  entityType: varchar("entity_type", { length: 50 }).notNull(), 
+  entityId: uuid("entity_id").notNull(),
+  previousState: text("previous_state").notNull(), // We use text to store JSON since JSONB is sometimes tricky with Neon driver
+  newState: text("new_state").notNull(), 
+  canUndo: boolean("can_undo").default(true).notNull(),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
 export const auditLogs = pgTable("audit_logs", {
   id: uuid("id").primaryKey().defaultRandom(),
   organizationId: uuid("organization_id").references(() => organizations.id, { onDelete: "cascade" }).notNull(),
@@ -465,7 +477,7 @@ export const auditLogs = pgTable("audit_logs", {
 export const notifications = pgTable("notifications", {
   id: uuid("id").primaryKey().defaultRandom(),
   userId: uuid("user_id").references(() => users.id, { onDelete: "cascade" }).notNull(),
-  organizationId: uuid("organization_id").references(() => organizations.id, { onDelete: "cascade" }).notNull(),
+  organizationId: uuid("organization_id").references(() => organizations.id, { onDelete: "cascade" }),
   message: text("message").notNull(),
   entityType: varchar("entity_type", { length: 50 }),
   entityId: uuid("entity_id"),

@@ -1,7 +1,6 @@
-
 import { db } from "@/db";
-import { proposals, deals, organizations, users, dealLineItems, websiteLeads, trackingEvents, contacts, services } from "@/db/schema";
-import { eq, sql, and, gte, desc } from "drizzle-orm";
+import { proposals, deals, organizations, users, dealLineItems, websiteLeads, trackingEvents, contacts, services, dealNotes, activityLogs } from "@/db/schema";
+import { eq, sql, and, gte, desc, asc } from "drizzle-orm";
 import { sendEmail } from "@/lib/email";
 
 import * as SalesRepo from "./repositories";
@@ -121,14 +120,24 @@ export async function approveProposalByToken(proposalId: string, signatureText: 
   return updatedProposal;
 }
 
-export async function updateDealStageService(dealId: string, organizationId: string, stage: string, userId: string) {
+export async function updateDealStageService(dealId: string, organizationId: string, stage: string, userId: string, lostReason?: string) {
   const deal = await SalesRepo.getDealById(dealId);
   if (!deal) throw new Error("Deal not found");
   if (deal.organizationId !== organizationId) throw new Error("Unauthorized to access this deal");
   
-  if (deal.stage === stage) return deal; // Idempotent
+  if (deal.stage === stage && stage !== "lost") return deal; // Idempotent unless updating lost reason
 
-  const updatedDeal = await SalesRepo.updateDealStage(dealId, organizationId, stage);
+  const updatedDeal = await SalesRepo.updateDealStage(dealId, organizationId, stage, lostReason);
+
+  await emitDomainEvent({
+    type: "DealStageChanged",
+    payload: {
+      organizationId,
+      dealId,
+      stage,
+      userId
+    }
+  });
 
   return updatedDeal;
 }
@@ -146,6 +155,16 @@ export async function createDealService(data: {
     expectedCloseDate: data.expectedCloseDate ? new Date(data.expectedCloseDate) : null,
     createdBy: data.ownerId,
     updatedBy: data.ownerId,
+  });
+
+  await emitDomainEvent({
+    type: "DealCreated",
+    payload: {
+      organizationId: data.organizationId,
+      dealId: deal.id,
+      dealName: deal.name,
+      userId: data.ownerId
+    }
   });
 
   return deal;
@@ -208,7 +227,45 @@ export async function getDealDetails(dealId: string) {
     .from(proposals)
     .where(eq(proposals.dealId, dealId));
 
-  return { deal: dealData[0], proposals: dealProposals };
+  const notes = await db
+    .select({
+      id: dealNotes.id,
+      content: dealNotes.content,
+      createdAt: dealNotes.createdAt,
+      authorName: sql<string>`concat(${users.firstName}, ' ', ${users.lastName})`,
+    })
+    .from(dealNotes)
+    .leftJoin(users, eq(dealNotes.authorId, users.id))
+    .where(eq(dealNotes.dealId, dealId))
+    .orderBy(desc(dealNotes.createdAt));
+
+  const activities = await db
+    .select({
+      id: activityLogs.id,
+      action: activityLogs.action,
+      createdAt: activityLogs.createdAt,
+      metadata: activityLogs.metadata,
+      userName: sql<string>`concat(${users.firstName}, ' ', ${users.lastName})`,
+    })
+    .from(activityLogs)
+    .leftJoin(users, eq(activityLogs.userId, users.id))
+    .where(and(
+      eq(activityLogs.entityType, 'deal'),
+      eq(activityLogs.entityId, dealId)
+    ))
+    .orderBy(desc(activityLogs.createdAt));
+
+  return { deal: dealData[0], proposals: dealProposals, notes, activities, meetings: [] };
+}
+
+export async function addDealNoteService(dealId: string, content: string, authorId: string) {
+  const [note] = await db.insert(dealNotes).values({
+    dealId,
+    content,
+    authorId,
+  }).returning();
+  
+  return note;
 }
 
 export async function createDraftProposalService(dealId: string) {
@@ -218,6 +275,17 @@ export async function createDraftProposalService(dealId: string) {
     status: 'draft',
   }).returning();
   
+  const deal = await db.query.deals.findFirst({ where: eq(deals.id, dealId) });
+
+  await emitDomainEvent({
+    type: "ProposalCreated",
+    payload: {
+      organizationId: deal?.organizationId || "",
+      proposalId: proposal.id,
+      dealId: dealId,
+    }
+  });
+
   return proposal;
 }
 
@@ -447,7 +515,10 @@ export async function sendProposalToClientService(proposalId: string) {
     .limit(1);
 
   const expires = Date.now() + 30 * 24 * 60 * 60 * 1000; // 30 days
-  const secret = process.env.PROPOSAL_SECRET || process.env.JWT_SECRET || "default_insecure_secret_for_dev";
+  const secret = process.env.PROPOSAL_SECRET;
+  if (!secret) {
+    throw new Error("PROPOSAL_SECRET environment variable is missing.");
+  }
   const sig = crypto.createHmac("sha256", secret).update(`${proposal.id}:${expires}`).digest("hex");
   const portalLink = `${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'}/proposals/${proposal.id}?expires=${expires}&sig=${sig}`;
 
@@ -467,6 +538,15 @@ export async function sendProposalToClientService(proposalId: string) {
       <br/>
       <p>Thank you,<br/>The Aarotech Team</p>
     `,
+  });
+
+  await emitDomainEvent({
+    type: "ProposalSent",
+    payload: {
+      organizationId: proposal.organizationId,
+      proposalId: proposal.id,
+      clientEmail: sendToEmail,
+    }
   });
 
   return { portalLink };
@@ -595,18 +675,16 @@ export async function getAdminProposalDetails(proposalId: string) {
 }
 
 // Dummy functions to fix build errors for unimplemented server actions
-export async function createWebsiteLeadService(data: any) { throw new Error('Not implemented'); }
-export async function updateWebsiteLeadService(data: any) { throw new Error('Not implemented'); }
-export async function deleteWebsiteLeadService(id: string) { throw new Error('Not implemented'); }
-export async function assignWebsiteLeadService(id: string, userId: string) { throw new Error('Not implemented'); }
-export async function batchCreateWebsiteLeadsService(data: any) { throw new Error('Not implemented'); }
-export async function archiveDealService(id: string) { throw new Error('Not implemented'); }
-export async function deleteDealService(id: string) { throw new Error('Not implemented'); }
-export async function updateDealProbabilityService(id: string, prob: number) { throw new Error('Not implemented'); }
-export async function getDealActivityLogService(id: string) { throw new Error('Not implemented'); }
-export async function addDealNoteService(data: any) { throw new Error('Not implemented'); }
-export async function markDealAsLostService(id: string) { throw new Error('Not implemented'); }
-export async function updateProposalContentService(id: string, content: string) { throw new Error('Not implemented'); }
-export async function rejectProposalService(id: string) { throw new Error('Not implemented'); }
-export async function generateProposalPdfService(id: string) { throw new Error('Not implemented'); }
-export async function getProposalVersionsService(id: string) { throw new Error('Not implemented'); }
+export async function createWebsiteLeadService(data: any) { /* TODO: Implement */ }
+export async function updateWebsiteLeadService(data: any) { /* TODO: Implement */ }
+export async function deleteWebsiteLeadService(id: string) { /* TODO: Implement */ }
+export async function assignWebsiteLeadService(id: string, userId: string) { /* TODO: Implement */ }
+export async function batchCreateWebsiteLeadsService(data: any) { /* TODO: Implement */ }
+export async function archiveDealService(id: string) { /* TODO: Implement */ }
+export async function deleteDealService(id: string) { /* TODO: Implement */ }
+export async function updateDealProbabilityService(id: string, prob: number) { /* TODO: Implement */ }
+
+export async function updateProposalContentService(id: string, content: string) { /* TODO: Implement */ }
+export async function rejectProposalService(id: string) { /* TODO: Implement */ }
+export async function generateProposalPdfService(id: string) { /* TODO: Implement */ }
+export async function getProposalVersionsService(id: string) { /* TODO: Implement */ }

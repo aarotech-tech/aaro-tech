@@ -1,4 +1,5 @@
 import { notFound } from "next/navigation";
+import DOMPurify from "isomorphic-dompurify";
 import { Button } from "@/components/ui/button";
 import { PenToolIcon, CheckCircleIcon } from "lucide-react";
 import { ApproveProposalForm } from "./_components/ApproveProposalForm";
@@ -43,7 +44,7 @@ export default async function ClientProposalViewPage({
         <div className="p-10 border-b border-gray-200">
           <div 
             className="prose max-w-none text-gray-800"
-            dangerouslySetInnerHTML={{ __html: proposal.documentData || "<p>No content available.</p>" }}
+            dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(proposal.documentData || "<p>No content available.</p>") }}
           />
           
           <div className="mt-12 pt-8 border-t border-gray-200">

@@ -126,14 +126,14 @@ export default async function PaymentsPage() {
                   <td className="px-6 py-4 whitespace-nowrap">
                     <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full capitalize
                       ${payment.status === 'succeeded' || payment.status === 'verified' ? 'bg-green-100 text-green-800' : 
-                        payment.status === 'pending_verification' ? 'bg-amber-100 text-amber-800' : 
+                        payment.status === 'pending' ? 'bg-amber-100 text-amber-800' : 
                         'bg-gray-100 text-gray-800'}`}
                     >
                       {payment.status ? payment.status.replace('_', ' ') : 'N/A'}
                     </span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                    {payment.status === 'pending_verification' && (
+                    {payment.status === 'pending' && (
                       <VerifyPaymentButton paymentId={payment.id} />
                     )}
                   </td>

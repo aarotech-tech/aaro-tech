@@ -120,9 +120,9 @@ export async function updateProposal(id: string, data: Partial<InferInsertModel<
 /**
  * Updates a deal stage.
  */
-export async function updateDealStage(id: string, organizationId: string, stage: string, tx: any = db) {
+export async function updateDealStage(id: string, organizationId: string, stage: string, lostReason?: string, tx: any = db) {
   const result = await tx.update(deals)
-    .set({ stage, updatedAt: new Date() })
+    .set({ stage, lostReason, updatedAt: new Date() })
     .where(and(eq(deals.id, id), eq(deals.organizationId, organizationId)))
     .returning();
   return result[0];

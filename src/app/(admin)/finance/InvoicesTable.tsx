@@ -5,6 +5,8 @@ import { DataTable } from "@/components/ui/data-table";
 import { DataTableColumnHeader } from "@/components/ui/data-table-column-header";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { RecordPaymentButton } from "./_components/RecordPaymentButton";
+import Link from "next/link";
 
 export function InvoicesTable({ invoices }: { invoices: any[] }) {
   const columns: ColumnDef<any>[] = [
@@ -55,8 +57,12 @@ export function InvoicesTable({ invoices }: { invoices: any[] }) {
       id: "actions",
       cell: ({ row }) => (
         <div className="text-right space-x-2">
-          <Button variant="outline" size="sm">View</Button>
-          <Button variant="secondary" size="sm">Record Payment</Button>
+          <Link href={`/finance/invoices/${row.original.id}`}>
+            <Button variant="outline" size="sm">View</Button>
+          </Link>
+          {row.original.status === 'open' && (
+            <RecordPaymentButton invoiceId={row.original.id} />
+          )}
         </div>
       ),
     },

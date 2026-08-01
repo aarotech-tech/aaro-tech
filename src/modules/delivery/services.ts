@@ -2,8 +2,8 @@ import * as DeliveryRepo from "./repositories";
 import { eventBus } from "../core/events";
 import { DbTx } from "@/db/types";
 import { db } from "@/db";
-import { projects, tasks, milestones, activityLogs, files, retainerPeriods, retainers, deliverables, deliverableVersions, comments, auditLogs, projectMembers, taskComments } from "@/db/schema";
-import { eq, and, desc, asc, sql, ilike, or } from "drizzle-orm";
+import { projects, tasks, milestones, activityLogs, files, retainerPeriods, retainers, deliverables, deliverableVersions, comments, auditLogs, projectMembers, taskComments, users } from "@/db/schema";
+import { eq, and, desc, asc, sql, ilike, or, inArray } from "drizzle-orm";
 import { sendDeliverableClientResponseEmail } from "@/lib/email";
 import { DomainStateTransitionError } from "../core/errors";
 
@@ -750,3 +750,101 @@ export async function updateMilestoneDependenciesService(id: string, deps: strin
 export async function updateDeliverableService(data: any) { throw new Error('Not implemented'); }
 export async function deleteDeliverableService(id: string) { throw new Error('Not implemented'); }
 export async function uploadDeliverableVersionService(data: any) { throw new Error('Not implemented'); }
+export async function assignProjectMember(projectId: string, userId: string, role: string = "member", assignedById: string) {
+  const project = await db.query.projects.findFirst({ where: eq(projects.id, projectId) });
+  
+  const [member] = await db.insert(projectMembers).values({
+    projectId,
+    userId,
+    role,
+  }).onConflictDoUpdate({
+    target: [projectMembers.projectId, projectMembers.userId],
+    set: { role }
+  }).returning();
+
+  if (project?.organizationId) {
+    await db.insert(activityLogs).values({
+      organizationId: project.organizationId,
+      entityType: "project",
+      entityId: projectId,
+      action: "project.member_assigned",
+      userId: assignedById,
+      metadata: JSON.stringify({ assignedUserId: userId, role })
+    });
+  }
+
+  return member;
+}
+
+export async function removeProjectMember(projectId: string, userId: string, removedById: string) {
+  const project = await db.query.projects.findFirst({ where: eq(projects.id, projectId) });
+
+  await db.delete(projectMembers)
+    .where(and(eq(projectMembers.projectId, projectId), eq(projectMembers.userId, userId)));
+
+  if (project?.organizationId) {
+    await db.insert(activityLogs).values({
+      organizationId: project.organizationId,
+      entityType: "project",
+      entityId: projectId,
+      action: "project.member_removed",
+      userId: removedById,
+      metadata: JSON.stringify({ removedUserId: userId })
+    });
+  }
+
+  return true;
+}
+
+export async function getProjectMembers(projectId: string) {
+  return await db.select({
+    userId: projectMembers.userId,
+    role: projectMembers.role,
+    user: users,
+  })
+  .from(projectMembers)
+  .innerJoin(users, eq(projectMembers.userId, users.id))
+  .where(eq(projectMembers.projectId, projectId));
+}
+export async function createManualProject(organizationId: string, data: { name: string; value?: number }, userId: string) {
+  const [project] = await db.insert(projects).values({
+    organizationId,
+    name: data.name,
+    value: data.value,
+    createdBy: userId,
+  }).returning();
+
+  await logProjectActivity(organizationId, project.id, "project.created", userId, { name: data.name });
+  
+  return project;
+}
+
+export async function completeProject(projectId: string, organizationId: string) {
+  const [project] = await db.update(projects)
+    .set({ status: 'completed' })
+    .where(eq(projects.id, projectId))
+    .returning();
+    
+  if (project) {
+    await logProjectActivity(organizationId, projectId, "project.completed", "system", { name: project.name });
+  }
+  
+  return project;
+}
+export async function bulkUpdateTaskStatusService(taskIds: string[], status: string, projectId: string, organizationId: string) {
+  // Verify project belongs to organization
+  const project = await db.query.projects.findFirst({
+    where: (projects, { eq, and }) => and(
+      eq(projects.id, projectId),
+      eq(projects.organizationId, organizationId)
+    )
+  });
+
+  if (!project) throw new Error("Unauthorized or project not found");
+
+  await db.update(tasks)
+    .set({ status, updatedAt: new Date() })
+    .where(inArray(tasks.id, taskIds));
+
+  return true;
+}

@@ -122,6 +122,29 @@ export class PortalService {
       fileUrl: "#",
     });
   }
+
+  async getClientProposals(organizationId: string) {
+    const { deals, proposals } = await import("@/db/schema");
+    const { inArray } = await import("drizzle-orm");
+    const orgDeals = await db.query.deals.findMany({
+      where: eq(deals.organizationId, organizationId),
+      columns: { id: true, name: true }
+    });
+    
+    if (orgDeals.length === 0) return [];
+    
+    const dealIds = orgDeals.map(d => d.id);
+    
+    const props = await db.query.proposals.findMany({
+      where: inArray(proposals.dealId, dealIds),
+      orderBy: [desc(proposals.createdAt)],
+      with: {
+        deal: true
+      }
+    });
+    
+    return props;
+  }
 }
 
 export const portalService = new PortalService();

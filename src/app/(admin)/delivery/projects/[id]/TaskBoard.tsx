@@ -3,7 +3,7 @@
 import { useState } from "react";
 import type { KanbanColumn, KanbanItem } from "@/components/ui/kanban";
 import dynamic from "next/dynamic";
-import { getTaskDetailsAction, updateTaskStatusAction } from "@/modules/delivery/actions";
+import { getTaskDetailsAction, updateTaskStatusAction, bulkUpdateTaskStatusAction } from "@/modules/delivery/actions";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -13,7 +13,16 @@ import {
   SheetTitle,
   SheetDescription,
 } from "@/components/ui/sheet";
-import { Loader2 } from "lucide-react";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Loader2, CheckSquare } from "lucide-react";
+import { TASK_STATUSES } from "@/lib/constants/delivery";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Button } from "@/components/ui/button";
 
 const KanbanBoard = dynamic(() => import("@/components/ui/kanban").then(mod => mod.KanbanBoard), { ssr: false });
 
@@ -27,6 +36,8 @@ export function TaskBoard({ initialColumns, projectId, organizationId }: { initi
   const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null);
   const [taskDetails, setTaskDetails] = useState<any | null>(null);
   const [isLoadingDetails, setIsLoadingDetails] = useState(false);
+  const [selectedTaskIds, setSelectedTaskIds] = useState<Set<string>>(new Set());
+  const [isBulkUpdating, setIsBulkUpdating] = useState(false);
 
   const handleDragEnd = async (taskId: string, sourceColId: string, destColId: string, newIndex: number) => {
     try {
@@ -36,6 +47,30 @@ export function TaskBoard({ initialColumns, projectId, organizationId }: { initi
       }
     } catch (err) {
       toast.error("Failed to update task status.");
+    }
+  };
+
+  const handleBulkUpdate = async (statusId: string) => {
+    if (selectedTaskIds.size === 0) return;
+    
+    setIsBulkUpdating(true);
+    try {
+      const res = await bulkUpdateTaskStatusAction({ 
+        taskIds: Array.from(selectedTaskIds), 
+        status: statusId, 
+        projectId, 
+        organizationId 
+      });
+      if (res?.data?.success) {
+        toast.success(`Updated ${selectedTaskIds.size} tasks to ${statusId}`);
+        setSelectedTaskIds(new Set());
+      } else {
+        throw new Error("Bulk update failed");
+      }
+    } catch (err) {
+      toast.error("Failed to bulk update tasks.");
+    } finally {
+      setIsBulkUpdating(false);
     }
   };
 
@@ -63,10 +98,25 @@ export function TaskBoard({ initialColumns, projectId, organizationId }: { initi
 
     return (
       <div 
-        className="p-3 cursor-pointer" 
+        className="p-3 cursor-pointer group" 
         onClick={() => handleTaskClick(task.id)}
       >
-        <h4 className="font-semibold text-gray-900 text-sm mb-2">{task.title}</h4>
+        <div className="flex items-start justify-between">
+          <h4 className="font-semibold text-gray-900 text-sm mb-2">{task.title}</h4>
+          <div className="opacity-0 group-hover:opacity-100 transition-opacity" onClick={e => e.stopPropagation()}>
+            <Checkbox 
+              checked={selectedTaskIds.has(task.id)}
+              onCheckedChange={(checked) => {
+                setSelectedTaskIds(prev => {
+                  const next = new Set(prev);
+                  if (checked) next.add(task.id);
+                  else next.delete(task.id);
+                  return next;
+                });
+              }}
+            />
+          </div>
+        </div>
         <div className="flex justify-between items-center mt-2">
           <Badge variant={task.priority === 'high' ? 'destructive' : task.priority === 'low' ? 'secondary' : 'default'} className="text-[10px]">
             {task.priority}
@@ -80,12 +130,42 @@ export function TaskBoard({ initialColumns, projectId, organizationId }: { initi
   };
 
   return (
-    <div className="h-full bg-white border border-gray-200 rounded-md">
-      <KanbanBoard 
-        initialColumns={initialColumns} 
-        onDragEnd={handleDragEnd} 
-        renderItem={renderItem}
-      />
+    <div className="h-full bg-white border border-gray-200 rounded-md flex flex-col">
+      {selectedTaskIds.size > 0 && (
+        <div className="bg-blue-50 border-b border-blue-100 p-3 flex items-center justify-between">
+          <div className="flex items-center text-blue-700 text-sm font-medium">
+            <CheckSquare className="w-4 h-4 mr-2" />
+            {selectedTaskIds.size} tasks selected
+          </div>
+          <div className="flex items-center gap-2">
+            <Button variant="ghost" size="sm" onClick={() => setSelectedTaskIds(new Set())} className="text-blue-600 hover:text-blue-800">
+              Clear
+            </Button>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button size="sm" variant="outline" className="bg-white" disabled={isBulkUpdating}>
+                  {isBulkUpdating ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
+                  Move to Stage...
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                {TASK_STATUSES.map(status => (
+                  <DropdownMenuItem key={status.id} onClick={() => handleBulkUpdate(status.id)}>
+                    {status.label}
+                  </DropdownMenuItem>
+                ))}
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
+        </div>
+      )}
+      <div className="flex-1 overflow-hidden">
+        <KanbanBoard 
+          initialColumns={initialColumns} 
+          onDragEnd={handleDragEnd} 
+          renderItem={renderItem}
+        />
+      </div>
 
       <Sheet open={!!selectedTaskId} onOpenChange={(open) => !open && setSelectedTaskId(null)}>
         <SheetContent className="sm:max-w-[500px]">

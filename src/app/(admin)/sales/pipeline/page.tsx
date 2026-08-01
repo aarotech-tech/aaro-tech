@@ -6,6 +6,7 @@ import { PipelineBoard } from "./PipelineBoard";
 import { KanbanColumn } from "@/components/ui/kanban";
 import { PageHeader } from "@/components/ui/page-header";
 import { NewDealModal } from "./_components/NewDealModal";
+import { ExportButton } from "@/components/shared/ExportButton";
 
 export default async function PipelinePage() {
   // Fetch deals with their organization and owner names
@@ -74,7 +75,12 @@ export default async function PipelinePage() {
             { label: "Sales", href: "/sales/leads" },
             { label: "Pipeline" }
           ]}
-          primaryAction={<NewDealModal organizations={orgsList} />}
+          primaryAction={
+            <div className="flex gap-2">
+              <ExportButton data={allDealsData} filename="pipeline_export" />
+              <NewDealModal organizations={orgsList} />
+            </div>
+          }
         />
       </div>
       <div className="flex-1 overflow-hidden p-6 pt-0">

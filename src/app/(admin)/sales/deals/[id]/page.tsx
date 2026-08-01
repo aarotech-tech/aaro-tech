@@ -7,9 +7,15 @@ import { PageHeader } from "@/components/ui/page-header";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { getStageLabel } from "@/lib/constants/pipeline";
-import { Building2, Calendar, DollarSign, User, FileText } from "lucide-react";
+import { Building2, Calendar, DollarSign, User, FileText, MessageSquare, Activity } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { EditDealModal } from "./_components/EditDealModal";
+import { MarkDealLostModal } from "./_components/MarkDealLostModal";
+import { AlertCircle } from "lucide-react";
+import { DealNotes } from "./_components/DealNotes";
+import { DealMeetings } from "./_components/DealMeetings";
+import { DealActivityLog } from "./_components/DealActivityLog";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 export default async function DealDetailsPage({ params }: { params: Promise<{ id: string }> }) {
   const resolvedParams = await params;
@@ -19,7 +25,7 @@ export default async function DealDetailsPage({ params }: { params: Promise<{ id
     notFound();
   }
 
-  const { deal, proposals } = data;
+  const { deal, proposals, notes, activities, meetings } = data;
   const formattedValue = formatCurrency(deal.value || 0);
 
   return (
@@ -34,6 +40,15 @@ export default async function DealDetailsPage({ params }: { params: Promise<{ id
             { label: "Pipeline", href: "/sales/pipeline" },
             { label: deal.name }
           ]}
+          secondaryActions={
+            deal.stage !== "lost" ? (
+              <MarkDealLostModal dealId={deal.id} organizationId={deal.organizationId}>
+                <Button variant="outline" size="sm" className="text-red-600 hover:text-red-700 hover:bg-red-50">
+                  <AlertCircle className="w-4 h-4 mr-2" /> Mark as Lost
+                </Button>
+              </MarkDealLostModal>
+            ) : null
+          }
         />
       </div>
 
@@ -122,6 +137,33 @@ export default async function DealDetailsPage({ params }: { params: Promise<{ id
                 </div>
               )}
             </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="pb-2">
+              <Tabs defaultValue="notes" className="w-full">
+                <TabsList className="grid w-full grid-cols-3">
+                  <TabsTrigger value="notes" className="flex items-center gap-2">
+                    <MessageSquare className="w-4 h-4" /> Notes
+                  </TabsTrigger>
+                  <TabsTrigger value="meetings" className="flex items-center gap-2">
+                    <Calendar className="w-4 h-4" /> Meetings
+                  </TabsTrigger>
+                  <TabsTrigger value="activity" className="flex items-center gap-2">
+                    <Activity className="w-4 h-4" /> Activity Log
+                  </TabsTrigger>
+                </TabsList>
+                <TabsContent value="notes" className="pt-4">
+                  <DealNotes dealId={deal.id} notes={notes} />
+                </TabsContent>
+                <TabsContent value="meetings" className="pt-4">
+                  <DealMeetings dealId={deal.id} meetings={meetings || []} />
+                </TabsContent>
+                <TabsContent value="activity" className="pt-4">
+                  <DealActivityLog activities={activities} />
+                </TabsContent>
+              </Tabs>
+            </CardHeader>
           </Card>
         </div>
       </div>

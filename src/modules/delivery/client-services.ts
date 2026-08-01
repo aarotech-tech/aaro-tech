@@ -1,5 +1,5 @@
 import { db } from "@/db";
-import { projects, deliverables, milestones, activityLogs, files, invoices } from "@/db/schema";
+import { projects, deliverables, milestones, activityLogs, files, invoices, tasks } from "@/db/schema";
 import { eq, desc, asc, and } from "drizzle-orm";
 
 export async function getClientProjects(organizationId: string) {
@@ -47,12 +47,17 @@ export async function getClientProjectDetails(projectId: string, organizationId:
     }
   });
 
+  const projectTasks = await db.query.tasks.findMany({
+    where: eq(tasks.projectId, projectId),
+  });
+
   return {
     ...project,
     deliverables: projectDeliverables,
     milestones: projectMilestones,
     activities: projectActivities,
     files: projectFiles,
-    invoices: projectInvoices
+    invoices: projectInvoices,
+    tasks: projectTasks
   };
 }

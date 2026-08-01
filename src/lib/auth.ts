@@ -39,24 +39,7 @@ export async function requireAuthenticatedUser() {
       where: eq(users.clerkId, clerkUser.id),
     });
 
-    if (dbUser && dbUser.userType === 'client' && dbUser.email.endsWith('@aarotech.in')) {
-      const [updatedUser] = await db.update(users).set({
-        userType: 'internal',
-        role: 'superadmin',
-        globalRole: 'owner'
-      }).where(eq(users.id, dbUser.id)).returning();
-      dbUser = updatedUser;
-
-      // Update Clerk public metadata
-      const clerk = await clerkClient();
-      await clerk.users.updateUserMetadata(clerkUser.id, {
-        publicMetadata: {
-          userType: 'internal',
-          isInternal: true,
-          role: 'internal'
-        }
-      });
-    }
+    // Removed auto-privilege escalation block
   } catch (err: any) {
     console.error("Database Connection Failed during Authentication:", err.message);
     throw new Error("Unable to connect to the database. Please verify your Neon DATABASE_URL and ensure the database is active.");
@@ -69,8 +52,8 @@ export async function requireAuthenticatedUser() {
       throw new UnauthorizedError("User database record not found and no email available");
     }
 
-    // Check if this should be an internal user using Clerk public metadata or email domain
-    const isInternal = clerkUser.publicMetadata?.isInternal === true || clerkUser.publicMetadata?.role === 'internal' || email.endsWith('@aarotech.in');
+    // Check if this should be an internal user using Clerk public metadata
+    const isInternal = clerkUser.publicMetadata?.isInternal === true || clerkUser.publicMetadata?.role === 'internal';
 
     try {
       const [newUser] = await db.insert(users).values({

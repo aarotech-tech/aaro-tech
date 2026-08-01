@@ -3,8 +3,10 @@
 import Link from "next/link";
 import { MessageCircle } from "lucide-react";
 import { sendGAEvent } from "@next/third-parties/google";
+import { usePathname } from "next/navigation";
 
 export function WhatsAppButton() {
+  const pathname = usePathname();
   const message = "Hi Aarotech, I would like a free growth plan for my business.";
   // We use a placeholder number here, as instructed, to hide real details if unavailable,
   // but wait, user said "Add WhatsApp as a primary conversion channel... Ensure mobile and desktop experiences are optimized."
@@ -20,6 +22,22 @@ export function WhatsAppButton() {
   };
 
   const whatsappUrl = whatsappNumber ? `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(message)}` : "/#contact";
+
+  // Hide on CRM routes
+  if (
+    pathname?.startsWith("/dashboard") ||
+    pathname?.startsWith("/sales") ||
+    pathname?.startsWith("/finance") ||
+    pathname?.startsWith("/delivery") ||
+    pathname?.startsWith("/portal") ||
+    pathname?.startsWith("/inbox") ||
+    pathname?.startsWith("/settings") ||
+    pathname?.startsWith("/automations") ||
+    pathname?.startsWith("/directory") ||
+    pathname?.startsWith("/reports")
+  ) {
+    return null;
+  }
 
   return (
     <Link 

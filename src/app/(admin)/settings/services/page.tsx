@@ -3,6 +3,7 @@ import { services } from "@/db/schema";
 import { PageHeader } from "@/components/ui/page-header";
 import { Button } from "@/components/ui/button";
 import { ServicesClient } from "./ServicesClient";
+import { ServiceDialog } from "./_components/ServiceDialog";
 
 export default async function ServicesSettingsPage() {
   const data = await db.select().from(services);
@@ -18,7 +19,7 @@ export default async function ServicesSettingsPage() {
             { label: "Settings", href: "/settings" },
             { label: "Services" }
           ]}
-          primaryAction={<Button>Add Service</Button>}
+          primaryAction={<ServiceDialog />}
         />
       </div>
       

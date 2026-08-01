@@ -25,6 +25,43 @@ export const createInvoiceAction = internalActionClient
     return { success: true, invoiceId: result.id };
   });
 
+// ------------- RETAINERS ------------- //
+
+const createRetainerSchema = z.object({
+  organizationId: z.string().uuid(),
+  name: z.string().min(1),
+  amount: z.number().positive(),
+  billingDay: z.number().min(1).max(28),
+  startDate: z.string(),
+  endDate: z.string().optional(),
+});
+
+export const createRetainerAction = internalActionClient
+  .schema(createRetainerSchema)
+  .action(async ({ parsedInput, ctx }) => {
+    const data = {
+      ...parsedInput,
+      startDate: new Date(parsedInput.startDate),
+      endDate: parsedInput.endDate ? new Date(parsedInput.endDate) : undefined,
+    };
+    const result = await FinanceService.financeService.createRetainer(data, ctx.user.id);
+    revalidatePath("/(admin)/finance", "layout");
+    return { success: true, result };
+  });
+
+const updateRetainerStatusSchema = z.object({
+  retainerId: z.string().uuid(),
+  status: z.enum(["active", "paused", "cancelled"]),
+});
+
+export const updateRetainerStatusAction = internalActionClient
+  .schema(updateRetainerStatusSchema)
+  .action(async ({ parsedInput, ctx }) => {
+    const result = await FinanceService.financeService.updateRetainerStatus(parsedInput.retainerId, parsedInput.status, ctx.user.id);
+    revalidatePath("/(admin)/finance", "layout");
+    return { success: true, result };
+  });
+
 const updateInvoiceSchema = z.object({
   invoiceId: z.string().uuid(),
   organizationId: z.string().uuid(),

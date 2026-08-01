@@ -3,7 +3,7 @@ import { redirect } from "next/navigation";
 import { getClientProjectDetails } from "@/modules/delivery/client-services";
 import { portalService } from "@/modules/portal/services";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { CheckCircle2, Circle, Clock, Check, FileText } from "lucide-react";
+import { CheckCircle2, Circle, Clock, Check, FileText, AlertCircle, TrendingUp, BarChart2 } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { PageHeader } from "@/components/ui/page-header";
@@ -28,6 +28,32 @@ export default async function ClientProjectWorkspacePage(props: { params: Promis
   const completedMilestones = project.milestones.filter(m => m.status === 'completed').length;
   const progress = project.milestones.length > 0 ? Math.round((completedMilestones / project.milestones.length) * 100) : 0;
 
+  // Task Board Summary
+  const tasksByStatus = {
+    todo: project.tasks.filter(t => t.status === 'todo' || t.status === 'backlog').length,
+    in_progress: project.tasks.filter(t => t.status === 'in_progress').length,
+    review: project.tasks.filter(t => t.status === 'review').length,
+    completed: project.tasks.filter(t => t.status === 'completed').length,
+  };
+  const totalTasks = project.tasks.length;
+
+  // Project Health Indicator
+  const overdueTasks = project.tasks.filter(t => t.dueDate && new Date(t.dueDate) < new Date() && t.status !== 'completed').length;
+  const healthStatus = overdueTasks > 0 ? 'at_risk' : project.status === 'active' ? 'on_track' : (project.status || 'on_track');
+  
+  const healthColors: Record<string, string> = {
+    'on_track': 'bg-emerald-100 text-emerald-800 border-emerald-200',
+    'at_risk': 'bg-amber-100 text-amber-800 border-amber-200',
+    'completed': 'bg-blue-100 text-blue-800 border-blue-200',
+    'on_hold': 'bg-gray-100 text-gray-800 border-gray-200'
+  };
+  const healthLabels: Record<string, string> = {
+    'on_track': 'On Track',
+    'at_risk': 'At Risk',
+    'completed': 'Completed',
+    'on_hold': 'On Hold'
+  };
+
   return (
     <div className="h-full overflow-y-auto flex flex-col">
       <div className="p-6 pb-0 max-w-6xl mx-auto w-full">
@@ -40,9 +66,14 @@ export default async function ClientProjectWorkspacePage(props: { params: Promis
             { label: project.name }
           ]}
           kpiBadges={
-            <span className="px-3 py-1 bg-indigo-100 text-indigo-800 rounded-full text-sm font-semibold uppercase tracking-wide">
-              {project.status}
-            </span>
+            <div className="flex gap-2">
+              <span className={`px-3 py-1 rounded-full text-sm font-semibold tracking-wide border ${healthColors[healthStatus] || healthColors['on_track']}`}>
+                {healthLabels[healthStatus] || 'On Track'}
+              </span>
+              <span className="px-3 py-1 bg-indigo-100 text-indigo-800 rounded-full text-sm font-semibold uppercase tracking-wide">
+                {project.status}
+              </span>
+            </div>
           }
         />
       </div>
@@ -51,6 +82,47 @@ export default async function ClientProjectWorkspacePage(props: { params: Promis
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2 space-y-6">
+          
+          {/* Task Board Summary */}
+          <Card className="shadow-sm">
+            <CardHeader>
+              <CardTitle className="text-lg flex items-center gap-2">
+                <BarChart2 className="w-5 h-5 text-gray-500" /> Task Progress
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              {totalTasks === 0 ? (
+                <p className="text-sm text-gray-500 text-center py-4">No tasks tracked for this project.</p>
+              ) : (
+                <div className="space-y-4">
+                  <div className="flex w-full h-4 rounded-full overflow-hidden bg-gray-100">
+                    <div className="bg-green-500" style={{ width: `${(tasksByStatus.completed / totalTasks) * 100}%` }} title={`Completed: ${tasksByStatus.completed}`} />
+                    <div className="bg-amber-400" style={{ width: `${(tasksByStatus.review / totalTasks) * 100}%` }} title={`Review: ${tasksByStatus.review}`} />
+                    <div className="bg-blue-500" style={{ width: `${(tasksByStatus.in_progress / totalTasks) * 100}%` }} title={`In Progress: ${tasksByStatus.in_progress}`} />
+                    <div className="bg-gray-300" style={{ width: `${(tasksByStatus.todo / totalTasks) * 100}%` }} title={`To Do: ${tasksByStatus.todo}`} />
+                  </div>
+                  <div className="grid grid-cols-4 gap-2 text-center text-sm">
+                    <div>
+                      <div className="font-semibold text-gray-900">{tasksByStatus.todo}</div>
+                      <div className="text-xs text-gray-500">To Do</div>
+                    </div>
+                    <div>
+                      <div className="font-semibold text-gray-900">{tasksByStatus.in_progress}</div>
+                      <div className="text-xs text-gray-500">In Progress</div>
+                    </div>
+                    <div>
+                      <div className="font-semibold text-gray-900">{tasksByStatus.review}</div>
+                      <div className="text-xs text-gray-500">Review</div>
+                    </div>
+                    <div>
+                      <div className="font-semibold text-gray-900">{tasksByStatus.completed}</div>
+                      <div className="text-xs text-gray-500">Completed</div>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </CardContent>
+          </Card>
           
           {/* Progress & Milestones */}
           <Card className="shadow-sm">
@@ -67,21 +139,21 @@ export default async function ClientProjectWorkspacePage(props: { params: Promis
               {project.milestones.length === 0 ? (
                 <p className="text-sm text-gray-500 text-center py-4">No milestones scheduled.</p>
               ) : (
-                <div className="space-y-3">
+                <div className="space-y-6 relative before:absolute before:inset-0 before:ml-5 before:-translate-x-px md:before:mx-auto md:before:translate-x-0 before:h-full before:w-0.5 before:bg-gradient-to-b before:from-transparent before:via-gray-200 before:to-transparent pt-2">
                   {project.milestones.map((m) => (
-                    <div key={m.id} className="flex justify-between items-center p-3 border rounded-md bg-gray-50/30">
-                      <div className="flex items-center gap-3">
-                        {m.status === 'completed' ? (
-                          <CheckCircle2 className="text-emerald-500 w-5 h-5" />
-                        ) : (
-                          <Circle className="text-gray-300 w-5 h-5" />
-                        )}
-                        <div>
-                          <h4 className={`font-medium ${m.status === 'completed' ? 'text-gray-900 line-through opacity-70' : 'text-gray-900'}`}>{m.name}</h4>
-                          <p className="text-xs text-gray-500">Due: {m.dueDate ? new Date(m.dueDate).toLocaleDateString() : 'TBD'}</p>
-                        </div>
+                    <div key={m.id} className="relative flex items-center justify-between md:justify-normal md:odd:flex-row-reverse group is-active">
+                      <div className={`flex items-center justify-center w-10 h-10 rounded-full border-4 border-white ${m.status === 'completed' ? 'bg-emerald-500 text-white' : 'bg-gray-200 text-gray-500'} shadow shrink-0 md:order-1 md:group-odd:-translate-x-1/2 md:group-even:translate-x-1/2 z-10`}>
+                        {m.status === 'completed' ? <CheckCircle2 className="w-5 h-5" /> : <Circle className="w-5 h-5" />}
                       </div>
-                      <Badge variant={m.status === 'completed' ? 'default' : 'secondary'} className="capitalize">{m.status}</Badge>
+                      <div className="w-[calc(100%-4rem)] md:w-[calc(50%-2.5rem)] p-4 rounded-lg border border-gray-100 bg-white shadow-sm hover:shadow-md transition-shadow">
+                        <div className="flex items-center justify-between mb-1">
+                          <h4 className={`font-semibold text-base ${m.status === 'completed' ? 'text-gray-900 line-through opacity-70' : 'text-gray-900'}`}>{m.name}</h4>
+                          <Badge variant={m.status === 'completed' ? 'default' : 'secondary'} className="capitalize">{m.status}</Badge>
+                        </div>
+                        <p className="text-sm text-gray-500 flex items-center gap-1">
+                          <Clock className="w-3.5 h-3.5" /> Due: {m.dueDate ? new Date(m.dueDate).toLocaleDateString() : 'TBD'}
+                        </p>
+                      </div>
                     </div>
                   ))}
                 </div>

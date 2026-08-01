@@ -1,9 +1,11 @@
 import { requireAuthenticatedUser } from "@/lib/auth";
 import { withCache } from "@/lib/redis";
+import { unstable_cache } from "next/cache";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { FileIcon, CheckCircle, Briefcase, DollarSign, Bell, Activity, ArrowRight, Clock, FileWarning } from "lucide-react";
 import { portalService } from "@/modules/portal/services";
 import Link from "next/link";
+import { formatPaiseToINR } from "@/lib/currency";
 import { Button } from "@/components/ui/button";
 import { PageHeader } from "@/components/ui/page-header";
 import { EmptyState } from "@/components/ui/EmptyState";
@@ -29,10 +31,18 @@ export default async function ClientDashboardPage() {
   const { myOrg } = membershipData;
 
   // Fetch client data
-  const cacheKey = `org:${myOrg.id}:clientDashboard`;
-  const { activeProjects, recentAssets, onboardingStatus, clientInvoices, inboxFeed } = await withCache(cacheKey, async () => {
-    return portalService.getDashboardData(myOrg.id, user.id);
-  }, 3600);
+  const getCachedDashboardData = unstable_cache(
+    async (orgId: string, userId: string) => {
+      return portalService.getDashboardData(orgId, userId);
+    },
+    [`org:${myOrg.id}:clientDashboard`],
+    {
+      tags: [`org:${myOrg.id}:dashboard`],
+      revalidate: 3600
+    }
+  );
+
+  const { activeProjects, recentAssets, onboardingStatus, clientInvoices, inboxFeed } = await getCachedDashboardData(myOrg.id, user.id);
 
   const outstandingInvoices = clientInvoices.filter(i => ["open", "partially_paid", "overdue"].includes(i.status || ""));
   const overdueInvoices = outstandingInvoices.filter(i => new Date(i.dueDate) < new Date());
@@ -105,7 +115,7 @@ export default async function ClientDashboardPage() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-gray-900">
-                  ${(outstandingInvoices.reduce((acc, inv) => acc + inv.amount, 0) / 100).toLocaleString()}
+                  {formatPaiseToINR(outstandingInvoices.reduce((acc, inv) => acc + inv.amount, 0))}
             </div>
           </CardContent>
         </Card>

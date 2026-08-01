@@ -1,17 +1,26 @@
 import { db } from "@/db";
 import { deliverables, projects, organizations } from "@/db/schema";
 import { eq, desc } from "drizzle-orm";
-import { auth } from "@clerk/nextjs/server";
+import { requireAuthenticatedUser } from "@/lib/auth";
+import { organizationMembers } from "@/db/schema";
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { FileCheck, Search, Filter } from "lucide-react";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { PageHeader } from "@/components/ui/page-header";
 import { FilterBar } from "@/components/ui/filter-bar";
+import { PromoteDeliverableButton } from "./_components/PromoteDeliverableButton";
 
 export default async function DeliverableReviewsPage() {
-  const { userId, orgId } = await auth();
-  if (!userId) redirect("/sign-in");
+  const user = await requireAuthenticatedUser();
+  
+  let orgId: string | null = null;
+  if (user.userType !== "internal") {
+    const membership = await db.query.organizationMembers.findFirst({
+      where: eq(organizationMembers.userId, user.id),
+    });
+    if (membership) orgId = membership.organizationId;
+  }
 
   // Fetch deliverables that are in review
   // The query enforces tenant isolation if an orgId exists, otherwise relies on role
@@ -29,7 +38,7 @@ export default async function DeliverableReviewsPage() {
     .from(deliverables)
     .innerJoin(projects, eq(deliverables.projectId, projects.id))
     .innerJoin(organizations, eq(projects.organizationId, organizations.id))
-    .where(eq(deliverables.status, "in_review"))
+    .where(eq(deliverables.status, "internal_review"))
     .orderBy(desc(deliverables.createdAt));
 
   const allReviews = await reviewsQuery;
@@ -114,9 +123,10 @@ export default async function DeliverableReviewsPage() {
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                     {review.createdAt ? new Date(review.createdAt).toLocaleDateString() : "N/A"}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                    <Link href={`/delivery/projects/${review.projectId}/deliverables/${review.id}`} className="text-indigo-600 hover:text-indigo-900">
-                      Review details
+                  <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-2">
+                    <PromoteDeliverableButton deliverableId={review.id} />
+                    <Link href={`/delivery/projects/${review.projectId}`} className="text-indigo-600 hover:text-indigo-900 inline-block px-3 py-1">
+                      View
                     </Link>
                   </td>
                 </tr>

@@ -70,12 +70,12 @@ export const workspacesConfig: Record<Workspace, WorkspaceConfig> = {
     id: "finance",
     name: "Finance",
     icon: Wallet,
-    defaultPath: "/finance/invoices",
+    defaultPath: "/finance",
     requiredRole: "admin", // Assuming only admin/finance roles can see this
     groups: [
       {
         items: [
-          { name: "Invoices", href: "/finance/invoices", icon: CreditCard },
+          { name: "Invoices", href: "/finance", icon: CreditCard },
           { name: "Payments", href: "/finance/payments", icon: Wallet },
         ]
       }

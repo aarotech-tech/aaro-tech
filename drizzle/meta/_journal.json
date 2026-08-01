@@ -15,6 +15,20 @@
       "when": 1784623236693,
       "tag": "0001_careless_vulcan",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1785424993313,
+      "tag": "0002_thick_lady_bullseye",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1785428510331,
+      "tag": "0003_sparkling_hex",
+      "breakpoints": true
     }
   ]
 }

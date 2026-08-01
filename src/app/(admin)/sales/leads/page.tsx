@@ -1,6 +1,6 @@
 import { db } from "@/db";
 import { websiteLeads } from "@/db/schema";
-import { eq, isNull } from "drizzle-orm";
+import { eq, inArray, isNull } from "drizzle-orm";
 import { LeadsTable } from "./LeadsTable";
 import { PageHeader } from "@/components/ui/page-header";
 
@@ -8,7 +8,7 @@ export default async function LeadsPage() {
   const activeLeads = await db
     .select()
     .from(websiteLeads)
-    .where(eq(websiteLeads.status, "new"));
+    .where(inArray(websiteLeads.status, ["new", "contacted"]));
 
   return (
     <div className="h-full overflow-y-auto flex flex-col">

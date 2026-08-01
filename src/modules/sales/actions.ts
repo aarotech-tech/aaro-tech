@@ -13,6 +13,38 @@ const qualifyLeadSchema = z.object({
   leadId: z.string().uuid("Invalid Lead ID"),
 });
 
+const updateLeadStatusSchema = z.object({
+  leadId: z.string().uuid("Invalid Lead ID"),
+  status: z.enum(["new", "contacted", "qualified", "archived"]),
+});
+
+export const updateLeadStatusAction = internalActionClient
+  .schema(updateLeadStatusSchema)
+  .action(async ({ parsedInput, ctx }) => {
+    const SalesRepo = await import("./repositories");
+    const { withUndoTracking } = await import("@/modules/core/undo");
+    
+    const { result, actionLogId } = await withUndoTracking({
+      userId: ctx.user.id,
+      actionType: `Update Lead Status to ${parsedInput.status}`,
+      entityType: "website_leads",
+      entityId: parsedInput.leadId,
+      getPreviousState: async () => {
+        const lead = await SalesRepo.getWebsiteLeadById(parsedInput.leadId);
+        return lead || {};
+      },
+      getNewState: async () => {
+        return { status: parsedInput.status }; 
+      },
+      execute: async () => {
+        return await SalesRepo.updateWebsiteLeadStatus(parsedInput.leadId, parsedInput.status);
+      }
+    });
+
+    revalidatePath("/(admin)/sales/leads", "page");
+    return { ...result, actionLogId };
+  });
+
 export const qualifyLeadAction = internalActionClient
   .schema(qualifyLeadSchema)
   .action(async ({ parsedInput, ctx }) => {
@@ -54,20 +86,41 @@ const updateDealStageSchema = z.object({
   dealId: z.string().uuid(),
   stage: z.string(),
   organizationId: z.string().uuid(),
+  lostReason: z.string().optional(),
 });
 
 export const updateDealStageAction = internalActionClient
   .schema(updateDealStageSchema)
   .action(async ({ parsedInput, ctx }) => {
-    const result = await SalesService.updateDealStageService(
-      parsedInput.dealId,
-      parsedInput.organizationId,
-      parsedInput.stage,
-      ctx.user.id
-    );
+    const SalesRepo = await import("./repositories");
+    const { withUndoTracking } = await import("@/modules/core/undo");
+
+    const { result, actionLogId } = await withUndoTracking({
+      userId: ctx.user.id,
+      actionType: `Move Deal to ${parsedInput.stage}`,
+      entityType: "deals",
+      entityId: parsedInput.dealId,
+      getPreviousState: async () => {
+        const deal = await SalesRepo.getDealById(parsedInput.dealId);
+        return deal || {};
+      },
+      getNewState: async () => {
+        return { stage: parsedInput.stage };
+      },
+      execute: async () => {
+        return await SalesService.updateDealStageService(
+          parsedInput.dealId,
+          parsedInput.organizationId,
+          parsedInput.stage,
+          ctx.user.id,
+          parsedInput.lostReason
+        );
+      }
+    });
 
     revalidatePath("/(admin)/sales/pipeline", "page");
-    return result;
+    revalidatePath(`/(admin)/sales/deals/${parsedInput.dealId}`, "page");
+    return { ...result, actionLogId };
   });
 
 const createDealSchema = z.object({

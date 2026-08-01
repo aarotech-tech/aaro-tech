@@ -1,0 +1,19 @@
+  async getInvoiceDetails(invoiceId: string) {
+    const data = await database
+      .select({
+        id: invoices.id,
+        invoiceNumber: invoices.invoiceNumber,
+        amount: invoices.amount,
+        status: invoices.status,
+        createdAt: invoices.createdAt,
+        dueDate: invoices.dueDate,
+        organizationName: organizations.name,
+      })
+      .from(invoices)
+      .leftJoin(organizations, eq(invoices.organizationId, organizations.id))
+      .where(eq(invoices.id, invoiceId))
+      .limit(1);
+
+    if (data.length === 0) return null;
+    return { ...data[0], lineItems: [] };
+  }

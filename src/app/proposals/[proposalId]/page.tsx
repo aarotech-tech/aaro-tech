@@ -1,9 +1,12 @@
 import { getClientProposalView } from "@/modules/sales/services";
 import crypto from "crypto";
+import DOMPurify from "isomorphic-dompurify";
 import { notFound } from "next/navigation";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { ProposalSignatureClient } from "./_components/ProposalSignatureClient";
+import { ProposalComments } from "./_components/ProposalComments";
+import { getProposalComments } from "@/modules/sales/services";
 
 export default async function PublicProposalPage({ 
   params,
@@ -23,6 +26,7 @@ export default async function PublicProposalPage({
   }
 
   const proposal = proposalData[0];
+  const comments = await getProposalComments(proposal.id);
 
   // Enforce signed tokens for proposals created after Day 4 rollout (July 24, 2026)
   const cutoffDate = new Date("2026-07-24T00:00:00Z");
@@ -36,7 +40,10 @@ export default async function PublicProposalPage({
     }
 
 
-    const secret = process.env.PROPOSAL_SECRET || process.env.JWT_SECRET || "default_insecure_secret_for_dev";
+    const secret = process.env.PROPOSAL_SECRET;
+    if (!secret) {
+      throw new Error("PROPOSAL_SECRET environment variable is missing.");
+    }
     const expectedSig = crypto.createHmac("sha256", secret).update(`${proposal.id}:${expires}`).digest("hex");
     
     if (sig !== expectedSig) {
@@ -78,7 +85,7 @@ export default async function PublicProposalPage({
             ) : (
               <div 
                 className="p-8 sm:p-12 bg-white min-h-[600px] prose max-w-none" 
-                dangerouslySetInnerHTML={{ __html: proposal.documentData }}
+                dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(proposal.documentData) }}
               />
             )}
           </CardContent>
@@ -95,7 +102,7 @@ export default async function PublicProposalPage({
         )}
 
         {proposal.status === 'accepted' && (
-          <Card className="bg-green-50 border-green-200">
+          <Card className="bg-green-50 border-green-200 mb-8">
             <CardContent className="p-6">
               <h3 className="text-lg font-semibold text-green-900 mb-2">Proposal Accepted 🎉</h3>
               <p className="text-sm text-green-800 mb-4">
@@ -108,6 +115,12 @@ export default async function PublicProposalPage({
             </CardContent>
           </Card>
         )}
+
+        <ProposalComments 
+          proposalId={proposal.id} 
+          comments={comments} 
+          clientName={proposal.organizationName}
+        />
       </div>
     </div>
   );

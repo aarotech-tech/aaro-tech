@@ -31,14 +31,35 @@ export const CoreService = {
       role: isInternal ? 'superadmin' : 'client',
       globalRole: isInternal ? 'owner' : null,
     };
-    await db.insert(users).values(dbData).onConflictDoUpdate({
+    const [user] = await db.insert(users).values(dbData).onConflictDoUpdate({
       target: users.clerkId,
       set: dbData
-    });
+    }).returning();
+
+    if (!isInternal && user) {
+      await db.update(contacts)
+        .set({ userId: user.id })
+        .where(eq(contacts.email, data.email));
+    }
   },
 
   deleteUser: async (clerkId: string) => {
     await db.delete(users).where(eq(users.clerkId, clerkId));
+  },
+
+  updateUserRole: async (userId: string, globalRole: string) => {
+    const [user] = await db.update(users).set({ globalRole }).where(eq(users.id, userId)).returning();
+    return user;
+  },
+
+  suspendUser: async (userId: string) => {
+    const [user] = await db.update(users).set({ status: 'suspended' }).where(eq(users.id, userId)).returning();
+    return user;
+  },
+
+  activateUser: async (userId: string) => {
+    const [user] = await db.update(users).set({ status: 'active' }).where(eq(users.id, userId)).returning();
+    return user;
   },
 
   getDerivedOrganizationId: async (projectId?: string, retainerPeriodId?: string) => {

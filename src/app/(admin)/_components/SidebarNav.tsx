@@ -25,6 +25,9 @@ export function SidebarNav() {
       <Link href="/dashboard" className={getLinkClasses("/dashboard", true)}>
         Dashboard
       </Link>
+      <Link href="/reports" className={getLinkClasses("/reports")}>
+        Reports
+      </Link>
       <Link href="/sales/leads" className={getLinkClasses("/sales/leads")}>
         Website Leads
       </Link>

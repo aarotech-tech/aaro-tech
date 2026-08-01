@@ -4,6 +4,8 @@ import { desc, eq } from "drizzle-orm";
 import { PageHeader } from "@/components/ui/page-header";
 import { Button } from "@/components/ui/button";
 import { RetainersClient } from "./RetainersClient";
+import { CreateRetainerDialog } from "./_components/CreateRetainerDialog";
+import { PlusIcon } from "lucide-react";
 
 export default async function RetainersPage() {
   const data = await db
@@ -21,6 +23,8 @@ export default async function RetainersPage() {
     .innerJoin(organizations, eq(retainers.organizationId, organizations.id))
     .orderBy(desc(retainers.createdAt));
 
+  const orgsList = await db.select({ id: organizations.id, name: organizations.name }).from(organizations);
+
   return (
     <div className="h-full flex flex-col">
       <div className="p-6 pb-0">
@@ -32,7 +36,11 @@ export default async function RetainersPage() {
             { label: "Finance", href: "/finance" },
             { label: "Retainers" }
           ]}
-          primaryAction={<Button>New Retainer</Button>}
+          primaryAction={
+            <CreateRetainerDialog organizations={orgsList}>
+              <Button><PlusIcon className="w-4 h-4 mr-2" /> New Retainer</Button>
+            </CreateRetainerDialog>
+          }
         />
       </div>
       <div className="p-6 pt-0 flex-1 mt-6">

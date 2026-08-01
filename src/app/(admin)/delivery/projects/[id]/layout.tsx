@@ -7,6 +7,7 @@ import { eq } from "drizzle-orm";
 import { notFound } from "next/navigation";
 
 import { ProjectTabs } from "./ProjectTabs";
+import { CompleteProjectButton } from "./_components/CompleteProjectButton";
 
 export default async function ProjectLayout({ 
   children, 
@@ -22,6 +23,7 @@ export default async function ProjectLayout({
       name: projects.name,
       status: projects.status,
       health: projects.health,
+      organizationId: projects.organizationId,
       organizationName: organizations.name,
     })
     .from(projects)
@@ -34,6 +36,8 @@ export default async function ProjectLayout({
     { name: "Overview", href: `/delivery/projects/${project.id}` },
     { name: "Task Board", href: `/delivery/projects/${project.id}/board` },
     { name: "Milestones", href: `/delivery/projects/${project.id}/milestones` },
+    { name: "Team", href: `/delivery/projects/${project.id}/team` },
+    { name: "Files", href: `/delivery/projects/${project.id}/files` },
     { name: "Finance", href: `/delivery/projects/${project.id}/finance` },
   ];
 
@@ -56,6 +60,11 @@ export default async function ProjectLayout({
                 {project.health} Health
               </Badge>
             </>
+          }
+          secondaryActions={
+            project.status !== 'completed' && project.status !== 'archived' && (
+              <CompleteProjectButton projectId={project.id} organizationId={project.organizationId} />
+            )
           }
         />
         
