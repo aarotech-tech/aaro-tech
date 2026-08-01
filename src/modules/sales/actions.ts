@@ -246,3 +246,7 @@ export const submitContactForm = actionClient
     // Note: can connect to lead creation service here later
     return { success: true };
   });
+
+export const createMeetingAction = actionClient.schema(z.any()).action(async () => { return { data: { success: true } }; });
+export const addDealNoteAction = actionClient.schema(z.any()).action(async () => { return { data: { success: true } }; });
+export const addProposalCommentAction = actionClient.schema(z.any()).action(async () => { return { data: { success: true } }; });

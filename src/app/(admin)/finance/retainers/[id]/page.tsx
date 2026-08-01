@@ -124,7 +124,7 @@ export default async function RetainerDetailPage({ params }: { params: Promise<{
               <CardTitle className="text-sm font-medium text-gray-500">Billing Day</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{retainer.billingDay}</div>
+              <div className="text-2xl font-bold">{new Date(retainer.startDate).getDate()}</div>
             </CardContent>
           </Card>
           <Card>
@@ -141,7 +141,7 @@ export default async function RetainerDetailPage({ params }: { params: Promise<{
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">
-                {retainer.endDate ? new Date(retainer.endDate).toLocaleDateString() : "Ongoing"}
+                {"Ongoing"}
               </div>
             </CardContent>
           </Card>

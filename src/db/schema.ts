@@ -593,3 +593,21 @@ export const projectMembers = pgTable(
   })
 );
 
+export const systemAutomations = pgTable("system_automations", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  name: varchar("name", { length: 255 }).notNull(),
+  triggerType: varchar("trigger_type", { length: 100 }).notNull(),
+  actionType: varchar("action_type", { length: 100 }).notNull(),
+  isActive: boolean("is_active").default(true),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const webhooks = pgTable("webhooks", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  url: text("url").notNull(),
+  description: text("description"),
+  events: jsonb("events").notNull(),
+  secret: varchar("secret", { length: 255 }),
+  isActive: boolean("is_active").default(true),
+  createdAt: timestamp("created_at").defaultNow(),
+});

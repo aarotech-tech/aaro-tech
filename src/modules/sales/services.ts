@@ -688,3 +688,5 @@ export async function updateProposalContentService(id: string, content: string) 
 export async function rejectProposalService(id: string) { /* TODO: Implement */ }
 export async function generateProposalPdfService(id: string) { /* TODO: Implement */ }
 export async function getProposalVersionsService(id: string) { /* TODO: Implement */ }
+
+export async function getProposalComments(id: string) { return []; }
